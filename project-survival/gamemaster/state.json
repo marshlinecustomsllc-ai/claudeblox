@@ -1,0 +1,33 @@
+{
+  "current_cycle": 1,
+  "game_status": "in_progress",
+  "last_action": "architecture.md complete (1246 lines) -- reviewed in full. Studio connected: place 'WickWood' (placeId 138914473177448), Edit mode. Starting Phase 1 (foundation scripts) + Phase 2 hero shot (Camp Clearing/Lobby world) in parallel.",
+  "pending_fixes": [],
+  "completed_features": [
+    "architecture.md (8 zones, 24 RemoteEvents, 11 Systems modules, monster spec, night escalation table, part budget 2412/4000)"
+  ],
+  "next_planned": [
+    "Phase 1: Config/GameEnums/Shared/RecipeBook/RemoteEvents + Main + Systems/ ModuleScript skeletons (luau-scripter)",
+    "Phase 2: Camp Clearing + Lobby world geometry + night lighting preset (world-builder)",
+    "Phase 3: CycleManager/HearthManager/SurvivalStats + SurvivalHUD (playable core loop milestone)",
+    "Phase 4: ResourceManager/CraftingManager/LightManager (economy)",
+    "Phase 5: remaining 6 zones + Trail Ring + boundary",
+    "Phase 6: Wick rig + WickAI",
+    "Phase 7: StructureManager + SessionManager + DataManager",
+    "Phase 8: night escalation wiring + signature moments",
+    "Phase 9: polish pipeline (interior-designer/detail-architect/set-dresser/sound/vfx/lighting/art-director/story-teller)",
+    "Phase 10: luau-reviewer -> ui-designer -> roblox-playtester -> computer-player"
+  ],
+  "notes": "New unrelated project, kept fully separate from the paused Color Lock project (D:/Roblox/project/). Studio place name is 'WickWood'.",
+  "concept": {
+    "title": "WICKWOOD",
+    "subtitle": "Five Nights in Wickwood",
+    "genre": "cooperative survival horror (survive-N-nights, 3-6 players)",
+    "premise": "Survivors keep a campfire lit for five nights while Wick, a 14-foot candle-wax stag that hunts light rather than people, walks the forest snuffing every light source it can reach."
+  },
+  "stats": {
+    "total_scripts": 0,
+    "total_parts": 0,
+    "last_playtest": null
+  }
+}
