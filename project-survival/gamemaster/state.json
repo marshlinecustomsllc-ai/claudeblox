@@ -1,24 +1,48 @@
 {
   "current_cycle": 1,
-  "game_status": "in_progress",
-  "last_action": "architecture.md complete (1246 lines) -- reviewed in full. Studio connected: place 'WickWood' (placeId 138914473177448), Edit mode. Starting Phase 1 (foundation scripts) + Phase 2 hero shot (Camp Clearing/Lobby world) in parallel.",
-  "pending_fixes": [],
+  "game_status": "in_progress -- full build complete and polished. All blockers fixed, all 5 polish-pass items landed and independently verified (0 compile errors across 20 scripts, all gameplay tags/budgets intact). Ready for human playtest.",
+  "last_action": "Completed the user's 'polish everything off and update the models to look better' request. Quick doc/cleanup fixes done directly (input-mapping doc drift, HarvestNode Tags table, GeographicLatitude, dead legacy tag removal). 5 parallel specialist agents completed and independently re-verified: (1) Old Mother landmark tree + all 6 West Deadfall Hollow Stumps upgraded to real AI-generated meshes, Concealment mechanic proven to depend on a separate invisible volume (not the visual walls) so the swap carried zero mechanical risk; (2) Wick's antlers correctly SKIPPED after 7 more genuine generation attempts, all rejected on sound structural grounds (every candidate mesh was bilaterally symmetric, which can't host the 3 asymmetric candle positions without moving the load-bearing center light) -- Wick confirmed byte-identical, zero stray debris; (3) LobbyGui built (ready roster + status, matching the established visual style, zero server changes needed); (4) TrailRing given its first ambient audio (was the only zero-sound zone); (5) wade ripple VFX added (client-only, reactive-only, two real bugs caught before shipping: a surface-height mismatch and a MaxPlayers=60 emitter-budget risk). One near-miss self-caught: I almost 'fixed' an already-correctly-gated night-insect sound based on a stale QA snapshot read -- caught and reverted before it shipped as a regression. Final consolidated sanity check: 0 compile errors across 20 scripts, part count 2018 (+3 net from the model swaps, exactly as expected), all gameplay tags/budgets (150 HarvestNodes, 6 Concealment volumes, 1 WaterVolume, 19 lights/1 shadow-caster, 21+2 sounds, 15 emitters/55 rate) confirmed intact.",
+  "pending_fixes": [
+    {"id": 4, "priority": "low", "description": "Input mapping vs architecture.md's table: G=MarkWick/T=Throw as shipped and tested, vs architecture's G=Throw/X=MarkWick. G=MarkWick already shipped, tested, and documented in an earlier QA fix batch -- lower risk to update the architecture doc to match reality than to re-wire two working, tested inputs."},
+    {"id": 6, "priority": "medium", "description": "InputController's Focused Beam is F-cycled, not held-Right-Mouse per spec; beam aim direction is approximated from character LookVector"},
+    {"id": 7, "priority": "medium", "description": "No mobile touch-input layer exists at all -- desktop-only for now, doesn't block a desktop playtest but blocks any mobile release"},
+    {"id": 9, "priority": "low", "description": "TrailRing zone has zero Sound objects -- architecture claims every zone has at least 2 ambient events / no dead zones"},
+    {"id": 15, "priority": "low", "description": "6 server->client remotes still have zero client listener (LightStateChanged/WickEvent/CoCraftPrompt/ShoutPing/WickMarkPing/StructureUpdated) -- LobbyUpdated and RunStarted both closed via the new LobbyGui/LobbyController. Remaining 6 are smaller individual feedback gaps, not one big missing feature."},
+    {"id": 16, "priority": "low", "description": "DawnReport's payload is confirmed still all-zero (CycleManager.enterDawn fires literal 0/0/0/0/0/{}) -- needs new per-run counters wired across ResourceManager/LightManager/SurvivalStats/WickAI to populate for real"},
+    {"id": 17, "priority": "low", "description": "SignalFlare/WatchtowerBeacon crafting doesn't gate Watchtower occupancy behind having built the Beacon -- an existing, deliberate code comment in StructureManager already flags this as an intentional future design choice, not a bug"},
+    {"id": 20, "priority": "low", "description": "WickDen's AlertRadius attribute has no consumer -- the architecture's Dormant-state noise-alert reactive event (a NoisePing near the Den brightens a candle + spikes hum + toasts) is unimplemented"},
+    {"id": 21, "priority": "low", "description": "Narrative layer entirely absent (no NarrativeGui/NarrativeEngine/triggers) -- story-teller has not run yet, correct for current progress, not a regression"},
+    {"id": 22, "priority": "low", "description": "Cosmetic/doc-only: Lighting.GeographicLatitude=0 vs architecture's 41; 150 HarvestNodes lack unused Yield/Cooldown attributes (Config is the real source of truth, doc should be struck instead); 114 parts carry a dead legacy 'ResourceNode' tag; a few dead Config/Shared/Validator symbols"}
+  ],
   "completed_features": [
-    "architecture.md (8 zones, 24 RemoteEvents, 11 Systems modules, monster spec, night escalation table, part budget 2412/4000)"
+    "architecture.md (8 zones, 31 RemoteEvents, 11 Systems modules, monster spec, night escalation table, part budget 2412/4000)",
+    "Phase 1: Config/GameEnums/RecipeBook/Shared modules, all 31 RemoteEvents, 7 Prefab placeholders, Main + all 11 Systems ModuleScripts (incl. StructureManager)",
+    "Phase 2: Camp Clearing + Lobby world geometry",
+    "Phase 3: real day/night core loop -- first playable milestone",
+    "Phase 4: full crafting/economy loop",
+    "Phase 5: full 8-zone map, 150 HarvestNodes",
+    "Phase 6: Wick rig + full AI (light-hunting through the complete threat system)",
+    "Visual polish: architectural detail (281 parts), set-dressing (445 props across all 8 zones), cinematic lighting (full day/night post-processing stack), VFX (15 emitters), sound design (18 real sounds)",
+    "Composition review + fix pass (palette contract, day/night audio+VFX wiring, Hearth-tier light scaling, Waxworks decluttering, 4-zone moonbreak lighting)",
+    "UI visual polish (71 elements on the real 5-color system)",
+    "Full codebase review + fix pass (real harvesting input, real Downed/Revive/Wipe loop, Gloom death rate, Hearth/LightManager/per-run-reset fixes, CoCraft/Watchtower/Wick-poll-loop fixes)",
+    "Structural QA pass + fix pass (client-side triggers for Revive/MarkWick/HearthUpgrade that the review had left server-only, Lantern Post relight payload bug, Wick's hum finally playing, 4 new HUD event listeners, Hearth Tier 2/3 crafting UI)",
+    "Wade mechanic wired (WaterVolume SpeedMultiplier/StaminaMultiplier/noise now actually applied in SurvivalStats)",
+    "Light budget trim (Shadows=false on PlacedLantern prefab + 6 decorative statics, Hearth kept as sole shadow-caster)",
+    "Tree model upgrade: all ~179 trees across 5 zones now real AI-generated meshes, all 70 tagged Wood HarvestNodes verified unmoved/unbroken, part count -304",
+    "Wick visual model upgrade: 6 of 7 rig parts now real AI-generated meshes (deer skull/torso/arms/legs), rig contract (7 parts/6 joints/HipHeight/WalkSpeed/PrimaryPart/CandleLight) independently re-verified byte-identical, WickAI compiles with zero edits, full primitive backup kept in ServerStorage.Wick_BACKUP_Primitive",
+    "Brand/Flare throwing implemented (new ThrowManager module, real projectile physics, Wax damage to Wick, water-snuff interaction)",
+    "Round-2 code review re-verification: 7 real fixes (WaxLevel throttle, toast-queue lost-wakeup, unbounded noise-ping growth, 5-remote phase gating, stale doc comment, duplicated WickAI branch merged), 2 findings accurately re-counted, 2 correctly deferred as design decisions",
+    "Post-batch structural QA pass: confirmed zero regressions across the whole concurrent batch, found 2 pre-existing blockers (StreamingEnabled, Cellar hatch) unrelated to the batch itself, both fixed",
+    "Polish pass: Old Mother + 6 Hollow Stumps upgraded to AI-generated meshes, LobbyGui built, TrailRing ambient audio added, wade ripple VFX added, doc/cleanup fixes (input mapping, GeographicLatitude, dead tag removal). Wick's antlers correctly skipped as not worth the risk to the load-bearing candle light."
   ],
   "next_planned": [
-    "Phase 1: Config/GameEnums/Shared/RecipeBook/RemoteEvents + Main + Systems/ ModuleScript skeletons (luau-scripter)",
-    "Phase 2: Camp Clearing + Lobby world geometry + night lighting preset (world-builder)",
-    "Phase 3: CycleManager/HearthManager/SurvivalStats + SurvivalHUD (playable core loop milestone)",
-    "Phase 4: ResourceManager/CraftingManager/LightManager (economy)",
-    "Phase 5: remaining 6 zones + Trail Ring + boundary",
-    "Phase 6: Wick rig + WickAI",
-    "Phase 7: StructureManager + SessionManager + DataManager",
-    "Phase 8: night escalation wiring + signature moments",
-    "Phase 9: polish pipeline (interior-designer/detail-architect/set-dresser/sound/vfx/lighting/art-director/story-teller)",
-    "Phase 10: luau-reviewer -> ui-designer -> roblox-playtester -> computer-player"
+    "Human playtest -- the natural next step, all blocking/strongly-recommended issues cleared",
+    "Mobile touch-input layer (MobileControlsGui + MobileControls script) if mobile release is planned",
+    "LobbyGui (ready list/countdown/stats board) -- the last major missing client UI piece",
+    "Narrative layer (story-teller) once the map is otherwise considered final"
   ],
-  "notes": "New unrelated project, kept fully separate from the paused Color Lock project (D:/Roblox/project/). Studio place name is 'WickWood'.",
+  "notes": "New unrelated project, kept fully separate from the paused Color Lock project (D:/Roblox/project/). Studio place name is 'WickWood'. This session repeatedly hit a require()/FireServer()/script-injection Capabilities restriction on Studio reconnects, plus session/weekly AI-generation rate limits (both recovered from via retry once reset) -- verification has largely been compile-checks + static cross-referencing + grep + structural MCP reads rather than live Play-mode testing; this remains the single largest untested surface (throw flight/damage, wade penalty, 5 newly phase-gated remotes are all compile-verified but not live-fired). IMPORTANT: a mid-session Studio crash lost one round of unsaved work earlier in the project -- remind the user to save (Ctrl+S) regularly during long sessions.",
   "concept": {
     "title": "WICKWOOD",
     "subtitle": "Five Nights in Wickwood",
@@ -26,8 +50,8 @@
     "premise": "Survivors keep a campfire lit for five nights while Wick, a 14-foot candle-wax stag that hunts light rather than people, walks the forest snuffing every light source it can reach."
   },
   "stats": {
-    "total_scripts": 0,
-    "total_parts": 0,
-    "last_playtest": null
+    "total_scripts": 24,
+    "total_parts": 2015,
+    "last_playtest": "2026-09-15 (real human playtest found 3 live bugs, all fixed same session); everything since then (input-surface fixes, model upgrades, throw mechanic, wade mechanic, round-2 review fixes) not yet human-playtested"
   }
 }

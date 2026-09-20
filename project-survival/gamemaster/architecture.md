@@ -842,7 +842,7 @@ Adjacent ground planes overlap by **6 studs** at every seam — the single highe
 
 | Tag | Count | Attributes | Purpose |
 |-----|-------|------------|---------|
-| `HarvestNode` | 138 | `ResourceId: string`, `Yield: number`, `RequiresTool: string?`, `Cooldown: number`, `NodeId: string` | Parent tag for all gatherables |
+| `HarvestNode` | 150 | `ResourceId: string`, `NodeId: string` | Parent tag for all gatherables. Yield/tool-requirement/respawn timing are read from `Config.RESOURCES[ResourceId]` by ResourceId, not authored per-instance — kept off the node itself so balance changes are a one-file edit. |
 | `TreeNode` | 62 | (inherits HarvestNode attrs) | Wood |
 | `RockNode` | 24 | | Stone |
 | `TallowNode` | 34 | | Tallow |
@@ -1101,8 +1101,8 @@ The Gloom overlay is a **client-side ImageLabel vignette plus a local ColorCorre
 | Focused Beam | Right Mouse (hold) | RightTrigger | BEAM button, hold |
 | Craft menu | Q (near Workbench) | ButtonB | CRAFT button, appears only near the Workbench |
 | Shout | V | DPadUp | SHOUT button |
-| Throw | G | RightBumper | THROW button, appears only when holding a throwable |
-| Mark Wick (spectator/tower) | X | ButtonA | MARK button |
+| Throw | T | RightBumper | THROW button, appears only when holding a throwable |
+| Mark Wick (spectator/tower) | G | ButtonA | MARK button |
 
 Every mobile button is **56 × 56 px minimum** (well above the 44 px floor), with the Interact button at 76 × 76 because it is the most-used control in the game. Contextual buttons (Craft, Throw, Mark) are hidden until valid, to keep the screen clear — Wickwood is played mostly with two thumbs and a lot of shouting.
 
