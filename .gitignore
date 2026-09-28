@@ -18,3 +18,6 @@ game_state.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude agent worktrees (transient per-agent scratch clones)
+.claude/worktrees/
