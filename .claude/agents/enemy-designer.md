@@ -403,6 +403,135 @@ Fix anything that fails these checks. First version is always a draft.
 
 ---
 
+# DELEGATED STATE MACHINE ENEMIES
+
+Some games split enemy AI into two separate layers:
+- A **service script** (ModuleScript in Systems/) owns state, scheduling, raid logic, and player targeting. It runs on the server's main tick and communicates with enemy actors through **attributes** it sets on the Model.
+- An **EnemyAI script** (Script in ServerScriptService) owns movement, animation, and physical behavior. It watches attributes and drives the body accordingly.
+
+When Game Master's prompt says the architecture uses this pattern (look for phrases like "delegates movement to EnemyAI", "communicates through attributes on Actor models", "ThreatService sets Phase/Patience"), **you are building the movement layer, not the brain**. The brain already exists. Your job is:
+
+1. Build the physical rig(s) as specified
+2. Write a Script that READS attributes from the model, drives Humanoid movement and sound in response
+3. Integrate smoothly with the service that drives state
+
+## How to Read the Pattern
+
+If the architecture has a service (e.g. `ThreatService`) that:
+- Clones enemy actors from ServerStorage at raid time
+- Sets attributes like `TargetPlot`, `Phase`, `Patience` on the cloned Model
+- Changes attributes over time to signal phase transitions
+
+...then EnemyAI is an attribute-change listener. The canonical pattern:
+
+```lua
+--!strict
+-- EnemyAI: movement puppet driven by ThreatService attributes
+
+local function handleActor(actorModel: Model)
+    local root = actorModel:WaitForChild("HumanoidRootPart", 10) :: BasePart?
+    local hum  = actorModel:FindFirstChildOfClass("Humanoid")
+    if not root or not hum then return end
+
+    -- Initial state read
+    local phase = actorModel:GetAttribute("Phase") or "Idle"
+    
+    -- React to attribute changes
+    local conn = actorModel.AttributeChanged:Connect(function(attr: string)
+        if attr == "Phase" then
+            phase = actorModel:GetAttribute("Phase") or "Idle"
+            -- drive movement based on new phase
+        elseif attr == "TargetPlot" then
+            -- recompute path to new target plot
+        end
+    end)
+    
+    -- cleanup when service destroys the model
+    actorModel.AncestryChanged:Connect(function()
+        if not actorModel.Parent then
+            conn:Disconnect()
+        end
+    end)
+end
+
+-- Watch for new actors spawned by ThreatService
+game:GetService("CollectionService"):GetInstanceAddedSignal("BearActor"):Connect(handleActor)
+for _, existing in game:GetService("CollectionService"):GetTagged("BearActor") do
+    task.spawn(handleActor, existing)
+end
+```
+
+Key difference from a self-driven AI: **you do NOT decide when to raid, who to target, or what stage it is**. You read `Phase` ("Announce", "Approach", "Raid", "Theft", "Retreat", "Sitting") and move the body accordingly. The service promotes the phase; you react.
+
+## The Molasses Architecture (A Bee's World)
+
+When building EnemyAI for A Bee's World, the architecture is specifically:
+
+**ThreatService** (pre-existing ModuleScript in Systems, DO NOT modify):
+- Owns the 6-stage Molasses arc state per player (`bear.stage`)
+- Selects raid target: `max(honeyAmount · ripeness)` across plots
+- Fires `ThreatEvent` RemoteEvent to broadcast raid phases
+- Sets attributes on Bear actor: `TargetPlot (number 1..6)`, `Phase (string)`, `Patience (number)`
+- Clones Bear and Cub models from ServerStorage at raid time, tags with `"BearActor"` and `"CubActor"`
+- Reads `Patience` attribute to determine repel threshold
+
+**EnemyAI** (you write this):
+- Listens for `CollectionService:GetTagged("BearActor")` and `"CubActor"`
+- Reads `TargetPlot` → computes the fence gap CFrame for that plot
+- Navigates Bear Lane → fence gap (AgentRadius=6, AgentHeight=26, AgentCanJump=false, WaypointSpacing=8)
+- During "Raid" phase: lingers on the plot deck, plays snuffling/pawing animations
+- During "Retreat" phase: pathfinds back to Den (0, ground, 185) and despawns
+- During "Sitting" phase (stage 6): stops at plot gate, faces the hive, does NOT raid
+- Drives sound: distant rumble → approach growl → active raid → retreat grunt
+
+**WaspDrone** actors (separate model, separate handling):
+- Tagged `"WaspActor"` by ThreatService
+- Do NOT use PathfindingService -- wasps fly
+- Move via `Humanoid:MoveTo()` directly (they fly above ground, ignore geometry)
+- Target: the player who needs to swat them (or circle the plot if no player is close)
+- Killed instantly by any player hitting `SwatWasp` remote (server validates proximity ≤40 studs)
+
+**Bear Lane geometry** (required for pathfinding):
+- The Bear Lane runs at Z = +140 (world coords), X span −345..+345, 16 studs wide
+- Entry: Den at world (0, ground Y, +185) → bear walks west/east along Bear Lane
+- Fence gap per plot: at the plot's local (+45, +52) -- need to compute world coords per plot index
+- Plot positions are: X = plotIndex × 120 − 420 (Plot 1..6 span −300..+300), Z = 0 (deck center)
+- World fence gap = (plotX + 45, groundY, plotZ + 52)
+- AgentRadius=6 confirms bear fits through a 12-stud fence gap
+
+**Phase movement table:**
+| Phase | Movement | Speed |
+|-------|----------|-------|
+| Announce | Stay in Den area, sway/sniff | 0 (idle) |
+| Approach | Den → Bear Lane → Fence Gap → Plot edge | 10 |
+| Raid | Wander plot deck, sniff cells | 6 |
+| Theft | Move toward richest honey cell position | 8 |
+| Retreat | Plot → Fence Gap → Bear Lane → Den → Despawn | 12 |
+| Sitting | Walk to gate position (fenceGap − 5 studs), stop, face hive | 6 |
+
+**Cub variant** (stage 4+):
+- Spawned alongside Bear, tagged `"CubActor"`
+- Smaller model (half Bear proportions), same R6 structure
+- AgentRadius=3, WalkSpeed faster (+4 vs Bear)
+- Specifically targets Pollen Cells (attack position biased toward those cells' world positions)
+- Otherwise same attribute-driven pattern as Bear
+
+**What you physically build:**
+1. `OldMolasses` Model in ServerStorage (R6 rig, bear visual: bulky brown torso, barrel head, paw-arms, rounded -- NOT threatening, TIRED and hungry)
+2. `MolassesCub` Model in ServerStorage (half proportions, same visual language)  
+3. `WaspDrone` Model in ServerStorage (R6 optional or non-Humanoid -- wasps are 3-part: body + 2 wings, no Humanoid needed; use BodyVelocity or LinearVelocity for flight)
+4. `EnemyAI` Script in ServerScriptService (the unified movement layer for all three actor types)
+
+**WaspDrone note:** Wasps do NOT need a Humanoid or R6 rig. They are simple 3-part models (an elongated body + 2 thin wings) that move via `BasePart:SetNetworkOwner(nil)` + `LinearVelocity` or direct CFrame tweening on the server. No pathfinding. No Humanoid.Health. Killed by setting `WaspActor.Alive = false` attribute (ThreatService reads this when SwatWasp fires).
+
+## Bee's World Visual Design Notes
+
+- **Old Molasses**: Do NOT make him look scary. He is a tired, hungry old bear. Bulky, rounded, slow-looking. WarmBrown/Brown material, round head slightly too big for his body. Paw marks on his forehead (flat dark circle parts welded to head). Worn, weathered -- like he has been doing this for years. The contrast between his non-threatening appearance and his actual threat is part of the design.
+- **Cub**: Same design language as Molasses, smaller. Looks playful, almost cute. That makes stage 4 (he brings the cub) more emotionally impactful.
+- **WaspDrone**: Sharp, angular. Yellow and black stripes (alternating face colors on wedge body). Elongated body, thin rectangular wings angled backward. Visually reads as aggressive immediately.
+
+---
+
 # ENEMY BEHAVIOR PRINCIPLES
 
 ## Imperfect Knowledge Creates Engagement
