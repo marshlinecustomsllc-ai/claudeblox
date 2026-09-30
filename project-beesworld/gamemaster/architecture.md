@@ -515,22 +515,53 @@ All X coordinates are unchanged. All Z coordinates carry a single uniform shift 
 
 ---
 
-### Zone: Apiary Yard (hub)
+### Zone: Apiary Yard (hub) — v2, EXPANDED
 
-- **Position:** centered (0, 0, −336)
-- **Dimensions:** 140 × 140 (X −70..+70, Z −406..−266), ground at Y = 0. The north edge at Z = −266 abuts the Wild Meadow's far edge.
-- **Floor:** `Cobblestone` `#9A9384` flagstones, weeds in the cracks
-- **Walls:** giant `WoodPlanks` shed corner at Z = −396, 90 studs tall
-- **Accents:** a toppled 70-stud watering can, a boot, a seed packet, three stacked human hive boxes
-- **Lighting:** 2 warm `PointLight`s under the shed eave, Color `#FFCE8A`, Range 45, Brightness 1.4 -- the only guaranteed-warm-at-night light on the map, which is what makes the hub read as "safe."
-- **Part count:** ~300
-- **Key objects:** `SpawnLocation` at (0, 1.5, −336) (engine requirement; `PlotService` teleports players to their plot ramp on spawn, and the hub stays reachable on foot); Global Leaderboard -- a giant chalk-marked seed packet at (−34, 0, −382), 26 × 20 SurfaceGui, top-10 lifetime honey with lineage names; six Plot Gateway signposts along Z = −286 with `RequestTeleport` touch pads; the Hub Bell (a hanging thimble) at (30, 0, −382) that rings on weather changes and raid warnings.
-- **Connections:** Petal Path spur from (0, 0, −286) north to the main path at Z = −88 — 16 wide, X −8..+8, Z range −286..−88, crossing the meadow.
-- **CHARACTER:** You are in the corner of a human's garden shed and the human has been gone a long while. Everything is enormous, slightly rusted, and comfortable -- the boot has moss in it. This is the only zone with no work to do, and it should feel like standing in a warm patch of afternoon light. The comedy of scale lands here hardest and sets the whole game's tone before the player learns a single mechanic.
+- **Position:** centered (0, 0, −406)
+- **Dimensions:** 400 × 280 (X −200..+200, Z −546..−266), ground at Y = 0. North edge at Z = −266 abuts the Wild Meadow — unchanged. The hub grew south and wide.
+- **Floor:** `Cobblestone` `#9A9384` flagstone base with three large `Slate` stepping-stone slabs leading north toward the gateway row; weeds and moss in the cracks; a faint soil band along the shed base
+- **Walls:** giant `WoodPlanks` shed wall at Z = −526, 200 studs wide, 130 studs tall. Window aperture at Y = 45 with a warm soft-white `PointLight` inside (the human is gone but left the kitchen light on). Two shed eave PointLights as before.
+- **Part count:** ~500
+- **Lighting:** 5 local lights:
+  - 2 eave PointLights: `#FFCE8A`, Range 45, Brightness 1.4 — warm, always-on, "safe"
+  - 1 shed window PointLight (interior): `#FFF4DC`, Range 55, Brightness 0.9 — casts a warm yellow rectangle onto the cobblestones below at night
+  - 1 flowerpot interior PointLight: `#FF9A4A`, Range 30, Brightness 0.7 — makes the pot read as a clubhouse; the bee world's version of a campfire
+  - 1 birdbath water PointLight: `#B8D8FF`, Range 20, Brightness 0.5 — a single cold-tinted reflection, contrasting the warm tones everywhere else
+
+**Zone layout (north to south):**
+
+**1. Gateway Row** (Z −266..−330, full 400 wide):
+- Six mini hive-box gateways, one per plot, evenly spaced at X = −250..+250 (spacing 100), at Z = −290
+  Each gateway: a stack of 2 white-painted WoodPlanks boxes (8×8 each), with a small coloured pennant on a stick above (pennant colour matches each plot's assigned colour). Tagged `TeleportPad` with `PlotIndex` attribute. On touch: teleports to plot ramp, pennant flutters.
+- **Hub Bell** at (0, 12, −298): a giant thimble (2 stacked frustum-like cylinders, Metal `#B0A890`, 8 studs tall) hanging from a 20-stud wooden crossbeam supported by two posts. Bell rings on raids and weather shifts. Tagged `HubBell`.
+- Path is extra wide here (full 400 studs) — the first thing a newly-spawned player sees: a row of six glowing hive boxes stretching across the garden, each one representing a real player's home. **This is the first social moment.** At a glance they know how many players are on the server and where they are.
+- **SpawnLocation** at (0, 1.5, −300) — engine requirement. `PlotService` teleports players to their plot ramp immediately; hub remains reachable on foot.
+
+**2. Social Garden** (Z −330..−440, full 400 wide):
+- **Birdbath** at (−80, 0, −385): 25-stud diameter shallow bowl on a fluted pedestal, `Cobblestone` / `Slate` material. Water surface is a flat Glass disc, `#B8E4FF`, faintly Neon. Small ripple ParticleEmitter above it. A place players walk around; slightly blocks line-of-sight to the shed, breaking up the space.
+- **Garden Table** at (90, 0, −390): flat WoodPlanks slab (30×20), two log-slice seats flanking it. On the table: a giant ceramic tea mug (12 studs tall, white with a brown smudge where it was held), a folded newspaper, a trowel handle sticking upright. Under the table: a tea-candle PointLight (`#FFCE8A`, Range 20, Brightness 0.6) — the second guaranteed-warm light source.
+- **Global Leaderboard** at (−140, 0, −395): a giant cork board on two wooden posts, 60 wide × 40 tall. `SurfaceGui` on the front face, top-10 lifetime honey with player names and generation markers. Hovering nearby makes the top entry's name shimmer (gold Neon tween). Tagged `LeaderboardBoard`.
+- Scattered between: 3 seed packets (small flat rectangles leaning against things), a pair of giant garden gloves on the ground (flat fabric-material wedge shapes), a glass marble near the birdbath (Glass, `#A8D8FF`, 4 studs diameter — inexplicably beautiful at bee scale).
+
+**3. The Flowerpot Den** (Z −440..−490, centred at X = 20):
+- **The Great Pot**: a giant terracotta flowerpot (WoodPlanks-equivalent brick material `#B5572A`) tipped on its side. Outer diameter 50 studs, inner hollow diameter 36 studs, rim thickness 7 studs. Lying at ~15° angle with its mouth pointing slightly toward the player path. Inside: warm orange PointLight (`#FF9A4A`), small pebble floor, and three tiny pansy sprouts (3-part each, `Grass` material `#9B7FD4` for petals). Soil spills from the mouth in a swept arc of `Ground` material parts.
+- This is the **social landmark** of the hub — where players will say "meet me at the pot." Its interior is just big enough to walk into (26 studs internal clearance, players are ~5 studs tall). It does nothing mechanically; it is purely a spatial identity piece. Every hub needs one thing that isn't functional.
+- A crack runs up the pot's south face (a thin dark wedge part) — the reason it fell.
+- **Watering Can** at (−110, 0, −455): the classic hub prop, now properly huge — 90 studs long, `SmoothPlastic` `#7A9E7E` (garden-green, slightly faded). Tipped on its side, nozzle pointing at a small stone puddle beneath it. Slow drip ParticleEmitter on the nozzle, ripple on the puddle. Mossy and clearly been here a while.
+
+**4. Shed Wall** (Z −490..−546, back wall):
+- Main shed wall: WoodPlanks `#7A5C3A`, 200 wide × 130 tall, at Z = −526. Slightly textured — 3 overlapping plank layers at different wood colors for depth.
+- **Shed window** at (50, 45, −526): a 30×20 aperture with a cross-frame (4 thin WoodPlanks parts), the warm interior light glowing through it. Visible from anywhere in the hub at night.
+- **Garden tools**: a leaning shovel (80-stud cylinder handle, flat ellipse spade head, Metal `#6A7A6A`) at (−60, 0, −522) leaning against the wall; a rake head flat on the ground below the leaning handle.
+- **Stack of hive boxes** at (120, 0, −520): 4 stacked old apiary boxes (WoodPlanks, cream-painted `#E8D49A` with age-stain `#C4A87A`), 16 studs each — the same design as the plot gateways but abandoned and unlabelled. The player's active hives are living; these are the discarded ones.
+- **A boot** at (−150, 0, −500): exactly as before — 50 studs tall, `WoodPlanks`, `#5A4430`, moss growing inside (3-part tuft `Grass` `#5A8A44` inside the boot opening). The boot is load-bearing for the tone of this zone. Keep it.
+
+- **Connections:** Petal Path spur from (0, 0, −286) north to the main path at Z = −88 — 16 wide, X −8..+8, Z range −286..−88. UNCHANGED — do not move this connection.
+- **CHARACTER:** You are in a human's garden that the human has been away from for a season. Everything is at the stage between "tidy" and "reclaimed by the garden." The boot has moss in it. The watering can has a drip. The tea mug on the table is still there. The shed light is still on. Someone left in a hurry, or just got distracted, and the garden — and the bees — carried on without them. This zone should feel warm, slightly melancholy, and full of scale comedy: a marble is a boulder, a flowerpot is a cathedral, a teacup holds a lake. **The question "what happened to the human?" should arrive unbidden and never be answered.**
 - **LIFE:**
-  - *Ambient:* dust motes in the eave light. A slow drip from the watering can spout every 4s into a small puddle with a ripple. The thimble bell sways and chimes faintly every ~25s. A distant lawnmower drone every ~90s (the human world, continuing without you).
-  - *Triggered:* stepping onto a Plot Gateway pad lights it and the signpost swings to point. Standing at the leaderboard makes the top entry's name shimmer.
-  - *Reactive:* when a raid starts anywhere, the bell rings hard three times and the eave lights flicker -- the hub is the game's town square during a raid.
+  - *Ambient:* dust motes drifting through the eave light and the shed window shaft. Slow watering can drip every 4s with puddle ripple. Birdbath water shimmer. Thimble bell sways and chimes faintly every ~25s. Distant lawnmower every ~90s. At night: only the shed window light remains; the birdbath PointLight shifts to a cold blue; the flowerpot's warm interior glow becomes the social campfire of the hub.
+  - *Triggered:* stepping onto a Gateway hive box lights the pennant gold and fires a gentle chime. Standing at the leaderboard makes the top entry shimmer. Walking into the flowerpot interior plays a soft enclosed-space ambient (reverb on the ambient loop).
+  - *Reactive:* when a raid starts anywhere, the bell rings hard three times and the eave lights flicker. For Stage 2+ Molasses raids (the bear has learned the back path), the shed window light flickers briefly — diegetic foreshadowing that something old and knowing is moving out there.
 
 ---
 
@@ -1027,12 +1058,12 @@ Additional required state colour: **Dormant Grey `#8E8A7A`** for unbuilt cell pl
 | Wild Meadow | 520 | 18 patches (~22 each), 120 grass tufts, log, puddle, path |
 | Pine Treeline | 150 | 18 pines, 4 resin nodes |
 | Giant garden fence run | 60 | boards + posts between and beyond bays |
-| Apiary Yard (hub) | 300 | giant human junk, leaderboard, 6 gateways, bell |
+| Apiary Yard (hub) | 500 | 4 zones: Gateway Row, Social Garden, Flowerpot Den, Shed Wall — 6 gateways, bell, birdbath, garden table, giant pot, shed wall, props |
 | Petal Path | 24 | stepping stones |
 | Perimeter skirt / barriers | 40 | invisible walls + treeline ring |
 | Actors (Molasses 16, Cub 11, wasp pool 8 × 4) | 59 | runtime-spawned |
-| **Total, worst case (6 players all maxed)** | **3,193** | **1,807 headroom** |
-| **Server at launch (6 empty plots)** | **1,699** | 91 per empty plot |
+| **Total, worst case (6 players all maxed)** | **3,393** | **1,607 headroom** |
+| **Server at launch (6 empty plots)** | **1,899** | 91 per empty plot |
 
 **Per-plot breakdown (max tier = 340):**
 
