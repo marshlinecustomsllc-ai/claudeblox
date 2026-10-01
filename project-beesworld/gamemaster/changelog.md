@@ -155,3 +155,15 @@
 - `royal_cell`: Z=-60 → Z=-10 — rim cells are ~8 studs from centre, not 60
 
 **Part budget:** +18 invisible parts → ~4,094/5,000
+
+## Cycle 11 — Dispatch 27: OfflineProgressService + DS v16→v17
+
+**File:** `cycle11_offline_progress_dispatch.md`
+
+### What it adds
+- **DataService v16→v17** — `profile.lastOnlineTime` (stamped with `os.time()` on every `SaveProfile`); migration[12]: `profile.lastOnlineTime = profile.lastOnlineTime or 0`; CURRENT_VERSION=17
+- **OfflineProgressService ModuleScript** — `ApplyOfflineProgress(player, profile)`: reads `lastOnlineTime`, computes elapsed, applies `math.floor(effectiveSeconds * rate)` to `profile.honey`; 120s minimum (no trivial reconnect spam), 14,400s maximum (4h cap, prevents abuse); reads `profile.lastRates.honeyPerSecond` if stored by ForagingService, falls back to 0.833/s (~50/min for a basic hive); rate capped at 50/s regardless
+- **DataService load path hook** — calls `ApplyOfflineProgress` immediately after profile load; if honey > 0, fires existing Notify remote with "Welcome back! Your bees collected X honey." success toast
+- **Optional Step D** — ForagingService `profile.lastRates` storage (so offline calc uses the player's actual production rate rather than the fallback default)
+
+**Part budget:** 0 new world parts → ~4,094/5,000 (unchanged)
