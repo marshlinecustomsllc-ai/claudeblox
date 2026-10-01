@@ -458,3 +458,12 @@
 - GameManager injection: after SpeedUpgradeService.Init()
 - PollenUpgradeController: 🌼 tab at left-0.70, yellow-green panel, progress bar, propolis cost display
 - Part budget: +0 permanent → 4,146/5,000
+
+## Dispatch 53 — QueenUpgradeService (cycle11_queen_upgrade_dispatch.md)
+- Config.QUEEN_UPGRADES: tier 0-5, maxBees 3/5/8/12/18/25, honey costs 0/1K/5K/15K/40K/100K
+- DataService migration: queenTier = 0 (after pollenTier)
+- QueenUpgradeService: GetMaxBees(tier), BuyQueenTier RF deducts honey, QueenSync RE
+- ForagingService: dynamic getMaxBees(player) replaces static MAX_BEES constant
+- GameManager: QueenUpgradeService.Init() after PollenYieldUpgradeService.Init()
+- QueenUpgradeController: 👑 tab at Y=0.80, soft pink panel, MAX QUEEN state at tier 5
+- Part budget: +0 permanent → 4,146 / 5,000
