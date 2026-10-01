@@ -1115,3 +1115,13 @@
 - Listens to HoneyCount + CombCellCount + CombState + RipenessDetailOn attribute changes
 - CharacterRemoving cleanup + CharacterAdded rebuild
 - Part budget impact: +0 permanent → 4,146 / 5,000
+
+## Dispatch 122 — Foraging Route Quality Display
+- `ForagingQualityController` LocalScript in StarterPlayerScripts
+- Quality card (240×84) slides up from bottom-centre when ForagingActive=true
+- 5 quality tiers: 🥀🥀🥀 Poor (×0.4) through 🌸🌸🌸🌸🌸 Amazing (×2.0)
+- Row 1: kid-friendly tier label (coloured); Row 2: 5-emoji flower bar; Row 3: multiplier + countdown
+- ForagingEndTime countdown via RunService.Heartbeat throttled to 1/sec
+- Reads ForagingActive + ForagingQuality + ForagingEndTime player attributes
+- Default quality 60 (Good tier) if ForagingQuality attribute not yet written
+- DisplayOrder=14, part budget impact: +0 → 4,146 / 5,000
