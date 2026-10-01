@@ -965,3 +965,12 @@
 - Handles `PrereqHint` row height growth from dispatch 107 transparently
 - All injected locals use `_108` suffix
 - +0 permanent parts → 4,146/5,000
+
+## Dispatch 109 — Propolis Rain Event
+- New `PropolisRainService` Script (ServerScriptService): 90s propolis ×2 event every 8–18 min, 10-min initial delay
+- `_G.PropolisRainService = { active, IsActive() }` — same pattern as PollenSurgeService (dispatch 106)
+- New `PropolisRainSync` RemoteEvent in ReplicatedStorage: payload `{active, duration, endsAt}` / `{active=false}`
+- ForagingService append: gsub injects `_G.PropolisRainService.IsActive()` check after propolisYield computation; idempotency marker `PropolisRainMult_109`
+- New `PropolisRainController` LocalScript (StarterPlayerScripts): Propolis Purple (130,60,200) banner, DisplayOrder=14, slides from Y=-0.08→Y=0.03, live second countdown
+- Simultaneous Pollen Surge + Propolis Rain stacks both doublers independently
+- +0 permanent parts → 4,146/5,000
