@@ -192,3 +192,17 @@
 - **User action reminder** — full table of 6 gamepasses + 2 developer products to create in Creator Dashboard; IDs remain `0` (safe no-op) until pasted in
 
 **Part budget:** 0 new world parts → ~4,094/5,000 (unchanged)
+
+## Cycle 11 — Dispatch 30: SeasonalEventService — Harvest Festival Framework
+
+**File:** `cycle11_seasonal_events_dispatch.md`
+
+### What it adds
+- **Config.SEASONAL_EVENTS** — `HarvestFestival` entry: `month=10` (October), `dayStart=1`, `dayEnd=31`, `yieldMult=1.25` (+25% foraging), `bannerMsg`, and `questOverride` table (id=`harvest_festival`, metric=`honeyHarvested`, target=2000, reward 1,500 honey + 50 propolis)
+- **SeasonalEventService ModuleScript** — `--!strict`; `Init()` calls `checkDate()` via `os.date("*t")` and sets `_activeEvent`; `IsActive()`, `GetActiveEvent()`, `GetYieldMult()` (1.25 or 1.0), `GetQuestOverride()` (table or nil); `AnnounceToPlayer(player)` fires Notify banner once per player per server lifetime via `_announcedPlayers` guard; `OnPlayerRemoving(player)` cleanup; `updateStallVisibility()` hides/shows HarvestStall BaseParts (Transparency/CanCollide)
+- **Main Script wiring** — `require(SeasonalEventService)`, `SeasonalEventService.Init()` at startup; `PlayerAdded` calls `AnnounceToPlayer`; `PlayerRemoving` calls `OnPlayerRemoving`
+- **ForagingService yield hook** — `local seasonalMult = SeasonalEventService.GetYieldMult()` inserted after existing `weatherMult`; multiplied into yield formula: `* weatherMult * seasonalMult`
+- **QuestService slot 3 override** — before `return quests` in `pickDailyQuests()`, checks `SeasonalEventService.GetQuestOverride()`; if non-nil, sets `quests[3] = questOverride` (festival quest replaces 3rd daily during October)
+- **HarvestStall world prop** — 4 parts in `Workspace.SeasonalProps` folder at (-10,4,-115) near Hub: `StallBase` (8×1×3 Wood/SandyYellow), `StallCanopy` (9×0.3×4 harvest red-orange Neon), `StallBanner` (6×1.5×0.2 Honey Gold SmoothPlastic + SurfaceGui TextLabel "🍯 Harvest Festival" FredokaOne), `HoneyJar` (Cylinder r=0.4 h=0.7 Neon Honey Gold); all Anchored=true; Tagged `HarvestStall`
+
+**Part budget:** +4 → ~4,098/5,000
