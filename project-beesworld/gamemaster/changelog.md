@@ -416,3 +416,13 @@
 - GameManager injection: TutorialService.Init() after LeaderboardService.Init()
 - TutorialController LocalScript: 7-step card overlay (Welcome→Pollen→Build Cell→Honey→Forge→Leaderboard→Ready!), Honey Gold progress bar, Skip button, Back/Out scale-in + Quad/In close, card destroyed after completion
 - Part budget: +0 permanent → 4,142/5,000
+
+## Dispatch 49 — HiveExpansionService (cycle 11)
+- Config.EXPANSION: Plot7 (X=350, 25K honey) + Plot8 (X=-350, 50K honey)
+- DataService migration: unlockedPlots {[1..6]=true} default
+- Workspace: Plot7 + Plot8 folders — Floor Part + LockOverlay Neon Part (amber glow, 35% transparent) + HexCells folder + BillboardGui "🔒 Locked" badge; +4 permanent parts
+- HiveExpansionService: server-authoritative unlock, deducts honey, destroys overlay, broadcasts ExpansionSync to all clients; cleans up overlays on server restart via PlayerAdded
+- ExpansionSync RemoteEvent + UnlockPlotRF RemoteFunction in ReplicatedStorage
+- GameManager injection: HiveExpansionService.Init() after TutorialService.Init()
+- ExpansionController: 🗺️ tab button in MainFrame, slide-from-right expand panel, 2 slot rows with cost + Unlock button, ✓ Owned state after unlock
+- Part budget: +4 permanent → 4,146/5,000

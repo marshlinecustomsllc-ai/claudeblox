@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 48: TutorialService hasSeen_tutorial migration, TutorialStart RE + TutorialComplete RF, 7-step FTUE card overlay Back/Out scale-in Honey Gold progress bar Skip btn",
+  "last_action": "dispatch 49: HiveExpansionService Plot7/Plot8 unlock 25K/50K honey, LockOverlay Neon parts, ExpansionSync RE + UnlockPlotRF RF, ExpansionController slide panel",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,5 +75,6 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 48
+  "dispatch_count": 49,
+  "total_parts": 4146
 }
