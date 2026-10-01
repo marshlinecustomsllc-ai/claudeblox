@@ -893,3 +893,9 @@
 - Binds to PlotSync OnClientEvent for local player claimed events
 - Shows propolis cost text for slots 7-8 (🔮)
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 99 — Foraging Return Animation
+**File:** cycle14_foraging_return_anim_dispatch.md
+**Cycle:** 14
+**Change:** Appends spawnYieldPop() to ForagingController via append injection. When ForagingSync fires with yields, floating BillboardGui labels pop up from the plot (+N 🍯/🔮/🌼) for each non-zero yield. Labels rise 4 studs and fade over 1.5s, auto-destroyed by Debris. Multiple yields stack vertically (stackIndex × 1.6 offset). findPlotPart() handles Plot1/plot_1/Plot 1 naming conventions. All injected locals use _99 suffix.
+**Part budget:** +0 permanent → 4,146/5,000
