@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 64 \u2014 Tab Layout Reflow, left col Y=0.18-0.72 step 0.09, right col Y=0.28-0.58 step 0.10",
+  "last_action": "dispatch 65 \u2014 TutorialService 6-step first-session overlay, tutorialSeen flag in profile",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,6 +75,6 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 64,
+  "dispatch_count": 65,
   "total_parts": 4146
 }

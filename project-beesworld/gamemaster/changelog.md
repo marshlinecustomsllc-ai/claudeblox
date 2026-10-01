@@ -582,3 +582,12 @@
 - Fixes overlap: queen(0.80) and propolis(0.775) had only 2.5% gap
 - No logic changes, no new scripts, no new parts
 - Part budget: +0 → 4,146/5,000
+
+## Dispatch 65 — TutorialService (cycle 11)
+- First-session 6-step guided tutorial, dismissed by DataStore flag tutorialSeen
+- DataService: tutorialSeen=false migration
+- TutorialService: TutorialSync RE + TutorialComplete RF (records seen=true)
+- GameManager: TutorialService.Init() after LeaderboardService.Init()
+- TutorialController: ScreenGui DisplayOrder=50, semi-transparent overlay, pop-in bubble
+- Steps point at reflowed tab positions from dispatch 64
+- Part budget: +0 → 4,146/5,000
