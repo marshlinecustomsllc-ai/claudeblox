@@ -702,3 +702,13 @@
 - ForagingService: records seasonal event flags and friend bonus trip counts
 - All 4 steps have idempotency guards for safe re-execution
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 78 — NotificationBadgeController (Cycle 11)
+- New LocalScript `NotificationBadgeController` in StarterPlayerScripts
+- Injects 14×14 red circle badge (UICorner radius 1) onto HUD tabs after 4s load delay
+- AchievementsTab: badge shows when AchievementSync reports new unlocks (count increase)
+- DailyRewardTab: badge shows when DailyRewardSync fires available=true, hides on claimed=true
+- HiveStatsTab: badge shows on exact milestone values (upgrades 5/20/42, days 3/7/30, honey 1M)
+- Back/Out easing pop animation on show, Quad/In shrink on hide
+- GetPropertyChangedSignal("Enabled") clears badge when panel opens
+- No server changes. +0 parts → 4,146 / 5,000

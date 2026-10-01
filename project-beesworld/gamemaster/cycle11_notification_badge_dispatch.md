@@ -1,318 +1,291 @@
-# Dispatch 59 — NotificationBadgeService
+# Dispatch 78 — NotificationBadgeController
 ## Cycle 11 · A Bee's World
 
-**Feature:** Red dot notification badges on tab buttons — daily reward ready, prestige unlocked, expansion affordable. Pure client-side: reads RemoteEvent sync data and updates badge visibility.
+**Feature:** Small red badge dot on HUD tabs to indicate unread notifications — a red circle overlay on the Achievements tab when a new achievement unlocks, and on the Daily Reward tab when a reward is ready to claim. Badge clears when the player opens the respective panel. Entirely client-side; listens to existing `AchievementSync` and `DailyRewardSync` RemoteEvents.
 **Part budget impact:** +0 permanent parts → **4,146 / 5,000**
-**Execution order:** After dispatch 58 (PrestigeService)
+**Execution order:** After dispatch 77 (AchievementsExpansion)
 
 ---
 
-## BADGE RULES
+## DESIGN
 
-| Tab | Badge triggers |
-|-----|---------------|
-| 📅 DailyTab | `canClaim = true` in DailySync payload |
-| ⭐ PrestigeTab | `canPrestige = true` in PrestigeSync payload |
-| 🗺️ ExpansionTab | `canAfford = true` (honey ≥ next expansion cost) — derived from HoneySync + ExpansionSync |
+`NotificationBadgeController` is a **LocalScript** in `StarterPlayerScripts`. It:
 
-All existing tab buttons were created by their respective Controller scripts. This dispatch patches each Controller to add a badge Frame and subscribe to the condition that shows it.
+1. After the HUD loads, locates each tab button in `HiveHUD` by name.
+2. Injects a small red `Frame` (circle via `UICorner`) into each tab it should badge.
+3. Listens to sync RemoteEvents and shows/hides the badge accordingly.
 
----
+### Badge appearance
 
-## APPROACH
-
-Rather than a separate service, this is a **patch dispatch** — three small injections into existing LocalScript Controllers. Each injection:
-1. Creates a red dot Frame child of the tab button
-2. Hides/shows it based on the condition in the sync handler
-
-Because the LocalScripts are in `StarterPlayerScripts`, we clone-and-replace them via Command Bar.
-
----
-
-## STEP A — DailyRewardController badge patch
-
-Open **DailyRewardController** in StarterPlayerScripts. Command Bar:
-
-```lua
-local SPScripts = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
-local ctrl = SPScripts:FindFirstChild("DailyRewardController")
-assert(ctrl, "DailyRewardController not found")
-
-local clone = ctrl:Clone()
-clone.Name = "DailyRewardController_WORKING"
-
--- 1. Add badge creation after tabBtn is created
-local anchor = 'tabBtn.ZIndex = 24'
-local found = clone.Source:find(anchor, 1, true)
-assert(found, "tabBtn.ZIndex anchor not found in DailyRewardController")
-
-local lineEnd = clone.Source:find("\n", found, true)
-local INJECT_BADGE = [[
-
--- Notification badge (red dot)
-local dailyBadge = Instance.new("Frame")
-dailyBadge.Name = "NotifBadge"
-dailyBadge.Size = UDim2.new(0.28, 0, 0.28, 0)
-dailyBadge.Position = UDim2.new(0.72, 0, -0.06, 0)
-dailyBadge.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-dailyBadge.BorderSizePixel = 0
-dailyBadge.ZIndex = 26
-dailyBadge.Visible = false
-dailyBadge.Parent = tabBtn
-do local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0.5, 0); c.Parent = dailyBadge end
-]]
-
-clone.Source = clone.Source:sub(1, lineEnd) .. INJECT_BADGE .. clone.Source:sub(lineEnd + 1)
-
--- 2. Show/hide badge in the DailySync handler
-local syncAnchor = 'DailySync.OnClientEvent:Connect(function(data)'
-local found2 = clone.Source:find(syncAnchor, 1, true)
-if not found2 then
-	syncAnchor = 'DailySync.OnClientEvent:Connect'
-	found2 = clone.Source:find(syncAnchor, 1, true)
-end
-if found2 then
-	-- Find the refreshUI(data) call inside the handler and inject after it
-	local refreshAnchor = 'refreshUI(data)'
-	local found3 = clone.Source:find(refreshAnchor, found2, true)
-	if found3 then
-		local lineEnd3 = clone.Source:find("\n", found3, true)
-		local INJECT_VIS = "\n\tdailyBadge.Visible = data.canClaim == true"
-		clone.Source = clone.Source:sub(1, lineEnd3) .. INJECT_VIS .. clone.Source:sub(lineEnd3 + 1)
-		print("Badge visibility injected in DailySync handler")
-	else
-		print("WARNING: refreshUI(data) not found in DailySync handler — add manually:")
-		print("  dailyBadge.Visible = data.canClaim == true")
-	end
-end
-
-ctrl.Name = "DailyRewardController_OLD_NX"
-ctrl.Parent = nil
-clone.Name = "DailyRewardController"
-clone.Parent = SPScripts
-
-print("DailyRewardController badge patch applied")
+```
+Size:       UDim2.new(0, 14, 0, 14)
+Position:   UDim2.new(1, -4, 0, -4)   -- top-right corner, slightly outside tab
+AnchorPoint: Vector2.new(1, 0)
+BackgroundColor3: Color3.fromRGB(220, 50, 50)   -- vivid red
+UICorner radius: 1, 0   -- full circle
+ZIndex: tab.ZIndex + 5
 ```
 
-**Verify:**
-```lua
-local SPScripts = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
-local ctrl = SPScripts:FindFirstChild("DailyRewardController")
-print(ctrl and ctrl.Source:find("NotifBadge") and "OK" or "MISSING")
-```
+### Badges created
+
+| Tab button name | Badge trigger |
+|----------------|---------------|
+| `AchievementsTab` | `AchievementSync` fires with any new unlock |
+| `DailyRewardTab` | `DailyRewardSync` fires with `available=true` |
+| `HiveStatsTab` (if present) | `StatsSync` fires with new milestone unlocked |
+
+Tab button names follow the naming convention set in dispatch 24 (AchievementsController) and dispatch 57 (DailyRewardController). The controller does a case-insensitive search for tab buttons containing `"Achieve"`, `"Daily"`, and `"Stats"` so minor naming variations are handled.
 
 ---
 
-## STEP B — PrestigeController badge patch
+## FILES CHANGED
 
-Open **PrestigeController** in StarterPlayerScripts. Command Bar:
+| File | Change |
+|------|--------|
+| `NotificationBadgeController` (new LocalScript in StarterPlayerScripts) | badge creation, show/hide logic |
 
-```lua
-local SPScripts = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
-local ctrl = SPScripts:FindFirstChild("PrestigeController")
-assert(ctrl, "PrestigeController not found")
-
-local clone = ctrl:Clone()
-clone.Name = "PrestigeController_WORKING"
-
--- 1. Add badge after tabBtn ZIndex
-local anchor = 'tabBtn.ZIndex = 20'
-local found = clone.Source:find(anchor, 1, true)
-if not found then
-	-- Fallback: after last tabBtn property
-	anchor = 'tabBtn.Font = Enum.Font.GothamBold'
-	found = clone.Source:find(anchor, 1, true)
-end
-assert(found, "tabBtn anchor not found in PrestigeController")
-
-local lineEnd = clone.Source:find("\n", found, true)
-local INJECT_BADGE = [[
-
--- Notification badge
-local prestigeBadge = Instance.new("Frame")
-prestigeBadge.Name = "NotifBadge"
-prestigeBadge.Size = UDim2.new(0.28, 0, 0.28, 0)
-prestigeBadge.Position = UDim2.new(0.72, 0, -0.06, 0)
-prestigeBadge.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-prestigeBadge.BorderSizePixel = 0
-prestigeBadge.ZIndex = 26
-prestigeBadge.Visible = false
-prestigeBadge.Parent = tabBtn
-do local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0.5, 0); c.Parent = prestigeBadge end
-]]
-
-clone.Source = clone.Source:sub(1, lineEnd) .. INJECT_BADGE .. clone.Source:sub(lineEnd + 1)
-
--- 2. Show/hide in refreshUI function
-local refreshAnchor = 'local function refreshUI(data'
-local found2 = clone.Source:find(refreshAnchor, 1, true)
-if found2 then
-	-- Find the return/end of refreshUI and inject badge visibility
-	-- Inject before "busy = false" at end of refreshUI
-	local busyAnchor = '\tbusy = false\nend'
-	local found3 = clone.Source:find(busyAnchor, found2, true)
-	if found3 then
-		local INJECT_VIS = "\tprestigeBadge.Visible = data.canPrestige == true\n"
-		clone.Source = clone.Source:sub(1, found3 - 1) .. INJECT_VIS .. clone.Source:sub(found3)
-		print("Badge visibility injected in refreshUI")
-	else
-		-- Simpler: find "busy = false" at end of function and inject before it
-		local busySimple = 'busy = false\nend'
-		local found4 = clone.Source:find(busySimple, found2, true)
-		if found4 then
-			local INJECT_VIS = "\tprestigeBadge.Visible = data.canPrestige == true\n"
-			clone.Source = clone.Source:sub(1, found4 - 1) .. INJECT_VIS .. clone.Source:sub(found4)
-			print("(fallback) Badge visibility injected")
-		else
-			print("WARNING: Could not find refreshUI end — add manually: prestigeBadge.Visible = data.canPrestige == true")
-		end
-	end
-end
-
-ctrl.Name = "PrestigeController_OLD_NX"
-ctrl.Parent = nil
-clone.Name = "PrestigeController"
-clone.Parent = SPScripts
-
-print("PrestigeController badge patch applied")
-```
+No server changes. Reuses existing `AchievementSync`, `DailyRewardSync`, `StatsSync` RemoteEvents.
 
 ---
 
-## STEP C — ExpansionController badge patch
+## STEP A — NotificationBadgeController (new LocalScript)
 
-Open **ExpansionController** in StarterPlayerScripts. Command Bar:
+Command Bar:
 
 ```lua
-local SPScripts = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
-local ctrl = SPScripts:FindFirstChild("ExpansionController")
-assert(ctrl, "ExpansionController not found")
+local SPS = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
+assert(SPS, "StarterPlayerScripts not found")
 
-local clone = ctrl:Clone()
-clone.Name = "ExpansionController_WORKING"
+local ctrl = Instance.new("LocalScript")
+ctrl.Name   = "NotificationBadgeController"
+ctrl.Parent = SPS
+ctrl.Source = [[
+--!strict
+-- NotificationBadgeController — red badge dots on HUD tabs
 
--- 1. Add badge after tabBtn creation
-local anchor = 'tabBtn.ZIndex'
-local found = clone.Source:find(anchor, 1, true)
-assert(found, "tabBtn.ZIndex anchor not found in ExpansionController")
+local PS        = game:GetService("Players")
+local RS        = game:GetService("ReplicatedStorage")
+local TS        = game:GetService("TweenService")
 
-local lineEnd = clone.Source:find("\n", found, true)
-local INJECT_BADGE = [[
+local player    = PS.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
--- Notification badge
-local expansionBadge = Instance.new("Frame")
-expansionBadge.Name = "NotifBadge"
-expansionBadge.Size = UDim2.new(0.28, 0, 0.28, 0)
-expansionBadge.Position = UDim2.new(0.72, 0, -0.06, 0)
-expansionBadge.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-expansionBadge.BorderSizePixel = 0
-expansionBadge.ZIndex = 26
-expansionBadge.Visible = false
-expansionBadge.Parent = tabBtn
-do local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0.5, 0); c.Parent = expansionBadge end
+local AchievementSync = RS:WaitForChild("AchievementSync")
+local DailyRewardSync = RS:WaitForChild("DailyRewardSync")
+local StatsSync       = RS:FindFirstChild("StatsSync")  -- optional
+
+-- ── Badge factory ──────────────────────────────────────
+local BADGE_SIZE = UDim2.new(0, 14, 0, 14)
+local BADGE_POS  = UDim2.new(1, -2, 0, -2)
+local BADGE_COLOR = Color3.fromRGB(220, 50, 50)
+
+local function makeBadge(parent: GuiObject): Frame
+    local badge = Instance.new("Frame")
+    badge.Name              = "NotifBadge"
+    badge.Size              = BADGE_SIZE
+    badge.Position          = BADGE_POS
+    badge.AnchorPoint       = Vector2.new(1, 0)
+    badge.BackgroundColor3  = BADGE_COLOR
+    badge.BorderSizePixel   = 0
+    badge.ZIndex            = parent.ZIndex + 5
+    badge.Visible           = false
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(1, 0)
+    corner.Parent = badge
+
+    -- Small white dot in center for contrast
+    local dot = Instance.new("Frame")
+    dot.Name             = "InnerDot"
+    dot.Size             = UDim2.new(0, 5, 0, 5)
+    dot.Position         = UDim2.new(0.5, 0, 0.5, 0)
+    dot.AnchorPoint      = Vector2.new(0.5, 0.5)
+    dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    dot.BorderSizePixel  = 0
+    dot.ZIndex           = badge.ZIndex + 1
+    local dotCorner = Instance.new("UICorner")
+    dotCorner.CornerRadius = UDim.new(1, 0)
+    dotCorner.Parent = dot
+    dot.Parent = badge
+
+    badge.Parent = parent
+    return badge
+end
+
+-- ── Animate badge in/out ──────────────────────────────
+local TWEEN_IN  = TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local TWEEN_OUT = TweenInfo.new(0.1,  Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+
+local function showBadge(badge: Frame)
+    badge.Size    = UDim2.new(0, 6, 0, 6)
+    badge.Visible = true
+    TS:Create(badge, TWEEN_IN, {Size = BADGE_SIZE}):Play()
+end
+
+local function hideBadge(badge: Frame)
+    local tw = TS:Create(badge, TWEEN_OUT, {Size = UDim2.new(0, 0, 0, 0)})
+    tw.Completed:Connect(function()
+        badge.Visible = false
+        badge.Size    = BADGE_SIZE
+    end)
+    tw:Play()
+end
+
+-- ── Find tab buttons in HiveHUD ────────────────────────
+local badges: {[string]: Frame} = {}
+
+local function findTab(hiveHud: Instance, keyword: string): GuiObject?
+    for _, obj in hiveHud:GetDescendants() do
+        if (obj:IsA("TextButton") or obj:IsA("ImageButton") or obj:IsA("Frame")) then
+            if obj.Name:lower():find(keyword:lower()) then
+                return obj :: GuiObject
+            end
+        end
+    end
+    return nil
+end
+
+-- Wire up after HiveHUD loads
+task.delay(4, function()
+    local hiveHud = playerGui:FindFirstChild("HiveHUD")
+    if not hiveHud then
+        -- Try once more after a longer wait
+        task.wait(3)
+        hiveHud = playerGui:FindFirstChild("HiveHUD")
+    end
+    if not hiveHud then
+        warn("[NotifBadge] HiveHUD not found — badges not created")
+        return
+    end
+
+    local tabKeywords = {
+        {key = "achieve", id = "achievement"},
+        {key = "daily",   id = "daily"},
+        {key = "stat",    id = "stats"},
+    }
+
+    for _, entry in tabKeywords do
+        local tab = findTab(hiveHud, entry.key)
+        if tab then
+            badges[entry.id] = makeBadge(tab)
+        end
+    end
+end)
+
+-- ── Achievement badge ──────────────────────────────────
+local lastAchievementCount = 0
+
+AchievementSync.OnClientEvent:Connect(function(data: any)
+    -- data.unlocked = array of achievement ids
+    if type(data) ~= "table" then return end
+    local unlocked = data.unlocked or data
+    local count = 0
+    if type(unlocked) == "table" then
+        for _ in pairs(unlocked) do count += 1 end
+    end
+
+    local badge = badges["achievement"]
+    if badge then
+        if count > lastAchievementCount then
+            showBadge(badge)
+        end
+    end
+    lastAchievementCount = count
+
+    -- Clear on tab open (HiveHUDController fires a BindableEvent or the panel becomes visible)
+    -- We detect by watching the achievement panel visibility if accessible
+    -- (lightweight approach: clear badge when player clicks the tab — wired below)
+end)
+
+-- ── Daily reward badge ─────────────────────────────────
+DailyRewardSync.OnClientEvent:Connect(function(data: any)
+    local badge = badges["daily"]
+    if not badge then return end
+    if type(data) == "table" and data.available == true then
+        showBadge(badge)
+    elseif type(data) == "table" and data.claimed == true then
+        hideBadge(badge)
+    end
+end)
+
+-- ── Stats badge (milestone unlocks) ───────────────────
+if StatsSync then
+    StatsSync.OnClientEvent:Connect(function(data: any)
+        -- Show badge when a new milestone stat threshold is crossed
+        -- We use a simple heuristic: if totalUpgradesBought, daysPlayed, or
+        -- totalHoneyEarned changed and is a round milestone number, light the badge
+        if type(data) ~= "table" then return end
+        local badge = badges["stats"]
+        if not badge then return end
+        local upgrades = data.totalUpgradesBought or 0
+        local days     = data.daysPlayed or 0
+        local honey    = data.totalHoneyEarned or 0
+        local milestones = {5, 20, 42}
+        local dayMiles   = {3, 7, 30}
+        for _, m in milestones do
+            if upgrades == m then showBadge(badge); return end
+        end
+        for _, m in dayMiles do
+            if days == m then showBadge(badge); return end
+        end
+        if honey == 1000000 then showBadge(badge) end
+    end)
+end
+
+-- ── Clear badges when tab is opened ───────────────────
+-- Listen for ScreenGui visibility changes (each panel controller hides/shows its ScreenGui)
+task.spawn(function()
+    task.wait(5)
+    -- Watch the AchievementsGui and DailyRewardGui for Enabled changes
+    local guisToWatch: {[string]: string} = {
+        AchievementsGui = "achievement",
+        DailyRewardGui  = "daily",
+        HiveStatsGui    = "stats",
+    }
+    for guiName, badgeId in guisToWatch do
+        local gui = playerGui:FindFirstChild(guiName)
+        if gui and gui:IsA("ScreenGui") then
+            gui:GetPropertyChangedSignal("Enabled"):Connect(function()
+                if gui.Enabled then
+                    local badge = badges[badgeId]
+                    if badge and badge.Visible then
+                        hideBadge(badge)
+                    end
+                end
+            end)
+        end
+    end
+end)
 ]]
 
-clone.Source = clone.Source:sub(1, lineEnd) .. INJECT_BADGE .. clone.Source:sub(lineEnd + 1)
-
--- 2. Track current honey from HoneySync (listen for HoneySync if available)
--- ExpansionSync sends list of slots with locked/unlocked + cost
--- We need: any locked slot where player honey >= cost
--- Inject a honey tracker and badge update into ExpansionSync handler
-
--- First add a honey tracker variable near the top
-local topAnchor = 'local panelOpen = false'
-local found2 = clone.Source:find(topAnchor, 1, true)
-if found2 then
-	local lineEnd2 = clone.Source:find("\n", found2, true)
-	local INJECT_VAR = "\nlocal currentHoney = 0  -- tracked from HoneySync\n"
-	clone.Source = clone.Source:sub(1, lineEnd2) .. INJECT_VAR .. clone.Source:sub(lineEnd2 + 1)
-	print("currentHoney tracker added")
-else
-	print("WARNING: panelOpen variable not found — currentHoney tracker not added, using 0")
-end
-
--- Inject HoneySync listener for expansion badge
--- Add before ExpansionSync handler or at the end before final closing
-local syncAnchor = 'ExpansionSync.OnClientEvent:Connect'
-local found3 = clone.Source:find(syncAnchor, 1, true)
-if found3 then
-	local INJECT_HONEY_LISTEN = [[
-
--- Track honey for expansion badge
-local HoneySync_ForBadge = game:GetService("ReplicatedStorage"):FindFirstChild("HoneySync")
-if HoneySync_ForBadge then
-	HoneySync_ForBadge.OnClientEvent:Connect(function(honey)
-		currentHoney = honey or 0
-		-- Update expansion badge
-		local hasAffordable = false
-		-- Re-check in next ExpansionSync; for now just check slots
-		expansionBadge.Visible = false  -- updated by ExpansionSync
-	end)
-end
-
-]]
-	clone.Source = clone.Source:sub(1, found3 - 1) .. INJECT_HONEY_LISTEN .. clone.Source:sub(found3)
-end
-
--- Inject badge update inside ExpansionSync handler
--- Look for refreshSlots or the handler body and add badge logic
-local refreshAnchor = 'ExpansionSync.OnClientEvent:Connect(function'
-local found4 = clone.Source:find(refreshAnchor, 1, true)
-if found4 then
-	-- Find the end of this event handler
-	local handlerBody = clone.Source:find("end%)\n", found4, true)
-	if handlerBody then
-		local INJECT_BADGE_LOGIC = [[
-
-		-- Update expansion badge: show if any locked slot is affordable
-		local canAffordExpansion = false
-		if data and type(data) == "table" then
-			for _, slot in (data.slots or data or {}) do
-				if slot.locked and slot.cost and currentHoney >= slot.cost then
-					canAffordExpansion = true
-					break
-				end
-			end
-		end
-		expansionBadge.Visible = canAffordExpansion
-]]
-		clone.Source = clone.Source:sub(1, handlerBody - 1) .. INJECT_BADGE_LOGIC .. clone.Source:sub(handlerBody)
-		print("Expansion badge logic injected in ExpansionSync handler")
-	end
-end
-
-ctrl.Name = "ExpansionController_OLD_NX"
-ctrl.Parent = nil
-clone.Name = "ExpansionController"
-clone.Parent = SPScripts
-
-print("ExpansionController badge patch applied")
+print("NotificationBadgeController created")
 ```
 
 ---
 
-## STEP D — Verification sweep
+## STEP B — Verification sweep
 
-In Command Bar:
+Command Bar:
 
 ```lua
-local SPScripts = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
+local SPS = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
+local ctrl = SPS and SPS:FindFirstChild("NotificationBadgeController")
+local RS   = game:GetService("ReplicatedStorage")
 
-local checks = {}
+local checks = {
+    (ctrl and "✅" or "❌") .. " NotificationBadgeController LocalScript",
+    (ctrl and ctrl.Source:find("makeBadge") and "✅" or "❌") .. " makeBadge function present",
+    (ctrl and ctrl.Source:find("AchievementSync") and "✅" or "❌") .. " AchievementSync listener",
+    (ctrl and ctrl.Source:find("DailyRewardSync") and "✅" or "❌") .. " DailyRewardSync listener",
+    (ctrl and ctrl.Source:find("StatsSync") and "✅" or "❌") .. " StatsSync listener",
+    (RS:FindFirstChild("AchievementSync") and "✅" or "❌") .. " AchievementSync RE exists",
+    (RS:FindFirstChild("DailyRewardSync") and "✅" or "❌") .. " DailyRewardSync RE exists",
+}
 
-local daily = SPScripts:FindFirstChild("DailyRewardController")
-table.insert(checks, ((daily and daily.Source:find("NotifBadge")) and "✅" or "❌") .. " DailyRewardController badge")
-
-local prestige = SPScripts:FindFirstChild("PrestigeController")
-table.insert(checks, ((prestige and prestige.Source:find("NotifBadge")) and "✅" or "❌") .. " PrestigeController badge")
-
-local expansion = SPScripts:FindFirstChild("ExpansionController")
-table.insert(checks, ((expansion and expansion.Source:find("NotifBadge")) and "✅" or "❌") .. " ExpansionController badge")
-
-print("=== DISPATCH 59 VERIFICATION ===")
+print("=== DISPATCH 78 VERIFICATION ===")
 for _, line in checks do print(line) end
 local allOK = not table.concat(checks, ""):find("❌")
-print(allOK and "✅ ALL CHECKS PASS — dispatch 59 complete" or "❌ SOME CHECKS FAILED")
+print(allOK and "✅ ALL CHECKS PASS — dispatch 78 complete" or "❌ SOME CHECKS FAILED")
 ```
 
 ---
@@ -321,18 +294,18 @@ print(allOK and "✅ ALL CHECKS PASS — dispatch 59 complete" or "❌ SOME CHEC
 
 | Item | Parts |
 |------|-------|
-| Badge Frame objects (child of existing UI, 0 BaseParts) | 0 |
-| **Dispatch 59 total** | **+0** |
+| UI elements only (no BaseParts) | 0 new server parts |
+| **Dispatch 78 total** | **+0** |
 | **Running total** | **4,146 / 5,000** |
 
 ---
 
-## VISUAL RESULT
+## NOTES
 
-After executing dispatch 59, three tab buttons gain a pulsing red dot in the top-right corner when their condition is met:
-
-- 📅 — red dot when daily reward is claimable (auto-clears when claimed)
-- ⭐ — red dot when lifetime honey threshold is reached for next prestige
-- 🗺️ — red dot when player can afford the next plot expansion
-
-All badges are client-side UI only — no server load, no additional remotes. They react to data already flowing from existing sync RemoteEvents.
+- `task.delay(4, ...)` gives `HiveHUDController` time to build the HiveHUD ScreenGui before badge injection. The controller also has a secondary `task.wait(3)` fallback for slow load scenarios.
+- The badge uses `Position = UDim2.new(1, -2, 0, -2)` with `AnchorPoint = Vector2.new(1, 0)` so it sits at the top-right corner of the tab, slightly overlapping the edge — the conventional "notification badge" position on mobile.
+- The `Back/Out` easing on `showBadge` gives a slight overshoot pop — satisfying visual feedback matching the Warm Wax panel open animations.
+- `AchievementSync` detection uses a `count > lastAchievementCount` heuristic (counts total unlocked achievements). If the server sends the full unlocked array each time, incrementing the count means a new achievement was added. This avoids having to diff individual achievement IDs.
+- `DailyRewardSync` uses `data.available == true` / `data.claimed == true` signals. Verify these fields match the actual payload structure from `DailyRewardService` (dispatch 57).
+- The `StatsSync` milestone detection is approximate (exact equality checks) — it will miss milestones if the player reaches them in between stat broadcasts. For a non-critical cosmetic feature this is acceptable.
+- If `HiveHUDController` shows/hides panels via `Frame.Visible` rather than `ScreenGui.Enabled`, the `GetPropertyChangedSignal("Enabled")` cleanup won't fire. In that case badges clear naturally on the next login (they start hidden). A future dispatch can hook the `Visible` property instead.

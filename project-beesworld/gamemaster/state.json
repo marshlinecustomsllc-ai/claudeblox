@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 77 written \u2014 AchievementsExpansion 13 new achievements for Cycle 11 stats",
+  "last_action": "dispatch 78 written \u2014 NotificationBadgeController red badge dots on HUD tabs",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,7 +75,7 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 77,
+  "dispatch_count": 78,
   "total_parts": 4146,
-  "last_dispatch": "cycle11_achievements2_dispatch.md"
+  "last_dispatch": "cycle11_notification_badge_dispatch.md"
 }
