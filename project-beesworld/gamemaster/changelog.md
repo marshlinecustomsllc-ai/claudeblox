@@ -797,3 +797,12 @@
 - formatCostLabel fallback helper injected if primary pattern-match fails
 - Completes Cycle 12 expansion plot propolis economy
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 88 — Pollen Upgrade Tree (Cycle 13)
+- CYCLE 13 BEGINS
+- Added 5 pollen upgrades to Config.UPGRADES: pollen_yield_1 through pollen_yield_5
+- Costs: 30 / 80 / 180 / 350 / 600 pollen (total 1,240); each adds +20% pollen/trip
+- UpgradeService: new `cost.pollen` deduction branch + `GetPollenMultiplier(player)` function
+- ForagingService: applies `GetPollenMultiplier` multiplier to `pollenYield` per trip
+- At max (5/5): 2× base pollen yield per trip
+- Part budget: +0 → 4,146 / 5,000
