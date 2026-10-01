@@ -984,3 +984,11 @@
 - New `HiveIdleController` LocalScript (StarterPlayerScripts): Propolis Brown toast, slides up to Y=0.93, holds 4s, fades out; DisplayOrder=12
 - Player join resets activity timer; new players (0 plots) are never notified
 - +0 permanent parts → 4,146/5,000
+
+## Dispatch 111 — Full Hive Multiplier
+- ForagingService append: `applyFullHiveMult_111(profile, h, p, plen)` → ×1.2 all yields when all 8 plots owned; checks `slot_N`, `N`, `"N"` key formats; sets `FullHiveBonus` player attribute; idempotency marker `FullHiveMult_111`
+- Manual integration step: insert `honeyYield, propolisYield, pollenYield = applyFullHiveMult_111(...)` before profile update in foraging loop
+- UpgradesController append: `FullHiveBadge_111` — `"🌟 Full Hive +20%"` TextLabel (Honey Gold, GothamBold) shown/hidden via `GetAttributeChangedSignal("FullHiveBonus")`
+- Config append: `full_hive_tycoon` achievement (`plot_count` condition, count=8, icon=🌟)
+- AchievementService append: `PlotCountCond_111` — patches `_G.AchievementService.checkCondition` for `plot_count` type; counts owned plots with three-key-format check
+- +0 permanent parts → 4,146/5,000
