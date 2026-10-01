@@ -974,3 +974,13 @@
 - New `PropolisRainController` LocalScript (StarterPlayerScripts): Propolis Purple (130,60,200) banner, DisplayOrder=14, slides from Y=-0.08→Y=0.03, live second countdown
 - Simultaneous Pollen Surge + Propolis Rain stacks both doublers independently
 - +0 permanent parts → 4,146/5,000
+
+## Dispatch 110 — Idle Hive Watcher
+- New `ForagingActivityBE` BindableEvent in ReplicatedStorage
+- New `HiveIdleSync` RemoteEvent in ReplicatedStorage
+- New `HiveIdleWatcher` Script (ServerScriptService): polls every 60s, fires idle notification if player has ≥1 plot + no activity for 5+ minutes
+- Cooldown: `HiveIdleLastNotify` player attribute, 10-min window prevents nag-spam
+- ForagingService append: wires `ForagingActivityBE` via `HiveStatsSync.FireClient` monkey-patch; idempotency marker `ForagingActivityFire_110`
+- New `HiveIdleController` LocalScript (StarterPlayerScripts): Propolis Brown toast, slides up to Y=0.93, holds 4s, fades out; DisplayOrder=12
+- Player join resets activity timer; new players (0 plots) are never notified
+- +0 permanent parts → 4,146/5,000
