@@ -119,3 +119,20 @@
 - **World — Plot Plaques x6** (3 parts × 6 = 18 parts in Workspace.Plot[N].PlotDecor): PlaqueBacking + PlaqueFrame + PlaqueSurface (PlotPlaque tag, PlotIndex attribute, PlaqueGui SurfaceGui)
 
 **Part budget:** +24 → ~4,076/5,000
+
+## Cycle 11 — Dispatch 25: AchievementService + DS v15→v16 (supersedes cycle7_achievements)
+
+**File:** `cycle11_achievements_dispatch.md`  
+**Supersedes:** `cycle7_achievements_dispatch.md` (targeted stale DS v7→v8 with migration[8] already taken by dispatch 21)
+
+### What it adds
+- **DataService v15→v16** — migration[11]: `profile.achievementsUnlocked = {}` only (questMetrics redundancy removed — already added in migration[10]); CURRENT_VERSION=16
+- **Config.ACHIEVEMENTS** — 20 entries across 5 categories: first steps (5), progress milestones (6), system unlocks (5), prestige/late game (3), daily quest milestone (1); each entry has id/label/desc/icon/condition function
+- **2 new RemoteEvents:** AchievementUnlocked (server→one client, {id,label,desc,icon}), AchievementSync (server→one client, unlockedIds array)
+- **AchievementService ModuleScript** — CheckAll iterates Config.ACHIEVEMENTS vs profile.questMetrics, grants newly-earned achievements, fires AchievementUnlocked per new achievement; SyncClient sends full unlockedIds array on join; PlayerAdded: task.wait(4) → SyncClient
+- **AchievementsRunner Script** — thin require launcher
+- **QuestService patches** — SetMetric function (for non-cumulative metrics: overwrites instead of adding, lazy-requires AchievementService.CheckAll); AchievementService.CheckAll lazy-require hook added at end of IncrementMetric; avoids circular dependency via function-body lazy require
+- **6 additional metric hooks** — CombService: floorsUnlocked via SetMetric; QueenService: queenTierReached via SetMetric; SwarmService: generationReached via SetMetric; ThreatService: molassesEnded via IncrementMetric; CosmeticService: skinsOwned via IncrementMetric; QuestService.handleClaim: questsCompleted +1 direct table update
+- **AchievementController LocalScript** — top-right corner toast ScreenGui (DisplayOrder=25); slide-in from right via Back easing, 4s hold, slide-out; toast queue for rapid unlocks; _unlockedIds set to suppress re-showing on sync
+
+**Part budget:** 0 new world parts, total unchanged ~4,076/5,000
