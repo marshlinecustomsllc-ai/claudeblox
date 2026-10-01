@@ -1038,3 +1038,19 @@
 - Step B: conditional append to BuildModeController to set slot attributes (skipped if already present)
 - Design principle: kids explore by clicking spots and watching stars; adults see the numbers and optimise
 - Part budget: +0 permanent → 4,146 / 5,000
+
+### Dispatch 116 — Hive Progress Celebration
+- New `HiveMilestoneSync` RemoteEvent in ReplicatedStorage
+- New `HiveMilestoneService` Script in ServerScriptService
+  - Watches CombCellCount, PrestigeLevel, HoneyLifetime player attributes
+  - 14 milestone tiers: cells (5/10/15/20/25/30/40/50), prestige (1/2/3+), honey lifetime (100/500/1000)
+  - Tracks fired milestones via `HiveMilestones` comma-string attribute (DataStore-persistable)
+  - Fires once per account, checks on join for players who already passed thresholds
+- New `HiveMilestoneCelebration` LocalScript in StarterPlayerScripts
+  - Full-screen overlay (DisplayOrder=50, IgnoreGuiInset=true) for 3.2s then slides away
+  - Kid-friendly: large emoji + punchy headline in GothamBold 22px gold
+  - Adult layer: stat detail line (WAX_CREAM, 13px) always visible — "50 cells — Full Hive Bonus active!"
+  - queue_116 handles rapid-fire simultaneous milestones gracefully
+  - TweenService Back-easing slide-in + Quad fade-out
+- Design principle: second-person praise for kids ("You did it!"), stat impact for adult optimisers
+- Part budget: +0 permanent → 4,146 / 5,000
