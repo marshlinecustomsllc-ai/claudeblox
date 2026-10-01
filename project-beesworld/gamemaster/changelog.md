@@ -639,3 +639,12 @@
 - GameManager: BeeNameService.Init() injected
 - HiveHUDController: queen name row + ✏️ rename button + dialog overlay
 - Part budget: +0 → 4,146/5,000
+
+## Dispatch 72 — HiveStatsService
+- DataService: totalHoneyEarned/totalForagingTrips/totalUpgradesBought/daysPlayed/lastLoginDay
+- HiveStatsService: daily login tracking, StatsSync RE, BroadcastStats
+- GameManager: HiveStatsService.Init() injected
+- ForagingService: trip + honey stat increments
+- SpeedUpgradeService: upgradesBought increment
+- HiveStatsController: 📊 tab X=0.925 Y=0.68, stats panel + active bonuses section
+- Part budget: +0 → 4,146/5,000
