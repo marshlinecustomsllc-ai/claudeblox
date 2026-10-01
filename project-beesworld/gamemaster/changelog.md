@@ -1185,3 +1185,13 @@
 - Baseline recorded at join — no spurious animations on reconnect
 - CollectionService CombSlot tag lookup with GetDescendants fallback
 - Part budget: +0 permanent → 4,146 / 5,000
+
+## Dispatch 129 — Honey Collection Tap Feedback (2026-10-01)
+- Added `HoneyTapController` LocalScript in StarterPlayerScripts
+- Float label: `+N 🍯` in GothamBold honey gold, rises 40px, fades over 0.75s
+- Ripple ring: UICorner circle 24→60px diameter, UIStroke outline, fades 0.4s
+- Honey jar bounce: icon scales ×1.2 in 0.08s, snaps back with Back easing 0.15s
+- Flood protection: max 8 simultaneous float labels, oldest destroyed on overflow
+- Amount formatter: K/M suffixes for large honey counts
+- Primary: HoneyCollect RemoteEvent; fallback: HoneyCount attribute delta
+- Part budget: +0 permanent → 4,146 / 5,000
