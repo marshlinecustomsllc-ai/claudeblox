@@ -324,3 +324,17 @@
 - **WardrobePanel UI**: 12 `Swatch_N` TextButtons in 4×3 grid (Size 20%×16%), each with `SelectionRing` UIStroke (hidden until selected), tooltip TextLabel (hover-reveal), `ColorIndex`+`ColorName` attributes; `RandomiseBtn` (🎲, Propolis Brown); `SelectedColourLabel` preview "Selected: Honey Gold"
 - **BeeColourController** LocalScript: `pulseSwatch` (Back/Out scale → Quad/In return), `setSelectedVisual` (ring toggle + preview update), hover tooltip show/hide, `SetBeeColor:InvokeServer`, `BeeColorSync` recolours other players' visible characters client-side
 - **Part budget**: 0 permanent → **~4,142/5,000** (no change)
+
+## Dispatch 41 — DailyRewardService (Cycle 11)
+- Config.DAILY_REWARDS: 7-day ladder — Day1: 500h/5p → Day7: 5000h/50p + streak_champion skin
+- DataService migration: loginStreak, lastLoginDay, dailyClaimedToday added to DEFAULT_PROFILE
+- DailyRewardSync RemoteEvent + ClaimDailyReward RemoteFunction in Remotes
+- DailyRewardService: utcDayNumber() (os.time()/86400), getNextStreak() consecutive/reset logic
+- Idempotent claim: lastLoginDay==today guard prevents double-claim across server restarts
+- Skin grant on Day 7 via PrestigeRewardService.GrantSkin, Notify toast on claim
+- GameManager wiring: require DailyRewardService + DailyRewardService.Init()
+- DailyRewardGui (DisplayOrder=55): dim overlay + CalendarPanel centre-screen (0.68×0.65)
+- 7 DayCard_N frames: day icons ☀️🌿🍀🌸⭐🏆👑, honey/propolis labels, ClaimBtn (Honey Gold)
+- DailyRewardController: scale-from-centre open (Back/Out), highlightDayCard (past=green✓/today=gold border/future=dimmed)
+- Dimmer backdrop tap closes panel (mobile-friendly)
+- Part budget: 0 permanent → cumulative ~4,142/5,000
