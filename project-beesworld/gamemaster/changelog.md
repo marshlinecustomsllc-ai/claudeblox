@@ -1280,3 +1280,12 @@
 - All overlays self-destruct after 1.8s via Completed:Connect chains
 - Lazy cell wiring via DescendantAdded watcher; connectedCells_138 prevents duplicate connections
 - +0 permanent parts → running total 4,146 / 5,000
+
+## Dispatch 139 — Bear Attack Warning System (2026-10-01)
+- Added `BearAttackService` Script in ServerScriptService (+1 permanent; 4,147/5,000)
+- Added `BearWarningController` LocalScript in StarterPlayerScripts
+- Bear cycle: random 120–300s interval per player; 10s warning; 15% honey drain (10% with hive_insulation)
+- Client: red screen-edge flash (4 pulses, 8px frames top/bottom/left/right) + sliding red banner "🐻 Bear incoming!" + result banner "🐻 Bear repelled! –N🍯"
+- BearWarning + BearResult RemoteEvents in ReplicatedStorage.RemoteEvents
+- Server increments BearSurviveCount attribute (triggers dispatch 131 "Bear Survivor" milestone)
+- DisplayOrder=45; IgnoreGuiInset=true for full-screen edge coverage
