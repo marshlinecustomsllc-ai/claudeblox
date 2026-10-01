@@ -247,3 +247,16 @@
 - **PrestigeRushGui LocalScript** — in StarterPlayerScripts; Heartbeat-driven countdown banner ("🏆 Rush: M:SS") centered top of screen; TweenService fade-in/fade-out; Honey Gold border + FredokaOne font; hides cleanly when rush expires
 
 **Part budget:** 0 new world parts → ~4,098/5,000 (unchanged)
+
+## Cycle 11 — Dispatch 34: LeaderboardService — OrderedDataStore + TopBar ScreenGui
+
+**File:** `cycle11_leaderboard_dispatch.md`
+
+### What it adds
+- **LeaderboardService ModuleScript** — `--!strict`; `OrderedDataStore` key `BeesWorldLeaderboard_v1`; score formula `generation × 1,000,000 + honey` (prestige players rank above same-honey non-prestige); `fetchTop(5)` reads sorted page + resolves display names (online players first, then `GetNameFromUserIdAsync`); 90-second server-side refresh loop writes all online scores + broadcasts; `RecordScore(player)` for on-demand updates; `PlayerRemoving` writes final score on leave
+- **LeaderSync RemoteEvent** — in `ReplicatedStorage/Remotes`; carries `{ entries: top5, updatedAt: timestamp }` to all clients
+- **LeaderboardGui ScreenGui** — top-right panel (`22%×36%`); Propolis Brown background + border; FredokaOne/Honey Gold header "🏆 Top Beekeepers"; 5 `RowN` frames each with `Rank` badge, `PlayerName` (Wax Cream), `Score` (right-aligned); "Updates every 90s" footer
+- **LeaderboardController LocalScript** — `--!strict`; `onLeaderSync` drives all 5 rows; `fmtScore` formats to "1.23M" / "45.1K" / raw; local player's row highlighted Honey Gold with `BackgroundColor3` tween; footer shows "Just updated" / "Updated Ns ago"
+- **Main Script wiring** — `LeaderboardService.Init()` injected (also handles `PlayerRemoving` score writes)
+
+**Part budget:** 0 new world parts → ~4,098/5,000 (unchanged)
