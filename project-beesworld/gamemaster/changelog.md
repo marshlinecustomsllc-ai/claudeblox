@@ -1125,3 +1125,15 @@
 - Reads ForagingActive + ForagingQuality + ForagingEndTime player attributes
 - Default quality 60 (Good tier) if ForagingQuality attribute not yet written
 - DisplayOrder=14, part budget impact: +0 → 4,146 / 5,000
+
+## Dispatch 123 — Bear Warning System (Old Molasses Alert)
+- `BearWarningSync` RemoteEvent in ReplicatedStorage
+- `BearAlertService` Script: schedules 3 warning fires at -30s, -15s, -5s before raid time
+- `BearWarningController` LocalScript: 3-stage alert card + escalating screen shake
+- Stage 1 (30s): 🐾 dark brown bg, amplitude 0.08
+- Stage 2 (15s): 🐻 orange-brown bg, amplitude 0.20
+- Stage 3 (5s): 🚨 red-brown bg, amplitude 0.45
+- Clear (0): ✅ green bg — raid over
+- Auto-dismiss per stage duration; task.cancel() prevents flicker on rapid-fire stages
+- DisplayOrder=45 (above all HUD, below milestone celebration=50)
+- Part budget impact: +0 → 4,146 / 5,000
