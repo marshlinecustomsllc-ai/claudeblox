@@ -219,3 +219,16 @@
 - **WaspTierController LocalScript** *(optional Step F)* — updates `WaspTierLabel` in HiveGui corner from `HudDataSync.generation` field; label shows "🐝⚡ Wasp: Gen N" so players understand escalation
 
 **Part budget:** 0 new world parts → ~4,098/5,000 (unchanged)
+
+## Cycle 11 — Dispatch 32: BeeInspectorGui Inline ReadyCheck Overlay
+
+**File:** `cycle11_beeinspector_dispatch.md`
+
+### What it adds
+- **ReadyCheckFrame** — floating overlay child of `HiveGui.MainFrame`; ZIndex=20 (above tab pages); `UDim2.new(0.45,0,0.38,0)` panel; starts off-screen right, slides in/out via TweenService (0.25s Quad/Out); deep Propolis Brown background with border stroke; `Title` TextLabel (FredokaOne, Wax Cream) shows "Floor N Requirements"
+- **3 bar rows** (RowCells, RowHoney, RowQueen) each with: icon emoji label, animated `Fill` frame (Propolis Brown → Honey Gold when met), `Value` TextLabel ("0/0" format), `Check` TextLabel (empty → "✓" when condition met)
+- **Footer label** — "Keep building!" / "🎉 Ready to unlock!" in Honey Gold / green depending on all-conditions-met state
+- **ReadyCheckController LocalScript** — `--!strict`; listens on `HudDataSync`; `FLOOR_REQ` table mirrors server Config (hardcoded, no client require); `updateRow()` animates bar widths + colors via BAR_TWEEN (0.35s Quad/Out); `slideIn()`/`slideOut()` slide the panel; `scheduleAutoHide()` hides after 4 seconds; wired to TabBuild + TabQueen `Activated` events so panel shows on tab click
+- **Hides permanently** when `floorUnlocked ≥ 3` (all floors unlocked — no future gate to show)
+
+**Part budget:** 0 new world parts → ~4,098/5,000 (unchanged)
