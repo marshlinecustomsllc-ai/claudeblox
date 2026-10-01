@@ -495,3 +495,13 @@
 - GameManager: HiveSkinService.Init() after DailyRewardService.Init()
 - HiveSkinController: 🎨 right-side tab, scrollable card list, color swatch, equip/buy
 - Part budget: +0 permanent → 4,146 / 5,000
+
+## Dispatch 57 — BeeVisualService + PlotService OwnerId Patch (cycle11_bee_visual_dispatch.md)
+- PlotService: OwnerId IntValue on HexCell parts + backfill helper
+- BindableEvents: BeeCountChanged + SkinChanged BindableEvent in SSS
+- ForagingService: BeeCountChanged:Fire() on bee start/return
+- HiveSkinService: SkinChanged:Fire() on ApplySkin
+- BeeVisualService: Heartbeat orbit spheres (radius 3.2, bob amp 0.6),
+  count matches active bees, color matches active skin, cleanup on PlayerRemoving
+- GameManager: BeeVisualService.Init() after HiveSkinService.Init()
+- Part budget: +0 permanent (spheres transient) → 4,146 / 5,000
