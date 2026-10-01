@@ -667,3 +667,15 @@
 - `findPlotParts()` scans Workspace.Map, Workspace.HivePlots, and Workspace root for resilience
 - Optional `ForagingSync` connection for per-event foraging state updates
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 75 — BeeParticleController (Cycle 11)
+- New LocalScript `BeeParticleController` in StarterPlayerScripts
+- Creates invisible client-local anchor parts (Transparency=1, CanCollide=false) at each
+  plot center (Y+2 above surface) and at the hive centroid
+- Each anchor carries a golden ParticleEmitter with fade in/out transparency, random spread,
+  LightEmission=0.6 for night glow
+- Rate control driven by PlotSync data: RATE_OFF(0) locked, RATE_IDLE(2) owned, RATE_BUSY(12) foraging
+- Hive center always emits at RATE_IDLE — hive always visually alive
+- Optional ForagingSync per-event rate bump mirrors HoneycombVisualController pattern
+- Client-side only — no server replication, +0 server part budget
+- Running total: 4,146 / 5,000
