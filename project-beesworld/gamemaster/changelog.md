@@ -648,3 +648,9 @@
 - SpeedUpgradeService: upgradesBought increment
 - HiveStatsController: 📊 tab X=0.925 Y=0.68, stats panel + active bonuses section
 - Part budget: +0 → 4,146/5,000
+
+## Dispatch 73 — UpgradeStatsPatch
+- Patches Queen/Propolis/PollenYield/HoneyStorage/PropolisStorage/PollenStorage services
+- Each now increments totalUpgradesBought on purchase
+- All 7 upgrade paths feed HiveStatsService counter
+- Part budget: +0 → 4,146/5,000

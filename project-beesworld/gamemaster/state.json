@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 72 \u2014 HiveStatsService persistent player statistics",
+  "last_action": "dispatch 73 \u2014 UpgradeStatsPatch all 6 remaining upgrade services",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,7 +75,7 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 72,
+  "dispatch_count": 73,
   "total_parts": 4146,
-  "last_dispatch": "cycle11_hive_stats_dispatch.md"
+  "last_dispatch": "cycle11_upgrade_stats_patch_dispatch.md"
 }
