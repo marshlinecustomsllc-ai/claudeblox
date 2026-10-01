@@ -232,3 +232,18 @@
 - **Hides permanently** when `floorUnlocked ≥ 3` (all floors unlocked — no future gate to show)
 
 **Part budget:** 0 new world parts → ~4,098/5,000 (unchanged)
+
+## Cycle 11 — Dispatch 33: PrestigeRewardService — Generation Reset Rewards
+
+**File:** `cycle11_prestige_reward_dispatch.md`
+
+### What it adds
+- **Config.PRESTIGE_REWARDS** — `rushDuration=300` (5-min +50% honey window), `skins` table mapping gen 1-5 to skin keys (golden_bee, obsidian_bee, crystal_bee, prism_bee, void_bee), `maxSkinGen=5` (gen 5+ always grants void_bee), `rushLabel`/`rushDesc` for toast
+- **Config.PRESTIGE_COSMETICS** — 5 prestige-gated cosmetic entries each with `name`, `color`, `bodyColor`, `genRequired`; separate from Config.COSMETICS (not purchase-locked, prestige-gated)
+- **PrestigeRewardService ModuleScript** — `--!strict`; `OnPrestige(player)` called immediately after generation reset: grants generation-appropriate skin (idempotent check vs `profile.cosmeticsUnlocked`) + starts rush window; `GetHoneyMultiplier(player)` returns 1.5 during rush, 1.0 otherwise; `GetRushTimeRemaining(player)` returns countdown seconds; `startRush()` fires Notify toast + auto-expires after `rushDuration`; `OnPlayerRemoving` cleanup; `Init()` wires removing handler
+- **PrestigeService wiring** — `PrestigeRewardService.OnPrestige(player)` injected immediately after `profile.generation` increment
+- **ForagingService wiring** — `local prestigeMult = PrestigeRewardService.GetHoneyMultiplier(player)` injected alongside existing `weatherMult * seasonalMult`; yield formula now `baseRate × weatherMult × seasonalMult × prestigeMult`
+- **PrestigeRushSync RemoteEvent** — created in `ReplicatedStorage/Remotes`; carries `{ active, endTime }` to client
+- **PrestigeRushGui LocalScript** — in StarterPlayerScripts; Heartbeat-driven countdown banner ("🏆 Rush: M:SS") centered top of screen; TweenService fade-in/fade-out; Honey Gold border + FredokaOne font; hides cleanly when rush expires
+
+**Part budget:** 0 new world parts → ~4,098/5,000 (unchanged)
