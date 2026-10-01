@@ -1195,3 +1195,13 @@
 - Amount formatter: K/M suffixes for large honey counts
 - Primary: HoneyCollect RemoteEvent; fallback: HoneyCount attribute delta
 - Part budget: +0 permanent → 4,146 / 5,000
+
+## Dispatch 130 — Daily Hive Tip (2026-10-01)
+- Added `DailyTipController` LocalScript in StarterPlayerScripts
+- 30-tip pool covering all major mechanics (adjacency, prestige, foraging, bears, achievements)
+- Daily rotation: `(day + UserId) % 30` — unique tip per player per day, social teaching mechanic
+- Tap card to advance tip; ✕ button for session dismiss; auto-dismiss after 8s
+- DailyBeeFactGui reuse: injects into existing frame if found to avoid DisplayOrder conflict
+- DisplayOrder=15 Wax Cream card (320×40px) at bottom-centre
+- Tips are dual-level: simple for kids, mechanically informative for adults
+- Part budget: +0 permanent → 4,146 / 5,000
