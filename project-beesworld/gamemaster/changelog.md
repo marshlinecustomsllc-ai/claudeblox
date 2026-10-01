@@ -536,3 +536,14 @@
 - HoneyStorageController: 🏺 tab left col Y=0.70, sky-blue STORE_CLR panel, toast on upgrade
 - Total honey sinks to max all tracks: ~722,000 honey across full game arc
 - Part budget: +0 → 4,146/5,000
+
+## Dispatch 61 — PropolisStorageUpgradeService (cycle 11)
+- 4-tier propolis storage: 500 → 1,200 → 3,000 → 7,000 → 15,000 propolis max
+- Config: PROPOLIS_STORAGE_UPGRADES, PROPOLIS_STORAGE_BASE_MAX=500, MAX_TIER=4
+- DataService: propolisStorageTier=0 migration
+- PropolisStorageUpgradeService: GetMaxPropolis(), BuyPropolisStorage RF (honey cost), PropolisStorageSync RE
+- ForagingService: propolis cap enforcement via GetMaxPropolis() before credit
+- GameManager: PropolisStorageUpgradeService.Init() after HoneyStorageUpgradeService.Init()
+- PropolisStorageController: 🧫 tab right col Y=0.50, RESIN_CLR=RGB(160,90,200) purple panel, "Costs Honey" note
+- Combined new honey sinks (storage both tracks): 128,000 honey total
+- Part budget: +0 → 4,146/5,000
