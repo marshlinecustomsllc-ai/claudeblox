@@ -448,3 +448,13 @@
 - GameManager injection: SpeedUpgradeService.Init() after AchievementService.Init()
 - SpeedUpgradeController: ⚡ tab button, slide-from-right panel, Honey Gold progress bar, Buy/MAX SPEED button states
 - Part budget: +0 permanent → 4,146/5,000
+
+## Dispatch 52 — PollenYieldUpgradeService (cycle 11)
+- Config.POLLEN_UPGRADES: 5 tiers, propolis costs 50/150/400/1K/2.5K, mult 1.20/1.44/1.73/2.07/2.49×
+- DataService migration: pollenTier default 0
+- PollenYieldUpgradeService: BuyPollenTier RF (propolis deducted), PollenSync RE broadcasts tier/mult/nextCost
+- PollenSync RemoteEvent + BuyPollenTier RemoteFunction in ReplicatedStorage
+- ForagingService injection: pollen yield *= GetMult(pollenTier), stacks with storm×season chain
+- GameManager injection: after SpeedUpgradeService.Init()
+- PollenUpgradeController: 🌼 tab at left-0.70, yellow-green panel, progress bar, propolis cost display
+- Part budget: +0 permanent → 4,146/5,000
