@@ -1,358 +1,303 @@
-# Dispatch 34 — LeaderboardService: OrderedDataStore + TopBar ScreenGui
-**File:** `cycle11_leaderboard_dispatch.md`
-**Cycle:** 11
-**Part budget:** 0 → ~4,098/5,000 (UI only, no world parts)
-**DataService migration:** None (reads existing `profile.honey` + `profile.generation`)
-**Depends on:** Dispatch 8 (DataService profile structure), Dispatch 19 (generation tracking)
-**Supersedes:** Any stub leaderboard from earlier cycles
+# Dispatch 47 — LeaderboardGui Top-10 Server Honey Leaderboard (Cycle 11)
 
----
+**Feature:** A real-time server leaderboard showing the top 10 players by lifetime honey
+earned this session. Updates every 15 seconds. Displayed as a compact panel on the
+right edge of the screen, collapsible via a 🏆 button.
 
-## Purpose
-
-Persistent global leaderboard backed by Roblox **OrderedDataStore**, with a live in-game
-**TopBar ScreenGui** that refreshes every 60 seconds. Score is `generation × 1,000,000 + honey`
-so prestige players always rank above same-honey non-prestige players.
-
-Before this dispatch: no cross-session leaderboard — players cannot see where they rank globally.
-After this dispatch: a compact top-5 panel in the top-right corner shows player names, scores,
-and highlights the local player's row if they're in the top 5.
+**Execution order:** After dispatch 46 (SeasonService).  
+**Part budget impact:** 0 (pure UI).  
+**Running total:** ~4,142 / 5,000.
 
 ---
 
 ## STEP A — LeaderboardService ModuleScript
 
 ```lua
--- STEP A: Create LeaderboardService in ServerScriptService
 local SSS = game:GetService("ServerScriptService")
-local old = SSS:FindFirstChild("LeaderboardService")
-if old then old:Destroy() end
 
 local svc = Instance.new("ModuleScript")
 svc.Name   = "LeaderboardService"
+svc.Parent = SSS
 svc.Source = [[
 --!strict
--- LeaderboardService — global honey leaderboard (dispatch 34)
+-- LeaderboardService — collects lifetime honey from all connected player profiles
+-- and broadcasts top-10 rankings to all clients every 15 seconds.
 
-local Players         = game:GetService("Players")
-local DataStoreService = game:GetService("DataStoreService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local Config      = require(game:GetService("ServerScriptService"):FindFirstChild("Config")
-                       or ReplicatedStorage:FindFirstChild("Config"))
-local DataService = require(game:GetService("ServerScriptService"):FindFirstChild("DataService"))
-
--- OrderedDataStore key: "BeesWorldLeaderboard_v1"
-local _ods: OrderedDataStore? = nil
-local function getODS(): OrderedDataStore
-    if not _ods then
-        _ods = DataStoreService:GetOrderedDataStore("BeesWorldLeaderboard_v1")
-    end
-    return _ods :: OrderedDataStore
-end
-
--- RemoteEvent for pushing top-5 to clients
-local remotes    = ReplicatedStorage:FindFirstChild("Remotes")
-local LeaderSync = remotes and remotes:FindFirstChild("LeaderSync")
-
--- Score formula: generation * 1_000_000 + honey (generation players always above same-honey players)
-local function calcScore(profile: any): number
-    local gen   = math.max(profile.generation or 0, 0)
-    local honey = math.max(profile.honey or 0, 0)
-    return gen * 1_000_000 + math.floor(honey)
-end
-
--- ---------------------------------------------------------------
--- Write player's score to ODS (called on save)
--- ---------------------------------------------------------------
-local function writeScore(player: Player): ()
-    local profile = DataService.GetProfile(player)
-    if not profile then return end
-    local score = calcScore(profile)
-    local key   = "player_" .. player.UserId
-
-    local ok, err = pcall(function(): ()
-        getODS():SetAsync(key, score)
-    end)
-    if not ok then
-        warn("[LeaderboardService] SetAsync failed for " .. player.Name .. ": " .. tostring(err))
-    end
-end
-
--- ---------------------------------------------------------------
--- Read top N entries from ODS
--- ---------------------------------------------------------------
-type LeaderEntry = { rank: number, userId: number, name: string, score: number }
-
-local function fetchTop(n: number): { LeaderEntry }
-    local pages
-    local ok, err = pcall(function(): ()
-        pages = getODS():GetSortedAsync(false, n)  -- descending, top N
-    end)
-    if not ok then
-        warn("[LeaderboardService] GetSortedAsync failed: " .. tostring(err))
-        return {}
-    end
-
-    local entries: { LeaderEntry } = {}
-    local currentPage = pages:GetCurrentPage()
-    for rank, entry in currentPage do
-        -- entry.key = "player_USERID", entry.value = score
-        local uidStr = tostring(entry.key):gsub("player_", "")
-        local uid    = tonumber(uidStr) or 0
-        local name   = "[Unknown]"
-        -- Try to get display name from online players first, then UserService
-        local onlinePlayer = Players:GetPlayerByUserId(uid)
-        if onlinePlayer then
-            name = onlinePlayer.DisplayName
-        else
-            local us_ok, uname = pcall(function(): string
-                return Players:GetNameFromUserIdAsync(uid)
-            end)
-            if us_ok then name = uname end
-        end
-        table.insert(entries, { rank = rank, userId = uid, name = name, score = entry.value })
-    end
-    return entries
-end
-
--- ---------------------------------------------------------------
--- Broadcast top 5 to all clients
--- ---------------------------------------------------------------
-local function broadcastLeaderboard(): ()
-    if not LeaderSync then return end
-    local top5 = fetchTop(5)
-    LeaderSync:FireAllClients({ entries = top5, updatedAt = os.time() })
-end
-
--- ---------------------------------------------------------------
--- Public API
--- ---------------------------------------------------------------
 local LeaderboardService = {}
 
-function LeaderboardService.Init(): ()
-    -- Score refresh loop: write all online players' scores every 90s
-    task.spawn(function(): ()
-        while true do
-            task.wait(90)
-            for _, player in Players:GetPlayers() do
-                writeScore(player)
+local Players      = game:GetService("Players")
+local DataService  = require(script.Parent.DataService)
+
+local LeaderboardSync: RemoteEvent?
+local BROADCAST_INTERVAL = 15   -- seconds
+
+-- ── Build snapshot ───────────────────────────────────────────────
+local function buildSnapshot(): {{userId: number, name: string, honey: number}}
+    local rows: {{userId: number, name: string, honey: number}} = {}
+    for _, player in Players:GetPlayers() do
+        local profile = DataService.GetProfile(player)
+        if profile then
+            table.insert(rows, {
+                userId = player.UserId,
+                name   = player.Name,
+                honey  = profile.lifetimeHoney or 0,
+            })
+        end
+    end
+    -- Sort descending by honey
+    table.sort(rows, function(a, b) return a.honey > b.honey end)
+    -- Top 10 only
+    if #rows > 10 then
+        local top: {{userId: number, name: string, honey: number}} = {}
+        for i = 1, 10 do top[i] = rows[i] end
+        return top
+    end
+    return rows
+end
+
+local function broadcast()
+    if not LeaderboardSync then return end
+    local snap = buildSnapshot()
+    -- Add rank number to each row
+    local payload: {{rank: number, userId: number, name: string, honey: number}} = {}
+    for i, row in snap do
+        table.insert(payload, { rank = i, userId = row.userId, name = row.name, honey = row.honey })
+    end
+    LeaderboardSync:FireAllClients(payload)
+end
+
+function LeaderboardService.Init()
+    local Remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
+    if not Remotes then
+        Remotes = Instance.new("Folder")
+        Remotes.Name = "Remotes"
+        Remotes.Parent = game:GetService("ReplicatedStorage")
+    end
+    LeaderboardSync = Remotes:FindFirstChild("LeaderboardSync")
+    if not LeaderboardSync then
+        LeaderboardSync = Instance.new("RemoteEvent")
+        LeaderboardSync.Name = "LeaderboardSync"
+        LeaderboardSync.Parent = Remotes
+    end
+
+    -- Sync joining player immediately
+    Players.PlayerAdded:Connect(function(player)
+        task.delay(4, function()
+            if not (player and player.Parent) then return end
+            if LeaderboardSync then
+                local snap = buildSnapshot()
+                local payload: {{rank: number, userId: number, name: string, honey: number}} = {}
+                for i, row in snap do
+                    table.insert(payload, {rank=i, userId=row.userId, name=row.name, honey=row.honey})
+                end
+                LeaderboardSync:FireClient(player, payload)
             end
-            broadcastLeaderboard()
+        end)
+    end)
+
+    -- Periodic broadcast
+    task.spawn(function()
+        while true do
+            task.wait(BROADCAST_INTERVAL)
+            broadcast()
         end
     end)
-
-    -- Write on save events (piggyback DataService saves)
-    -- Also write when a player leaves so their final score is recorded
-    Players.PlayerRemoving:Connect(function(player: Player): ()
-        writeScore(player)
-    end)
-
-    -- Initial broadcast a few seconds after startup (profiles should be loaded)
-    task.delay(8, broadcastLeaderboard)
-end
-
--- Called externally (e.g. after honey harvest or prestige) for real-time updates
-function LeaderboardService.RecordScore(player: Player): ()
-    writeScore(player)
-end
-
--- Exposed for admin/debug
-function LeaderboardService.FetchTop(n: number): { LeaderEntry }
-    return fetchTop(n)
 end
 
 return LeaderboardService
 ]]
-svc.Parent = SSS
 
-print("✅ STEP A: LeaderboardService created in ServerScriptService")
-print("   Score = generation × 1,000,000 + honey")
-print("   Writes to OrderedDataStore 'BeesWorldLeaderboard_v1'")
-print("   Broadcasts top-5 to all clients every 90s + on startup after 8s")
-```
-
-**Verify Step A:**
-
-```lua
-local SSS = game:GetService("ServerScriptService")
-local svc = SSS:FindFirstChild("LeaderboardService")
-assert(svc and svc:IsA("ModuleScript"), "LeaderboardService missing or wrong type")
-local src = svc.Source
-assert(src:find("OrderedDataStore"), "OrderedDataStore not used")
-assert(src:find("calcScore"), "calcScore missing")
-assert(src:find("LeaderSync"), "LeaderSync not referenced")
-assert(src:find("broadcastLeaderboard"), "broadcastLeaderboard missing")
-assert(src:find("--!strict"), "--!strict missing")
-print("✅ STEP A verified: LeaderboardService present and correct")
+print("LeaderboardService created")
 ```
 
 ---
 
-## STEP B — LeaderSync RemoteEvent
+## STEP B — LeaderboardSync RemoteEvent + GameManager wiring
 
 ```lua
--- STEP B: Create LeaderSync RemoteEvent in Remotes folder
-local RS = game:GetService("ReplicatedStorage")
-local remotes = RS:FindFirstChild("Remotes")
-assert(remotes, "Remotes folder not found in ReplicatedStorage")
-
-if not remotes:FindFirstChild("LeaderSync") then
-    local ev = Instance.new("RemoteEvent")
-    ev.Name   = "LeaderSync"
-    ev.Parent = remotes
-    print("✅ STEP B: LeaderSync RemoteEvent created")
-else
-    print("✅ STEP B: LeaderSync already exists — no action needed")
+-- RemoteEvent
+local RE = game:GetService("ReplicatedStorage")
+local Remotes = RE:FindFirstChild("Remotes")
+if not Remotes then
+    Remotes = Instance.new("Folder")
+    Remotes.Name = "Remotes"
+    Remotes.Parent = RE
 end
+local ls = Remotes:FindFirstChild("LeaderboardSync")
+if not ls then
+    ls = Instance.new("RemoteEvent")
+    ls.Name = "LeaderboardSync"
+    ls.Parent = Remotes
+end
+print("LeaderboardSync RemoteEvent ready")
+
+-- GameManager injection
+local SSS = game:GetService("ServerScriptService")
+local gm  = SSS:FindFirstChild("GameManager")
+assert(gm, "GameManager not found")
+local clone = gm:Clone()
+gm.Name = "GameManager_OLD_47B"
+gm.Parent = nil
+
+local src = clone.Source
+src = src:gsub(
+    "(local SeasonService = require%(script%.Parent%.SeasonService%))",
+    [[%1
+local LeaderboardService = require(script.Parent.LeaderboardService)]]
+)
+src = src:gsub(
+    "(SeasonService%.Init%(%%))",
+    [[%1
+    LeaderboardService.Init()]]
+)
+clone.Source = src
+clone.Name = "GameManager"
+clone.Parent = SSS
+print("GameManager wired for LeaderboardService")
 ```
 
 ---
 
-## STEP C — TopBar ScreenGui (static structure)
+## STEP C — LeaderboardGui ScreenGui
 
 ```lua
--- STEP C: Build LeaderboardGui ScreenGui in StarterGui
-local SG = game:GetService("StarterGui")
+local StarterGui = game:GetService("StarterGui")
 
-local old = SG:FindFirstChild("LeaderboardGui")
-if old then old:Destroy() end
+local lbGui              = Instance.new("ScreenGui")
+lbGui.Name               = "LeaderboardGui"
+lbGui.DisplayOrder       = 11
+lbGui.IgnoreGuiInset     = false
+lbGui.ResetOnSpawn       = false
+lbGui.Parent             = StarterGui
 
-local gui = Instance.new("ScreenGui")
-gui.Name           = "LeaderboardGui"
-gui.IgnoreGuiInset = true
-gui.DisplayOrder   = 40
-gui.ResetOnSpawn   = false
-gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-gui.Parent         = SG
+-- Toggle button (🏆) — right edge
+local toggleBtn          = Instance.new("TextButton")
+toggleBtn.Name           = "ToggleBtn"
+toggleBtn.Parent         = lbGui
+toggleBtn.Size           = UDim2.new(0.055, 0, 0.075, 0)
+toggleBtn.Position       = UDim2.new(0.945, 0, 0.30, 0)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(122, 74, 34)
+toggleBtn.Text           = "🏆"
+toggleBtn.TextScaled     = true
+toggleBtn.Font           = Enum.Font.FredokaOne
+toggleBtn.TextColor3     = Color3.fromRGB(242, 168, 28)
+toggleBtn.ZIndex         = 10
+local tbCorner           = Instance.new("UICorner")
+tbCorner.CornerRadius    = UDim.new(0.2, 0)
+tbCorner.Parent          = toggleBtn
+local tbStroke           = Instance.new("UIStroke")
+tbStroke.Color           = Color3.fromRGB(242, 168, 28)
+tbStroke.Thickness       = 2
+tbStroke.Parent          = toggleBtn
 
--- Panel
-local panel = Instance.new("Frame")
-panel.Name                = "LeaderPanel"
-panel.Size                = UDim2.new(0.22, 0, 0.36, 0)
-panel.Position            = UDim2.new(0.77, 0, 0.01, 0)
-panel.AnchorPoint         = Vector2.new(0, 0)
-panel.BackgroundColor3    = Color3.fromRGB(25, 14, 4)
-panel.BackgroundTransparency = 0.15
-panel.BorderSizePixel     = 0
-panel.ZIndex              = 5
-panel.Parent              = gui
-
-local panelCorner = Instance.new("UICorner")
-panelCorner.CornerRadius = UDim.new(0, 10)
-panelCorner.Parent = panel
-
-local panelStroke = Instance.new("UIStroke")
-panelStroke.Color     = Color3.fromRGB(122, 74, 34)  -- Propolis Brown
-panelStroke.Thickness = 2
-panelStroke.Parent    = panel
+-- Panel (slides in from right)
+local panel              = Instance.new("Frame")
+panel.Name               = "LeaderboardPanel"
+panel.Parent             = lbGui
+panel.Size               = UDim2.new(0.22, 0, 0.55, 0)
+panel.Position           = UDim2.new(1.01, 0, 0.23, 0)   -- starts off-screen
+panel.BackgroundColor3   = Color3.fromRGB(20, 12, 5)
+panel.BackgroundTransparency = 0.05
+panel.BorderSizePixel    = 0
+panel.Visible            = true   -- visibility controlled by Position
+panel.ZIndex             = 10
+local pCorner            = Instance.new("UICorner")
+pCorner.CornerRadius     = UDim.new(0.03, 0)
+pCorner.Parent           = panel
+local pStroke            = Instance.new("UIStroke")
+pStroke.Color            = Color3.fromRGB(242, 168, 28)
+pStroke.Thickness        = 2
+pStroke.Parent           = panel
 
 -- Header
-local header = Instance.new("TextLabel")
+local header             = Instance.new("TextLabel")
 header.Name              = "Header"
-header.Size              = UDim2.new(1, 0, 0.14, 0)
+header.Parent            = panel
+header.Size              = UDim2.new(1, 0, 0.11, 0)
 header.Position          = UDim2.new(0, 0, 0, 0)
 header.BackgroundColor3  = Color3.fromRGB(122, 74, 34)
-header.BackgroundTransparency = 0
-header.TextColor3        = Color3.fromRGB(242, 168, 28)   -- Honey Gold
+header.Text              = "🏆  Top Beekeepers"
+header.TextColor3        = Color3.fromRGB(242, 168, 28)
 header.Font              = Enum.Font.FredokaOne
 header.TextScaled        = true
-header.Text              = "🏆 Top Beekeepers"
-header.ZIndex            = 6
-header.Parent            = panel
+header.ZIndex            = 11
+local hCorner            = Instance.new("UICorner")
+hCorner.CornerRadius     = UDim.new(0.03, 0)
+hCorner.Parent           = header
 
-local headerCorner = Instance.new("UICorner")
-headerCorner.CornerRadius = UDim.new(0, 10)
-headerCorner.Parent = header
+-- Row list container
+local rowList            = Instance.new("Frame")
+rowList.Name             = "RowList"
+rowList.Parent           = panel
+rowList.Size             = UDim2.new(0.94, 0, 0.86, 0)
+rowList.Position         = UDim2.new(0.03, 0, 0.12, 0)
+rowList.BackgroundTransparency = 1
+rowList.ZIndex           = 11
+local listLayout         = Instance.new("UIListLayout")
+listLayout.SortOrder     = Enum.SortOrder.LayoutOrder
+listLayout.Padding       = UDim.new(0.006, 0)
+listLayout.Parent        = rowList
 
--- 5 row slots
-local rowHeight = 0.155
-for i = 1, 5 do
-    local row = Instance.new("Frame")
-    row.Name                = "Row" .. i
-    row.Size                = UDim2.new(0.92, 0, rowHeight, 0)
-    row.Position            = UDim2.new(0.04, 0, 0.15 + (i - 1) * (rowHeight + 0.01), 0)
-    row.BackgroundTransparency = 1
-    row.ZIndex              = 6
-    row.Parent              = panel
+-- Pre-create 10 row frames (updated by controller)
+for i = 1, 10 do
+    local row            = Instance.new("Frame")
+    row.Name             = "Row_" .. i
+    row.Parent           = rowList
+    row.Size             = UDim2.new(1, 0, 0.088, 0)
+    row.BackgroundColor3 = i == 1 and Color3.fromRGB(80, 55, 10)
+                        or i == 2 and Color3.fromRGB(55, 55, 55)
+                        or i == 3 and Color3.fromRGB(60, 35, 15)
+                        or Color3.fromRGB(30, 18, 8)
+    row.BackgroundTransparency = 0.25
+    row.LayoutOrder      = i
+    row.ZIndex           = 12
+    local rCorner        = Instance.new("UICorner")
+    rCorner.CornerRadius = UDim.new(0.12, 0)
+    rCorner.Parent       = row
 
-    -- Rank badge
-    local rank = Instance.new("TextLabel")
-    rank.Name               = "Rank"
-    rank.Size               = UDim2.new(0.18, 0, 1, 0)
-    rank.BackgroundColor3   = Color3.fromRGB(60, 35, 10)
-    rank.BackgroundTransparency = 0.3
-    rank.TextColor3         = Color3.fromRGB(242, 168, 28)
-    rank.Font               = Enum.Font.FredokaOne
-    rank.TextScaled         = true
-    rank.Text               = "#" .. i
-    rank.ZIndex             = 7
-    rank.Parent             = row
+    -- Rank
+    local rankLbl        = Instance.new("TextLabel")
+    rankLbl.Name         = "Rank"
+    rankLbl.Parent       = row
+    rankLbl.Size         = UDim2.new(0.13, 0, 1, 0)
+    rankLbl.Position     = UDim2.new(0.01, 0, 0, 0)
+    rankLbl.BackgroundTransparency = 1
+    rankLbl.Text         = i == 1 and "🥇" or i == 2 and "🥈" or i == 3 and "🥉" or "#" .. i
+    rankLbl.TextColor3   = Color3.fromRGB(242, 168, 28)
+    rankLbl.Font         = Enum.Font.FredokaOne
+    rankLbl.TextScaled   = true
+    rankLbl.ZIndex       = 13
 
-    local rc = Instance.new("UICorner")
-    rc.CornerRadius = UDim.new(0, 4)
-    rc.Parent = rank
+    -- Name
+    local nameLbl        = Instance.new("TextLabel")
+    nameLbl.Name         = "PlayerName"
+    nameLbl.Parent       = row
+    nameLbl.Size         = UDim2.new(0.53, 0, 1, 0)
+    nameLbl.Position     = UDim2.new(0.15, 0, 0, 0)
+    nameLbl.BackgroundTransparency = 1
+    nameLbl.Text         = "—"
+    nameLbl.TextColor3   = Color3.fromRGB(232, 212, 154)
+    nameLbl.Font         = Enum.Font.FredokaOne
+    nameLbl.TextScaled   = true
+    nameLbl.TextXAlignment = Enum.TextXAlignment.Left
+    nameLbl.ZIndex       = 13
 
-    -- Name label
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Name          = "PlayerName"
-    nameLabel.Size          = UDim2.new(0.55, 0, 1, 0)
-    nameLabel.Position      = UDim2.new(0.20, 0, 0, 0)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.TextColor3    = Color3.fromRGB(232, 212, 154)  -- Wax Cream
-    nameLabel.Font          = Enum.Font.FredokaOne
-    nameLabel.TextScaled    = true
-    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-    nameLabel.Text          = "—"
-    nameLabel.ZIndex        = 7
-    nameLabel.Parent        = row
-
-    -- Score label
-    local scoreLabel = Instance.new("TextLabel")
-    scoreLabel.Name         = "Score"
-    scoreLabel.Size         = UDim2.new(0.26, 0, 1, 0)
-    scoreLabel.Position     = UDim2.new(0.74, 0, 0, 0)
-    scoreLabel.BackgroundTransparency = 1
-    scoreLabel.TextColor3   = Color3.fromRGB(200, 180, 100)
-    scoreLabel.Font         = Enum.Font.FredokaOne
-    scoreLabel.TextScaled   = true
-    scoreLabel.TextXAlignment = Enum.TextXAlignment.Right
-    scoreLabel.Text         = "0"
-    scoreLabel.ZIndex       = 7
-    scoreLabel.Parent       = row
+    -- Honey
+    local honeyLbl       = Instance.new("TextLabel")
+    honeyLbl.Name        = "HoneyAmt"
+    honeyLbl.Parent      = row
+    honeyLbl.Size        = UDim2.new(0.30, 0, 1, 0)
+    honeyLbl.Position    = UDim2.new(0.69, 0, 0, 0)
+    honeyLbl.BackgroundTransparency = 1
+    honeyLbl.Text        = "0"
+    honeyLbl.TextColor3  = Color3.fromRGB(242, 168, 28)
+    honeyLbl.Font        = Enum.Font.FredokaOne
+    honeyLbl.TextScaled  = true
+    honeyLbl.TextXAlignment = Enum.TextXAlignment.Right
+    honeyLbl.ZIndex      = 13
 end
 
--- Footer
-local footer = Instance.new("TextLabel")
-footer.Name              = "Footer"
-footer.Size              = UDim2.new(1, 0, 0.07, 0)
-footer.Position          = UDim2.new(0, 0, 0.93, 0)
-footer.BackgroundTransparency = 1
-footer.TextColor3        = Color3.fromRGB(120, 100, 60)
-footer.Font              = Enum.Font.FredokaOne
-footer.TextScaled        = true
-footer.Text              = "Updates every 90s"
-footer.ZIndex            = 6
-footer.Parent            = panel
-
-print("✅ STEP C: LeaderboardGui ScreenGui created in StarterGui (5 rows, top-right panel)")
-```
-
-**Verify Step C:**
-
-```lua
-local SG = game:GetService("StarterGui")
-local gui = SG:FindFirstChild("LeaderboardGui")
-assert(gui, "LeaderboardGui missing")
-local panel = gui:FindFirstChild("LeaderPanel")
-assert(panel, "LeaderPanel missing")
-for i = 1, 5 do
-    local row = panel:FindFirstChild("Row" .. i)
-    assert(row, "Row" .. i .. " missing")
-    assert(row:FindFirstChild("PlayerName"), "Row" .. i .. " PlayerName missing")
-    assert(row:FindFirstChild("Score"), "Row" .. i .. " Score missing")
-end
-print("✅ STEP C verified: LeaderboardGui with 5 rows, Header, Footer present")
+print("LeaderboardGui built — 10 rows ready")
 ```
 
 ---
@@ -360,267 +305,196 @@ print("✅ STEP C verified: LeaderboardGui with 5 rows, Header, Footer present")
 ## STEP D — LeaderboardController LocalScript
 
 ```lua
--- STEP D: LeaderboardController LocalScript in StarterPlayerScripts
-local SPS = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
+local StarterPlayer = game:GetService("StarterPlayer")
+local SPS           = StarterPlayer:FindFirstChild("StarterPlayerScripts")
 assert(SPS, "StarterPlayerScripts not found")
-
-local old = SPS:FindFirstChild("LeaderboardController")
-if old then old:Destroy() end
 
 local ctrl = Instance.new("LocalScript")
 ctrl.Name   = "LeaderboardController"
+ctrl.Parent = SPS
 ctrl.Source = [[
 --!strict
--- LeaderboardController — drives LeaderboardGui from LeaderSync events (dispatch 34)
+-- LeaderboardController — receives LeaderboardSync and updates the panel.
 
 local Players           = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService      = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local player    = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui", 10)
-local gui       = playerGui:WaitForChild("LeaderboardGui", 10)
-local panel     = gui:WaitForChild("LeaderPanel", 10)
-local footer    = panel:FindFirstChild("Footer") :: TextLabel?
+local localPlayer       = Players.LocalPlayer
+local PlayerGui         = localPlayer:WaitForChild("PlayerGui")
+local LbGui             = PlayerGui:WaitForChild("LeaderboardGui", 15)
+if not LbGui then return end
 
-local remotes    = ReplicatedStorage:WaitForChild("Remotes", 10)
-local LeaderSync = remotes:WaitForChild("LeaderSync", 10)
+local panel    = LbGui:WaitForChild("LeaderboardPanel", 5)
+local toggleBtn = LbGui:WaitForChild("ToggleBtn", 5)
+local rowList  = panel:WaitForChild("RowList", 5)
 
-local HIGHLIGHT_COLOR = Color3.fromRGB(242, 168, 28)   -- Honey Gold for local player row
-local NORMAL_COLOR    = Color3.fromRGB(232, 212, 154)   -- Wax Cream for other rows
-local SCORE_TWEEN     = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
--- Format score: "1.23M" for millions, "45K" for thousands, raw for < 1000
-local function fmtScore(score: number): string
-    if score >= 1_000_000 then
-        return string.format("%.2fM", score / 1_000_000)
-    elseif score >= 1_000 then
-        return string.format("%.1fK", score / 1_000)
+-- ── Format helper ────────────────────────────────────────────────
+local function fmtHoney(n: number): string
+    if n >= 1_000_000 then return string.format("%.1fM", n/1_000_000)
+    elseif n >= 1_000  then return string.format("%.1fK", n/1_000)
     end
-    return tostring(score)
+    return tostring(math.floor(n))
 end
 
-type LeaderEntry = { rank: number, userId: number, name: string, score: number }
+-- ── Row update ───────────────────────────────────────────────────
+local MEDAL = {"🥇","🥈","🥉"}
 
-local function onLeaderSync(data: { entries: { LeaderEntry }, updatedAt: number? }): ()
-    local entries = data.entries or {}
-
-    for i = 1, 5 do
-        local row = panel:FindFirstChild("Row" .. i) :: Frame?
+local function updateRows(data: {{rank: number, userId: number, name: string, honey: number}})
+    for i = 1, 10 do
+        local row     = rowList:FindFirstChild("Row_" .. i) :: Frame?
         if not row then continue end
+        local entry   = data[i]
+        local rankLbl = row:FindFirstChild("Rank")     :: TextLabel?
+        local nameLbl = row:FindFirstChild("PlayerName") :: TextLabel?
+        local honeyLbl = row:FindFirstChild("HoneyAmt") :: TextLabel?
 
-        local nameLabel  = row:FindFirstChild("PlayerName") :: TextLabel?
-        local scoreLabel = row:FindFirstChild("Score")      :: TextLabel?
-        if not nameLabel or not scoreLabel then continue end
-
-        local entry = entries[i]
         if entry then
-            nameLabel.Text      = entry.name
-            scoreLabel.Text     = fmtScore(entry.score)
-            -- Highlight local player's row
-            local isLocal = entry.userId == player.UserId
-            nameLabel.TextColor3  = isLocal and HIGHLIGHT_COLOR or NORMAL_COLOR
-            scoreLabel.TextColor3 = isLocal and HIGHLIGHT_COLOR or Color3.fromRGB(200, 180, 100)
-            -- Subtle highlight on row background
-            if isLocal then
-                TweenService:Create(row, SCORE_TWEEN, {
-                    BackgroundTransparency = 0.6,
-                    BackgroundColor3       = Color3.fromRGB(80, 50, 5),
-                }):Play()
-                row.BackgroundTransparency = 0.6
-            else
-                row.BackgroundTransparency = 1
-                row.BackgroundColor3 = Color3.fromRGB(25, 14, 4)
+            if rankLbl  then rankLbl.Text  = MEDAL[i] or ("#" .. i) end
+            if nameLbl  then
+                -- Highlight local player's row
+                if entry.userId == localPlayer.UserId then
+                    nameLbl.TextColor3 = Color3.fromRGB(255, 220, 80)
+                    nameLbl.Text = "► " .. entry.name
+                else
+                    nameLbl.TextColor3 = Color3.fromRGB(232, 212, 154)
+                    nameLbl.Text = entry.name
+                end
             end
+            if honeyLbl then honeyLbl.Text = fmtHoney(entry.honey) .. " 🍯" end
         else
-            nameLabel.Text      = "—"
-            scoreLabel.Text     = ""
-            row.BackgroundTransparency = 1
+            if rankLbl  then rankLbl.Text  = "-" end
+            if nameLbl  then nameLbl.Text  = "—" end
+            if honeyLbl then honeyLbl.Text = "" end
         end
     end
-
-    if footer and data.updatedAt then
-        local ago = os.time() - (data.updatedAt or os.time())
-        footer.Text = ago < 5 and "Just updated" or ("Updated " .. ago .. "s ago")
-    end
 end
 
-LeaderSync.OnClientEvent:Connect(onLeaderSync)
+-- ── Panel slide animation ────────────────────────────────────────
+local PANEL_OPEN  = UDim2.new(0.77, 0, 0.23, 0)
+local PANEL_CLOSE = UDim2.new(1.01, 0, 0.23, 0)
+local SHOW = TweenInfo.new(0.28, Enum.EasingStyle.Back,  Enum.EasingDirection.Out)
+local HIDE = TweenInfo.new(0.20, Enum.EasingStyle.Quad,  Enum.EasingDirection.In)
+
+local isOpen = false
+
+local function openPanel()
+    if isOpen then return end
+    isOpen = true
+    TweenService:Create(panel, SHOW, {Position = PANEL_OPEN}):Play()
+end
+
+local function closePanel()
+    if not isOpen then return end
+    isOpen = false
+    TweenService:Create(panel, HIDE, {Position = PANEL_CLOSE}):Play()
+end
+
+toggleBtn.Activated:Connect(function()
+    if isOpen then closePanel() else openPanel() end
+end)
+
+-- ── LeaderboardSync ──────────────────────────────────────────────
+local Remotes = ReplicatedStorage:WaitForChild("Remotes", 10)
+local LbSync : RemoteEvent? = Remotes and Remotes:WaitForChild("LeaderboardSync", 10) :: RemoteEvent?
+
+if LbSync then
+    LbSync.OnClientEvent:Connect(function(data)
+        updateRows(data)
+        -- Brief glow on toggle button to indicate refresh
+        TweenService:Create(toggleBtn, TweenInfo.new(0.1), {
+            BackgroundColor3 = Color3.fromRGB(180, 120, 40),
+        }):Play()
+        task.delay(0.4, function()
+            TweenService:Create(toggleBtn, TweenInfo.new(0.3), {
+                BackgroundColor3 = Color3.fromRGB(122, 74, 34),
+            }):Play()
+        end)
+    end)
+end
 ]]
-ctrl.Parent = SPS
 
-print("✅ STEP D: LeaderboardController LocalScript created")
-```
-
-**Verify Step D:**
-
-```lua
-local SPS = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
-local ctrl = SPS and SPS:FindFirstChild("LeaderboardController")
-assert(ctrl and ctrl:IsA("LocalScript"), "LeaderboardController missing")
-local src = ctrl.Source
-assert(src:find("LeaderSync"), "LeaderSync not referenced")
-assert(src:find("fmtScore"), "fmtScore missing")
-assert(src:find("HIGHLIGHT_COLOR"), "HIGHLIGHT_COLOR missing")
-assert(src:find("--!strict"), "--!strict missing")
-print("✅ STEP D verified: LeaderboardController present and correct")
+print("LeaderboardController LocalScript created")
 ```
 
 ---
 
-## STEP E — Wire LeaderboardService.Init() into Main Script
+## STEP E — Verification
 
 ```lua
--- STEP E: Wire LeaderboardService into Main Script
-local SSS = game:GetService("ServerScriptService")
-local mainScript = SSS:FindFirstChild("Main") or SSS:FindFirstChild("GameManager")
-assert(mainScript, "Main/GameManager not found")
+local SSS    = game:GetService("ServerScriptService")
+local SP     = game:GetService("StarterPlayer")
+local SG     = game:GetService("StarterGui")
+local RE     = game:GetService("ReplicatedStorage")
 
-local src = mainScript.Source
-if src:find("LeaderboardService") then
-    print("✅ STEP E: LeaderboardService already in Main Script — no change needed")
-else
-    local clone = mainScript:Clone()
-    local oldName = mainScript.Name
-    mainScript.Name = oldName .. "_OLD_34E"
-    mainScript.Parent = nil
-
-    local reqLine = "\nlocal LeaderboardService = require(game:GetService(\"ServerScriptService\"):FindFirstChild(\"LeaderboardService\"))\nLeaderboardService.Init()\n"
-    local newSrc = src:gsub("(Players%.PlayerAdded)", reqLine .. "%1", 1)
-    if newSrc == src then newSrc = src .. reqLine end
-    clone.Source = newSrc
-    clone.Name = oldName
-    clone.Parent = SSS
-    print("✅ STEP E: LeaderboardService.Init() injected into Main Script")
-end
-```
-
----
-
-## STEP F — Full verification
-
-```lua
--- STEP F: Full dispatch 34 verification
-local SSS     = game:GetService("ServerScriptService")
-local RS      = game:GetService("ReplicatedStorage")
-local SG      = game:GetService("StarterGui")
-local SP      = game:GetService("StarterPlayer")
-local SPS     = SP:FindFirstChild("StarterPlayerScripts")
-local remotes = RS:FindFirstChild("Remotes")
 local results = {}
 local issues  = {}
 
 -- 1. LeaderboardService
 local svc = SSS:FindFirstChild("LeaderboardService")
 if svc and svc:IsA("ModuleScript") then
-    local src = svc.Source
-    if src:find("OrderedDataStore") and src:find("calcScore") and src:find("broadcastLeaderboard") then
-        table.insert(results, "✅ LeaderboardService: ODS + calcScore + broadcast present")
-    else
-        table.insert(issues, "❌ LeaderboardService missing key functions")
-    end
+    local lines = select(2, svc.Source:gsub("\n","\n")) + 1
+    table.insert(results, "✅ LeaderboardService: " .. lines .. " lines")
+    if not svc.Source:find("--!strict")   then table.insert(issues, "MISSING --!strict") end
+    if not svc.Source:find("buildSnapshot") then table.insert(issues, "MISSING buildSnapshot") end
 else
-    table.insert(issues, "❌ LeaderboardService not found")
+    table.insert(issues, "❌ LeaderboardService NOT FOUND")
 end
 
--- 2. LeaderSync RemoteEvent
-if remotes and remotes:FindFirstChild("LeaderSync") then
-    table.insert(results, "✅ LeaderSync RemoteEvent exists")
-else
-    table.insert(issues, "❌ LeaderSync RemoteEvent missing")
-end
+-- 2. LeaderboardSync RemoteEvent
+local Remotes = RE:FindFirstChild("Remotes")
+local ls = Remotes and Remotes:FindFirstChild("LeaderboardSync")
+table.insert(results, ls and "✅ LeaderboardSync RemoteEvent" or "❌ LeaderboardSync MISSING")
+if not ls then table.insert(issues, "LeaderboardSync missing") end
 
 -- 3. LeaderboardGui
-local gui   = SG:FindFirstChild("LeaderboardGui")
-local panel = gui and gui:FindFirstChild("LeaderPanel")
-if panel then
-    local allRows = true
-    for i = 1, 5 do
-        if not panel:FindFirstChild("Row" .. i) then allRows = false end
+local lb = SG:FindFirstChild("LeaderboardGui")
+if lb then
+    local panel = lb:FindFirstChild("LeaderboardPanel")
+    local rows  = panel and panel:FindFirstChild("RowList")
+    local rowCount = 0
+    if rows then
+        for _, c in rows:GetChildren() do
+            if c:IsA("Frame") then rowCount = rowCount + 1 end
+        end
     end
-    if allRows then
-        table.insert(results, "✅ LeaderboardGui: LeaderPanel with 5 rows present")
-    else
-        table.insert(issues, "❌ LeaderboardGui missing some rows")
-    end
+    table.insert(results, "✅ LeaderboardGui (DisplayOrder=" .. lb.DisplayOrder .. ") — " .. rowCount .. " rows")
+    if rowCount < 10 then table.insert(issues, "Expected 10 rows, got " .. rowCount) end
 else
-    table.insert(issues, "❌ LeaderboardGui or LeaderPanel missing")
+    table.insert(issues, "❌ LeaderboardGui NOT FOUND")
 end
 
--- 4. LeaderboardController LocalScript
+-- 4. LeaderboardController
+local SPS  = SP:FindFirstChild("StarterPlayerScripts")
 local ctrl = SPS and SPS:FindFirstChild("LeaderboardController")
 if ctrl and ctrl:IsA("LocalScript") then
-    table.insert(results, "✅ LeaderboardController LocalScript present")
+    local lines = select(2, ctrl.Source:gsub("\n","\n")) + 1
+    table.insert(results, "✅ LeaderboardController: " .. lines .. " lines")
+    if not ctrl.Source:find("--!strict") then table.insert(issues, "MISSING --!strict") end
+    if not ctrl.Source:find("fmtHoney")  then table.insert(issues, "MISSING fmtHoney") end
 else
-    table.insert(issues, "❌ LeaderboardController missing from StarterPlayerScripts")
+    table.insert(issues, "❌ LeaderboardController NOT FOUND")
 end
 
--- 5. Main Script wiring
-local mainScript = SSS:FindFirstChild("Main") or SSS:FindFirstChild("GameManager")
-if mainScript and mainScript.Source:find("LeaderboardService") then
-    table.insert(results, "✅ Main Script references LeaderboardService")
-else
-    table.insert(issues, "⚠ Main Script does not reference LeaderboardService — manual wiring needed")
-end
-
--- 6. No stale OLD copies
-local stale = {}
-for _, c in SSS:GetChildren() do
-    if c.Name:find("_OLD_34") then table.insert(stale, c.Name) end
-end
-if #stale == 0 then
-    table.insert(results, "✅ No stale _OLD_34x copies in SSS")
-else
-    table.insert(issues, "⚠ Stale: " .. table.concat(stale, ", ") .. " — destroy them")
-end
-
-print("\n=== DISPATCH 34 VERIFICATION ===")
-for _, r in results do print(r) end
-if #issues > 0 then
-    print("\nISSUES:")
-    for _, i in issues do print(i) end
-else
-    print("\n🎉 All checks passed — dispatch 34 complete!")
-    print("   Global leaderboard live: OrderedDataStore + TopBar ScreenGui + 90s refresh")
-end
+local out = "=== DISPATCH 47 VERIFICATION ===\n" .. table.concat(results, "\n") .. "\n"
+if #issues > 0 then out = out .. "\nISSUES:\n" .. table.concat(issues, "\n")
+else out = out .. "\n✅ ALL CHECKS PASSED — dispatch 47 complete" end
+print(out)
+return out
 ```
 
 ---
 
-## Execution order checklist
+## Summary
 
-1. ☐ **STEP A** — Create LeaderboardService ModuleScript  
-2. ☐ **STEP B** — Create LeaderSync RemoteEvent  
-3. ☐ **STEP C** — Create LeaderboardGui ScreenGui (5-row panel)  
-4. ☐ **STEP D** — Create LeaderboardController LocalScript  
-5. ☐ **STEP E** — Wire LeaderboardService.Init() into Main Script  
-6. ☐ **STEP F** — Full verification  
+| Item | Created/Modified |
+|---|---|
+| LeaderboardService | buildSnapshot (sort by lifetimeHoney, top 10), 15s broadcast, PlayerAdded sync, LeaderboardSync:FireAllClients |
+| LeaderboardSync RemoteEvent | server → all clients |
+| GameManager wiring | LeaderboardService.Init() |
+| LeaderboardGui (DisplayOrder=11) | 🏆 ToggleBtn (right edge), LeaderboardPanel (22%×55%), 10 pre-built Row frames |
+| Row design | 🥇🥈🥉 medals, name (local player highlighted ►), honey amount (K/M format) |
+| LeaderboardController | slide-from-right (Back/Out), fmtHoney, local player highlight, toggle button glow pulse |
 
----
-
-## Testing notes
-
-- **OrderedDataStore in Studio:** Studio can read/write DataStores if "Enable Studio Access to API
-  Services" is enabled in Game Settings → Security. Required for end-to-end testing.
-
-- **Simulate leaderboard update in Command Bar during play-test:**
-  ```lua
-  local SSS = game:GetService("ServerScriptService")
-  local LS = require(SSS:FindFirstChild("LeaderboardService"))
-  local top = LS.FetchTop(5)
-  for _, e in top do print(e.rank, e.name, e.score) end
-  ```
-
-- **Force broadcast:**
-  ```lua
-  LS.RecordScore(game:GetService("Players"):GetPlayers()[1])
-  ```
-
----
-
-## Part budget
-
-| Step | Parts added | Running total |
-|------|-------------|---------------|
-| All  | 0 (scripting + UI only) | 4,098 |
-| **Total** | **0** | **~4,098 / 5,000** |
+**Execution order:** A → B → C → D → E (verify)  
+**Part budget:** 0 → **~4,142 / 5,000**
