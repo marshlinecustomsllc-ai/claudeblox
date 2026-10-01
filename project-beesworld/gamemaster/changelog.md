@@ -1215,3 +1215,14 @@
 - EarnedMilestones_131 attribute for session persistence
 - DisplayOrder=50, matches existing milestone placeholder slot
 - Part budget: +0 permanent → 4,146 / 5,000
+
+## Dispatch 132 — Propolis Upgrade Shop (2026-10-01)
+- Added `BuyUpgrade` RemoteEvent in ReplicatedStorage
+- Added `PropolisUpgradeService` server Script — validates cost/prereqs/ownership server-side
+- Added `PropolisShopController` LocalScript — upgrade shop panel UI
+- 8 upgrades: wax_seal(1,2), royal_jelly(1,2), propolis_varnish, bee_stamina(1,2), hive_insulation
+- Prereq chains: wax_seal_2 requires wax_seal_1; royal_jelly_2 requires royal_jelly_1; bee_stamina_2 requires bee_stamina_1
+- Toggle 🌿 button at left-centre; panel slides from left, DisplayOrder=19
+- Card states: gold (buyable), grey (locked/insufficient), green ✓ (owned)
+- Dual-appeal text: kid effect + adult stat delta on every card
+- Part budget: +0 permanent → 4,146 / 5,000
