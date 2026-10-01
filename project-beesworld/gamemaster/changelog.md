@@ -1205,3 +1205,13 @@
 - DisplayOrder=15 Wax Cream card (320×40px) at bottom-centre
 - Tips are dual-level: simple for kids, mechanically informative for adults
 - Part budget: +0 permanent → 4,146 / 5,000
+
+## Dispatch 131 — Milestone Celebration (2026-10-01)
+- Added `MilestoneCelebrationController` LocalScript in StarterPlayerScripts
+- 8 milestones: honey(100/1K/10K), cells(5/9), prestige(1/3), forages(10)
+- Gold screen flash (0.4s fade) + 18 confetti squares (1.5s arc) + headline card (1.6s slide)
+- Queue staggering: celebrations play 2.5s apart to prevent overlap
+- Baseline pass on init: silently marks met milestones — no spurious re-celebration on rejoin
+- EarnedMilestones_131 attribute for session persistence
+- DisplayOrder=50, matches existing milestone placeholder slot
+- Part budget: +0 permanent → 4,146 / 5,000
