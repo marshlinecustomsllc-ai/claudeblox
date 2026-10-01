@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 69 \u2014 SeasonalEventService UTC month multipliers",
+  "last_action": "dispatch 70 \u2014 FriendBonusService +10% honey per friend",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,7 +75,7 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 69,
+  "dispatch_count": 70,
   "total_parts": 4146,
-  "last_dispatch": "cycle11_seasonal_dispatch.md"
+  "last_dispatch": "cycle11_friend_bonus_dispatch.md"
 }

@@ -624,3 +624,11 @@
 - ForagingService: seasonal honey/pollen multipliers applied
 - SeasonalController: top-center banner, auto-hide 8s, dismiss button
 - Part budget: +0 → 4,146/5,000
+
+## Dispatch 70 — FriendBonusService
+- FriendBonusService: GetFriendsAsync() cache, +10% honey/friend capped at +30%
+- FriendBonusSync RE: broadcasts multiplier to each player on join/leave
+- GameManager: FriendBonusService.Init() injected
+- ForagingService: friend multiplier stacks with seasonal
+- HiveHUDController: "🐝 +X% friend bonus" indicator label
+- Part budget: +0 → 4,146/5,000
