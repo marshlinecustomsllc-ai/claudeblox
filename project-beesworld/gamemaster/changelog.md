@@ -1175,3 +1175,13 @@
 - Listens to CombState + HoneyCount + CombCellCount attributes
 - Six cell types counted for diversity: honey, brood, pollen, royal, dance_floor, kiln
 - Part budget: +0 permanent → 4,146 / 5,000
+
+## Dispatch 128 — Comb Slot Unlock Animation (2026-10-01)
+- Added `SlotUnlockController` LocalScript in StarterPlayerScripts
+- Ring scale pulse (1.15× grow 0.12s + shrink 0.18s, EasingStyle.Back overshoot)
+- Golden shimmer overlay (fade in 0.1s + fade out 0.6s, UICorner matched)
+- 🐝 emoji pop floats upward 30px and fades over 0.9s
+- Animation queue with 0.4s stagger for rapid threshold crossings
+- Baseline recorded at join — no spurious animations on reconnect
+- CollectionService CombSlot tag lookup with GetDescendants fallback
+- Part budget: +0 permanent → 4,146 / 5,000
