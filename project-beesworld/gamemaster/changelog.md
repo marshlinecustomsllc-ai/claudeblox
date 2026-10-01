@@ -1137,3 +1137,13 @@
 - Auto-dismiss per stage duration; task.cancel() prevents flicker on rapid-fire stages
 - DisplayOrder=45 (above all HUD, below milestone celebration=50)
 - Part budget impact: +0 → 4,146 / 5,000
+
+## Dispatch 124 — Seasonal Achievements
+- `SeasonalAchievementService` Script: checks 16 achievement thresholds on attribute change, persists via DataStore2
+- `SeasonalAchievementController` LocalScript: 🏅 Goals panel (300×420) + unlock toasts
+- 16 achievements: 🌸 Spring ×4 | ☀️ Summer ×4 | 🍂 Autumn ×4 | ❄️ Winter ×4
+- Panel: scrollable, season headers, earned=coloured/locked=muted, slide-in from right
+- Toast (260×60): slides in from right at screen centre-right, 3s display, DisplayOrder=48
+- prevAchievements_124 diff tracks new unlocks — no toast on login re-load
+- Goals button at {1,-160,1,-160} (above Bee Roster at -108, above Guide at -56)
+- Part budget impact: +0 → 4,146 / 5,000
