@@ -814,3 +814,12 @@
 - ForagingService: propolisYield multiplied by GetPropolisMultiplier per trip
 - All three resources now have self-reinforcing upgrade trees
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 90 — Foraging Speed Upgrade Tree (Cycle 13)
+- Added 4 speed upgrades: foraging_speed_1 through foraging_speed_4
+- Costs: 200 / 600 / 1,400 / 3,000 honey; each reduces foraging time by 10%
+- At max (4/4): 0.6× base trip duration (36s from 60s base), floor enforced
+- UpgradeService: GetForagingSpeedMultiplier(player) with 0.6 minimum clamp
+- ForagingService: duration multiplied by GetForagingSpeedMultiplier per trip
+- FORAGING_DURATION = 60 ensured in Config
+- Part budget: +0 → 4,146 / 5,000
