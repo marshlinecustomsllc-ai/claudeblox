@@ -875,3 +875,13 @@
 - SFX SoundGroup created in SoundService (volume 0.5)
 - Fully client-side — binds to UpgradeSync + PrestigeSync RemoteEvents
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 97 — Seasonal Bonus Event System (Cycle 14 opener)
+- New SeasonalService (ServerScript): detects UTC month → active season
+- 4 seasons: Spring Bloom / Summer Buzz / Autumn Harvest / Winter Rest
+- Broadcasts SeasonalSync to all clients on join + every 5 min
+- ForagingService: seasonal bonus multipliers applied after all other multipliers
+- New SeasonalController (LocalScript): SeasonalHUD frame in top-right
+- HUD shows season name + per-resource bonus percentages, fades in/out
+- Part budget: +0 → 4,146 / 5,000
+- Cycle 14 started
