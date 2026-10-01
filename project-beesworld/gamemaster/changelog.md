@@ -953,3 +953,15 @@
 - `task.wait(3)` fallback tries `OwnedUpgrades` player attribute on initial load
 - All injected locals use `_107` suffix — no collision with `_92` tab system injection
 - +0 permanent parts → 4,146/5,000
+
+## Dispatch 108 — HiveStats Panel Auto-Resize
+- Converts `UpgradeList` Frame → `ScrollingFrame` in StarterGui (Step B live surgery)
+- `AutomaticCanvasSize = Enum.AutomaticSize.Y` — canvas grows with row count
+- `ScrollBarThickness = 4`, `ScrollBarImageColor3 = Honey Gold (242,168,28)`
+- `ElasticBehavior = WhenScrollable` — no rubber-band when list fits in panel
+- Appends `refreshCanvasSize_108()` + `CanvasResize_108` marker to UpgradesController
+- `RenderStepped` one-shot recalculates `CanvasSize` after layout settles each sync
+- Fires on `UpgradeSync` (after 0.1s row-update wait) and once at 2s initial load
+- Handles `PrereqHint` row height growth from dispatch 107 transparently
+- All injected locals use `_108` suffix
+- +0 permanent parts → 4,146/5,000
