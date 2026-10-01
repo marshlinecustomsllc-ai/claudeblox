@@ -1262,3 +1262,11 @@
 - Flood protection: MAX_LABELS_136=5, oldest-first eviction (pruneLabels_136)
 - `prevPropolis_136` initialised post-join to prevent false burst on attribute replication
 - DisplayOrder=55; +0 permanent parts → running total 4,146 / 5,000
+
+## Dispatch 137 — Foraging Return Countdown Timer (2026-10-01)
+- Added `ForagingTimerController` LocalScript in StarterPlayerScripts
+- Honey-gold pill (160×32px) slides in from top-right when ForagingActive=true
+- Ticks M:SS every 0.5s using ForagingEndTime absolute timestamp (server authority)
+- States: counting → "🐝 Bees returning…" (final 3s) → "🐝 Welcome back!" (1.5s) → hide
+- timerRunning_137 guard prevents double loops; ForagingEndTime listener handles hive_insulation mid-run updates
+- DisplayOrder=11; CharacterRemoving cleanup; +0 permanent parts → running total 4,146 / 5,000
