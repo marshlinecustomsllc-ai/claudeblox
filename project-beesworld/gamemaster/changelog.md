@@ -386,3 +386,16 @@
 - QueenNameLabel (top-left of MainFrame) + ✏️ RenameBtn
 - RenameDialog: scale-from-centre animation, TextBox, confirm/cancel, status label (first-free info/error/success)
 - Part budget: 0 permanent → cumulative ~4,142/5,000
+
+## Dispatch 46 — SeasonService Spring/Summer/Autumn/Winter (Cycle 11)
+- Config.SEASONS: 4 entries (index 0–3), each with name/emoji/label, honeyMult, pollenMult, propMult, lighting preset
+- SeasonService: getSeasonIndex (os.time()/86400%4), applyLighting (8s Quad/Out TweenService transition)
+- GetHoneyMult/GetPollenMult/GetPropMult/GetCurrentSeason public API
+- 5-minute poll loop: detects day change, re-applies lighting, fires SeasonSync:FireAllClients
+- PlayerAdded fires current season to joining player after 2s delay
+- SeasonSync RemoteEvent in Remotes folder
+- GameManager wiring: SeasonService.Init()
+- ForagingService injection: seasonHoneyMult, seasonPollenMult, seasonPropMult applied to all yield calculations
+- SeasonController LocalScript: SeasonBadge TextLabel in MainFrame (0.16×0.07), colour tween per season
+- Season schedule: UTC day mod 4 → 0=Spring 🌸, 1=Summer ☀️, 2=Autumn 🍂, 3=Winter ❄️
+- Part budget: 0 permanent → cumulative ~4,142/5,000

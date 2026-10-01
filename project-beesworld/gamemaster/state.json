@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 45 written: BeeNaming (BeeNameService sanitise+idempotent, BeeNameSync RE, SetQueenName RF, BillboardGui above queen, RenameDialog TextBox in HiveGui) \u2014 ~4,142/5,000 parts",
+  "last_action": "dispatch 46 written: SeasonService (4 seasons day%4, applyLighting 8s tween, GetHoneyMult/GetPollenMult/GetPropMult, ForagingService season mults, SeasonController badge) \u2014 ~4,142/5,000 parts",
   "pending_fixes": [
     {
       "id": 2,
@@ -58,9 +58,9 @@
     "Old Molasses + Wasp threat system: DataService v10->v11, ThreatService 6-stage patience progression + smoker repel + permanent BearOffering fork (appease/banish), WaspService periodic scout loop + guard intercept + swat mechanic, ThreatZone world zone (Treeline/BearLane/MolassesDen/BearAltar/WaspSpawn/GuardPerch ~145 parts -> ~4,020/5,000 total), MolassesController + WaspAlertController LocalScripts, 5 new RemoteEvents"
   ],
   "next_planned": [
-    "dispatch 46: SeasonService rotating seasonal multiplier (Spring/Summer/Autumn/Winter)",
     "dispatch 47: LeaderboardGui top-10 server honey leaderboard",
-    "dispatch 48: TutorialService first-time FTUE overlay walkthrough"
+    "dispatch 48: TutorialService first-time FTUE overlay walkthrough",
+    "dispatch 49: HiveExpansionService unlock additional plot rows beyond starter grid"
   ],
   "notes": "New project, kept fully separate from the completed WICKWOOD build and the paused Color Lock project. Git branch: add-beesworld-project. Cloud MCP limitation: Studio MCP runs on user's local Windows machine; cloud container cannot reach it (localhost) -- all Studio builds blocked until local reconnect. All work in this phase = dispatch documents (complete Studio execution guides). DISPATCH EXECUTION ORDER IS CRITICAL -- DataService migrations are sequential (v8->v9->v10->v11) and each dispatch patches the live game state. IMPORTANT LESSON LEARNED: Server-datamodel changes made during Play mode are ephemeral -- all BUILD steps must use genuine Edit-mode calls.",
   "concept": {
@@ -75,5 +75,5 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 45
+  "dispatch_count": 46
 }
