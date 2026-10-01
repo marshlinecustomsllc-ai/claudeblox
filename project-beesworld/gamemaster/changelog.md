@@ -654,3 +654,16 @@
 - Each now increments totalUpgradesBought on purchase
 - All 7 upgrade paths feed HiveStatsService counter
 - Part budget: +0 → 4,146/5,000
+
+## Dispatch 74 — HoneycombVisualController (Cycle 11)
+- New LocalScript `HoneycombVisualController` in StarterPlayerScripts
+- Listens to existing `PlotSync` RemoteEvent (no new server code)
+- Sets Material + Color on `Plot_N` / `ExpansionSlot_N` BaseParts per state:
+  - Locked: SmoothPlastic, RGB(60,55,50) grey
+  - Owned idle: Neon, RGB(242,168,28) honey gold
+  - Foraging active: Neon, pulsing RGB(255,210,60)↔RGB(180,110,10) at 0.6s TweenService Sine
+  - Expansion slot locked: Neon, RGB(80,60,180) dim blue
+- `activePulses[part]` flag table used as goroutine kill switch — no thread refs needed
+- `findPlotParts()` scans Workspace.Map, Workspace.HivePlots, and Workspace root for resilience
+- Optional `ForagingSync` connection for per-event foraging state updates
+- Part budget: +0 → 4,146 / 5,000
