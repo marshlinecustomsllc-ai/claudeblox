@@ -294,3 +294,14 @@
 - **DanceGui**: DisplayOrder=45; DanceBanner (Propolis Brown, Honey Gold UIStroke, UICorner); TitleLabel (FredokaOne Honey Gold); CountdownLabel (FredokaOne Wax Cream); MultBadge "×1.25" (Honey Gold)
 - **DanceController** LocalScript: `TweenInfo Back/Out` slide-in / `Quad/In` slide-out; Heartbeat countdown `fmtTime()`; "Dance over" 3s linger then auto-hide
 - **Part budget**: +9 permanent → **~4,107/5,000**
+
+## Dispatch 38 — AchievementBadge World Props (cycle 11)
+- **Config.ACHIEVEMENTS**: 5 milestone defs — first_harvest (500h), queen_tier_3 (2000h), generation_5 (5000h), honey_100k (10000h), floor_3 (8000h)
+- **DataService migration**: `achievements = {} :: {string}` + `lifetimeHoney = 0` added to DEFAULT_PROFILE
+- **AchievementSync RemoteEvent** in `ReplicatedStorage/Remotes` (fires `{id, allUnlocked[]}`)
+- **AchievementService** ModuleScript: `Grant(player, id)` idempotent via `hasAchievement()`, 5 checker APIs (CheckFirstHarvest/CheckQueenTier/CheckGeneration/AddLifetimeHoney/CheckFloor), `SyncOnJoin` restores on reconnect, honey reward added + Notify toast on unlock
+- **Service wiring**: GameManager (require+Init), ForagingService (AddLifetimeHoney+CheckFirstHarvest), QueenService (CheckQueenTier), PrestigeService (CheckGeneration), FloorService (CheckFloor)
+- **5 trophy pedestal models** at Z=−130 row (X=−20 to +20, 10-stud spacing): base+column+platform+stem+cup(sphere)+numBadge+BillboardGui = 7 parts each = **+35 parts**
+- **BillboardGui** on each cup: AchievementTitle + LockStatus labels, starts grey "🔒 Locked" → Honey Gold "✅ Unlocked!" via TweenService
+- **AchievementController** LocalScript: `unlockPedestal` twines all model parts to Honey Gold, adds PointLight, updates BillboardGui; `allUnlocked[]` in payload restores full state from single event
+- **Part budget**: +35 permanent → **~4,142/5,000**
