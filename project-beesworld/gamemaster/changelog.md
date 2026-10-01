@@ -712,3 +712,16 @@
 - Back/Out easing pop animation on show, Quad/In shrink on hide
 - GetPropertyChangedSignal("Enabled") clears badge when panel opens
 - No server changes. +0 parts → 4,146 / 5,000
+
+## Dispatch 79 — PrestigeService (Cycle 12)
+- New ModuleScript `PrestigeService` in ServerScriptService
+- Prestige conditions: honey full + propolis full + all 8 plots owned
+- Prestige effects: reset honey/propolis/pollen, unown plots 2-8, prestigeLevel += 1
+- GetPrestigeMultiplier: 1.0 + prestigeLevel * 0.05 (permanent +5% honey/trip per level)
+- ForagingService patched with prestige multiplier (stacks after friend bonus)
+- PrestigeSync RemoteEvent + RequestPrestige RemoteFunction in RS
+- New LocalScript PrestigeController: ⭐ PRESTIGE button at HUD bottom center
+- BillboardGui nametag badge "⭐ N" in honey gold FredokaOne above each prestiged player's head
+- DataService: prestigeLevel + totalPrestigeCount fields added
+- GameManager: PrestigeService.Init() injected
+- Part budget: +0 → 4,146 / 5,000
