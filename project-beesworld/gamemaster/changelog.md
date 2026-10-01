@@ -806,3 +806,11 @@
 - ForagingService: applies `GetPollenMultiplier` multiplier to `pollenYield` per trip
 - At max (5/5): 2× base pollen yield per trip
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 89 — Propolis Upgrade Tree (Cycle 13)
+- Added 5 propolis upgrades: propolis_yield_1 through propolis_yield_5
+- Costs: 40 / 100 / 220 / 400 / 700 propolis (total 1,460); each adds +20% propolis/trip
+- UpgradeService: GetPropolisMultiplier(player) function added
+- ForagingService: propolisYield multiplied by GetPropolisMultiplier per trip
+- All three resources now have self-reinforcing upgrade trees
+- Part budget: +0 → 4,146 / 5,000
