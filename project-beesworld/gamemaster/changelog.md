@@ -832,3 +832,12 @@
 - ForagingService: effectiveBeeCount = plot.beeCount + beeBonus (computed at trip time, not stored)
 - Survives prestige resets cleanly — bonus re-applies each trip
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 92 — Upgrades Panel Category Tabs (Cycle 13)
+- UpgradesController: appended category tab row (🍯 Honey / 🔮 Propolis / 🌼 Pollen)
+- TabRow Frame with UIListLayout horizontal, sized 1/3 each, Honey Gold active / Propolis Brown inactive
+- applyTabFilter() shows/hides UpgradeList rows by CostType attribute
+- CostType auto-detection heuristic: scans cost label for 🔮/🌼 emojis
+- Tab selection persisted to PlayerGui attribute within session
+- task.wait(5) ensures UpgradeList is built before TabRow injection
+- Part budget: +0 → 4,146 / 5,000
