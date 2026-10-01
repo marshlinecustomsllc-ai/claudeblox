@@ -929,3 +929,9 @@
 **Cycle:** 14
 **Change:** Adds swift_wings_1/2/3 upgrades to Config (honey cost 300/750/1600, prereq chain, tripDurationMult 0.90/0.80/0.65). Injects getEffectiveDuration_104() into ForagingService with 5s minimum floor. task.wait(Config.FORAGING_DURATION) replaced with profile-aware call.
 **Part budget:** +0 permanent → 4,146/5,000
+
+## Dispatch 105 — Queen Bee Upgrade
+**File:** cycle14_queen_bee_upgrade_dispatch.md
+**Cycle:** 14
+**Change:** Adds queen_bee upgrade (500 propolis, prereq swift_wings_3, +5 effective bees) and queen_blessing achievement (upgrade_owned condition type) to Config. Patches ForagingService effectiveBeeCount, AchievementService upgrade_owned condition handler, HiveStatsController 👑 crown icon on queen_bee purchase. upgrade_owned is a new achievement condition type.
+**Part budget:** +0 permanent → 4,146/5,000
