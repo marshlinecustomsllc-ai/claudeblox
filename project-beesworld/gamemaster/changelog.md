@@ -1155,3 +1155,12 @@
 - ⚠️ steps print "skip" if target service not yet in Studio — safe to re-run after those dispatches
 - Wires the achievement stats referenced by SeasonalAchievementService (dispatch 124)
 - Part budget impact: +0 → 4,146 / 5,000
+
+## Dispatch 126 — Pollen Trail VFX
+- `PollenTrailController` LocalScript in StarterPlayerScripts
+- Emits one-shot pollen particle burst at comb plot on ForagingActive true→false
+- 3 quality tiers: Low=15 pale gold particles | Mid=30 honey gold | High=55 bright amber
+- ParticleEmitter.Rate=0, Emit(count) burst — no continuous emission, no part leaks
+- Debris cleanup after particle lifetime expires
+- Falls back to HumanoidRootPart if plot part not found
+- Part budget impact: +0 → 4,146 / 5,000

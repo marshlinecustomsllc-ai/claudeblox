@@ -1,7 +1,7 @@
 {
   "current_cycle": 14,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 125 written \u2014 TotalForages + BearSurviveCount inject wires for SeasonalAchievementService",
+  "last_action": "dispatch 126 written \u2014 PollenTrailController pollen burst on forager return",
   "pending_fixes": [
     {
       "id": 2,
@@ -80,8 +80,8 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 125,
+  "dispatch_count": 126,
   "total_parts": 4146,
-  "last_dispatch": "cycle14_stat_tracking_dispatch.md",
+  "last_dispatch": "cycle14_pollen_trail_dispatch.md",
   "last_updated": "2026-10-01T22:52:29.599556Z"
 }
