@@ -136,3 +136,22 @@
 - **AchievementController LocalScript** — top-right corner toast ScreenGui (DisplayOrder=25); slide-in from right via Back easing, 4s hold, slide-out; toast queue for rapid unlocks; _unlockedIds set to suppress re-showing on sync
 
 **Part budget:** 0 new world parts, total unchanged ~4,076/5,000
+
+## Cycle 11 — Dispatch 26: NarrativeEngine + ZoneTriggers (supersedes cycle7_narrative)
+
+**File:** `cycle11_narrative_dispatch.md`  
+**Supersedes:** `cycle7_narrative_dispatch.md` (stale trigger positions; wardrobe_pad and several plot triggers used coordinates that didn't match actual built geometry)
+
+### What it adds
+- **NarrativeGui** — ScreenGui in StarterGui (DisplayOrder=20, ResetOnSpawn=false), NarrativeFrame + NarrativeText (GothamItalic, Wax Cream color, starts invisible)
+- **NarrativeEngine LocalScript** — in StarterPlayerScripts; Heartbeat proximity polling vs NarrativeTrigger-tagged parts; typewriter reveal (MaxVisibleGraphemes, 40ms/char); 4.5s hold; TweenService fade in/out; once-per-session _seenIds filter; toast queue for simultaneous triggers; entirely client-side, no RemoteEvents
+- **18 ZoneTrigger parts** — in Workspace.NarrativeTriggers folder; all Transparency=1, CanCollide=false, Anchored=true; NarrativeId + TriggerRadius attributes; NarrativeTrigger CollectionService tag
+- **18 narrative fragments** across 5 zones: hub/apiary (4), plot mechanics (5), meadow (3), treeline/Molasses (4), late-game prestige (2)
+
+### Key trigger position corrections vs cycle7
+- `wardrobe_pad`: (-280, 12, -45) → (-250, 8, 35) — matches WardrobePad BASE_Z=35 from dispatch 22
+- `plot_first`: (-250, 8, -90) → (-250, 8, -50) — Z=-90 is outside deck footprint (deck Z -55..+55)
+- `dance_floor`: Z=-50 → Z=0 — cell (0,0) is at deck centre Z=0, not Z=-50
+- `royal_cell`: Z=-60 → Z=-10 — rim cells are ~8 studs from centre, not 60
+
+**Part budget:** +18 invisible parts → ~4,094/5,000
