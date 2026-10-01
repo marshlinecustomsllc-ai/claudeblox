@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 75 written \u2014 BeeParticleController visible bee flight particles",
+  "last_action": "dispatch 76 written \u2014 AntiCheatService server-side foraging exploit prevention",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,7 +75,7 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 75,
+  "dispatch_count": 76,
   "total_parts": 4146,
-  "last_dispatch": "cycle11_bee_particles_dispatch.md"
+  "last_dispatch": "cycle11_anticheat_dispatch.md"
 }

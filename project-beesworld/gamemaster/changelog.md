@@ -679,3 +679,13 @@
 - Optional ForagingSync per-event rate bump mirrors HoneycombVisualController pattern
 - Client-side only — no server replication, +0 server part budget
 - Running total: 4,146 / 5,000
+
+## Dispatch 76 — AntiCheatService (Cycle 11)
+- New ModuleScript `AntiCheatService` in ServerScriptService
+- Cooldown gate: rejects foraging requests < MIN_INTERVAL_SECONDS(8) since last start
+- Yield ceiling: rejects honeyYield > MAX_YIELD_HONEY (500 * 3.5 = 1750)
+- Strike system: 3 violations → player:Kick() with logged reason
+- ForagingService patched: RecordForagingStart() on trip start, CheckForagingRequest()
+  before yield application
+- PlayerRemoving cleanup prevents stale table accumulation
+- Part budget: +0 → 4,146 / 5,000
