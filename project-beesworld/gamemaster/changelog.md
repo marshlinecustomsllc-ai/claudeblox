@@ -782,3 +782,11 @@
 - PrestigeService: calls `AchievementService.CheckAchievements` after prestige completes (task.spawn)
 - All 3 patches have idempotency guards
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 86 — Expansion Plot Propolis Cost (Cycle 12)
+- Config.PLOT_COSTS[7] changed from {honey=800} → {propolis=150}
+- Config.PLOT_COSTS[8] changed from {honey=1200} → {propolis=300}
+- PlotService.ClaimPlot: added propolis deduction branch (`if cost.propolis`) with guard
+- Creates meaningful propolis sink independent of prestige condition
+- UI label update (showing "propolis" in HUD) deferred to future dispatch
+- Part budget: +0 → 4,146 / 5,000
