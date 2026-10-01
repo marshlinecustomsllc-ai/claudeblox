@@ -992,3 +992,12 @@
 - Config append: `full_hive_tycoon` achievement (`plot_count` condition, count=8, icon=🌟)
 - AchievementService append: `PlotCountCond_111` — patches `_G.AchievementService.checkCondition` for `plot_count` type; counts owned plots with three-key-format check
 - +0 permanent parts → 4,146/5,000
+
+## Dispatch 112 — Seasonal Streak Achievement
+- Season system: `math.floor(os.time()/1200)%4` → Spring/Summer/Autumn/Winter (20-min cycles, global clock)
+- UpgradeService append: `SeasonRecord_112` — records `profile.seasonUpgrades[season]=true` on purchase; hooks `_G.UpgradeService.onPurchase` or falls back to `UpgradeSync.FireClient` wrapping
+- Config append: 5 achievements — `spring_buyer`, `summer_buyer`, `autumn_buyer`, `winter_buyer`, `all_seasons` (icon 🌍, all 4 seasons required)
+- AchievementService append: `SeasonCond_112` — patches `_G.AchievementService.checkCondition` for `season_upgrade` (per-season) and `all_seasons` (all 4) condition types
+- HiveStatsController append: `SeasonLabel_112` — season icon+name TextLabel (dim wax cream, 11pt, updates every 30s) below HiveEfficiencyLabel or FullHiveBadge
+- Long-term engagement hook: `all_seasons` achievement requires play across 4 real-world 20-min windows
+- +0 permanent parts → 4,146/5,000
