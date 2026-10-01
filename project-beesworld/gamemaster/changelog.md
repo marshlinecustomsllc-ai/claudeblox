@@ -905,3 +905,9 @@
 **Cycle:** 14
 **Change:** ForagingService yield clamps scale with prestige level. effectiveMaxHoney = MAX_HONEY + (prestigeLevel × 500), effectiveMaxPropolis = MAX_PROPOLIS + (prestigeLevel × 100), effectiveMaxPollen = MAX_POLLEN + (prestigeLevel × 60). At prestige 10: honey 10,000 / propolis 1,500 / pollen 900. Gsub substitution on math.min clamp patterns with append fallback.
 **Part budget:** +0 permanent → 4,146/5,000
+
+## Dispatch 101 — Bee Count Milestone Notifications
+**File:** cycle14_bee_milestones_dispatch.md
+**Cycle:** 14
+**Change:** Appends bee milestone checker to HiveStatsController via second OnClientEvent bind on HiveStatsSync. Toasts fire when total bee count crosses 10/25/50/100/250/500/1000. Tracked via LocalPlayer BeeMilestoneReached attribute (session-scoped). Back easing slide-in at Y=0.78, DisplayOrder=21. beeCount field fallback chain handles multiple naming conventions.
+**Part budget:** +0 permanent → 4,146/5,000
