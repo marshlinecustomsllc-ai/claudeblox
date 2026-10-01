@@ -616,3 +616,11 @@
 - MusicDuck/MusicRestore BindableFunctions in RS
 - DailyRewardController patched: duck on open, restore on close
 - Part budget: +0 → 4,146/5,000
+
+## Dispatch 69 — SeasonalEventService
+- Config: SEASONAL_EVENTS (spring/summer/autumn/winter multiplier tables)
+- SeasonalEventService: UTC month detection, GetMultipliers(), hourly refresh, SeasonalSync RE
+- GameManager: SeasonalEventService.Init() injected
+- ForagingService: seasonal honey/pollen multipliers applied
+- SeasonalController: top-center banner, auto-hide 8s, dismiss button
+- Part budget: +0 → 4,146/5,000
