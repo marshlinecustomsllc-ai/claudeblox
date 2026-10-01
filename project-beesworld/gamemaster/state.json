@@ -1,7 +1,7 @@
 {
   "current_cycle": 12,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "Dispatch 82: PrestigeReadySync \u2014 server broadcasts prestige condition state to client",
+  "last_action": "Dispatch 83: Tutorial expansion \u2014 prestige_intro, prestige_done, seasonal_intro steps",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,7 +75,7 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 82,
+  "dispatch_count": 83,
   "total_parts": 4146,
-  "last_dispatch": "cycle12_prestige_ready_dispatch.md"
+  "last_dispatch": "cycle12_tutorial_expansion_dispatch.md"
 }

@@ -754,3 +754,15 @@
 - PrestigeController patched: `PrestigeReadySync.OnClientEvent` listener shows/hides PRESTIGE button (task.delay(4.5) for button build timing)
 - All 4 injection steps have idempotency guards
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 83 — Tutorial Expansion (Cycle 12)
+- Added `tutorialSeen = {}` field to DataService profile schema
+- Added generic `ShowStep(player, stepId, text)` helper to TutorialService
+- Added `CheckPrestigeIntro` — fires when honey+propolis >= 90% cap (before prestige)
+- Added `ShowPrestigeDone` — fires once after first prestige completes
+- Added `ShowSeasonalIntro` — fires once after first seasonal event seen
+- ForagingService: calls CheckPrestigeIntro after each yield (task.spawn)
+- PrestigeService: calls ShowPrestigeDone after prestigeLevel increment (task.spawn)
+- HiveStatsService: calls ShowSeasonalIntro after first seasonalSeen entry (task.spawn)
+- All 5 patches have idempotency guards
+- Part budget: +0 → 4,146 / 5,000
