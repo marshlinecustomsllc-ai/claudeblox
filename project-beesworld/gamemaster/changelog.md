@@ -1104,3 +1104,14 @@
 - formatStat_120: K/M suffixes; prestige shows ✦ / ✦✦ / ✦✦✦ glyphs
 - pcall wrapper on broadcast loop — single error doesn't kill service
 - DisplayOrder=16, part budget impact: +0 → 4,146 / 5,000
+
+## Dispatch 121 — Honey Ripeness Indicator
+- `HoneyRipenessController` LocalScript in StarterPlayerScripts
+- BillboardGui above each honey cell: fill bar (48×5) + ripeness emoji label
+- 5 stages: 🌱 0-24% | 🌼 25-49% | 🍯 50-74% | 🍯✨ 75-99% | 🎉 100%
+- Fill computed hive-wide (HoneyCount / honeyCells×100) — all cells show same level
+- Tap any billboard to toggle RipenessDetailOn (shows % alongside emoji)
+- TweenService 0.6s fill bar animation on HoneyCount change
+- Listens to HoneyCount + CombCellCount + CombState + RipenessDetailOn attribute changes
+- CharacterRemoving cleanup + CharacterAdded rebuild
+- Part budget impact: +0 permanent → 4,146 / 5,000
