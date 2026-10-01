@@ -486,3 +486,12 @@
 - DailyRewardController: 📅 tab at Y=0.865, 7-pip streak tracker, claim toast slide-from-top
 - Auto-opens panel 5s after login when reward available; tab pulses gold when unclaimed
 - Part budget: +0 permanent → 4,146 / 5,000
+
+## Dispatch 56 — HiveSkinService (cycle11_hive_skin_dispatch.md)
+- Config.HIVE_SKINS: 4 skins — free default, 5K amber, 20K obsidian, 50K royal gold
+- DataService migration: activeSkin="default", unlockedSkins={} (after dailyStreak)
+- HiveSkinService: OwnerId-tag cell lookup, BuySkin + ApplySkin RF, SkinSync RE
+- Server-side apply: changes Material + Color on all player HexCell parts in world
+- GameManager: HiveSkinService.Init() after DailyRewardService.Init()
+- HiveSkinController: 🎨 right-side tab, scrollable card list, color swatch, equip/buy
+- Part budget: +0 permanent → 4,146 / 5,000

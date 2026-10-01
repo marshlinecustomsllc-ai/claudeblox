@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 55: DailyRewardService \u2014 7-day rotating streak, ClaimDaily RF, DailySync RE, lastDailyDay+dailyStreak DataService fields, DailyRewardController \ud83d\udcc5 tab auto-opens on login",
+  "last_action": "dispatch 56: HiveSkinService \u2014 4 cosmetic skins (Wax/Amber/Obsidian/Royal), BuySkin+ApplySkin RF, server-side hex cell material/color apply, HiveSkinController \ud83c\udfa8 right tab scroll card list",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,6 +75,6 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 55,
+  "dispatch_count": 56,
   "total_parts": 4146
 }
