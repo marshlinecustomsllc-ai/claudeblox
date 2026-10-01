@@ -1023,3 +1023,18 @@
   - 100% client-side, zero server cost
 - Design principle: simple emoji + one sentence per cell for kids; adjacency tip surfaces the placement puzzle depth for adults
 - Part budget: +0 permanent → 4,146 / 5,000
+
+### Dispatch 115 — Comb Placement Bonus Preview
+- New `PlacementPreviewController` LocalScript in StarterPlayerScripts
+  - BillboardGui above selected comb slot showing adjacency bonus stars
+  - Kids: star count + friendly text ("🌟🌟 2 neighbours help!")
+  - Adults: optional detail line with exact % (toggled via small "details" button)
+  - Detail-on state persists as `PlacementDetailOn` player attribute (session-scoped)
+  - `BONUS_FROM_115`: honey←honey+6%, brood←pollen+8%, pollen←brood+5%, royal←honey+10%, kiln←brood+7%
+  - `NEIGHBOURS_115`: 3×3 hex grid offset neighbour table (slots 1–9)
+  - Listens to `SelectedSlot` + `SelectedCellType` player attributes set by Build Mode
+  - Zero-bonus message: "Place here too!" (encouraging, never punishing)
+  - `AlwaysOnTop=true` BillboardGui so mobile players always see the preview
+- Step B: conditional append to BuildModeController to set slot attributes (skipped if already present)
+- Design principle: kids explore by clicking spots and watching stars; adults see the numbers and optimise
+- Part budget: +0 permanent → 4,146 / 5,000
