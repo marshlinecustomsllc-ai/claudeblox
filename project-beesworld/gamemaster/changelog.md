@@ -477,3 +477,12 @@
 - PropolisUpgradeController: 🧪 tab at Y=0.775, amber panel, MAX PROPOLIS state
 - Completes 4-track upgrade economy: speed/queen/propolis sink honey; pollen sinks propolis
 - Part budget: +0 permanent → 4,146 / 5,000
+
+## Dispatch 55 — DailyRewardService (cycle11_daily_reward_dispatch.md)
+- Config.DAILY_REWARDS: 7-day rotating, honey 150→1000 + propolis bonuses on days 3/5/7
+- DataService migration: lastDailyDay = 0, dailyStreak = 0 (after propolisTier)
+- DailyRewardService: utcDayNumber(), streak reset on miss, ClaimDaily RF, DailySync RE
+- GameManager: DailyRewardService.Init() after PropolisYieldUpgradeService.Init()
+- DailyRewardController: 📅 tab at Y=0.865, 7-pip streak tracker, claim toast slide-from-top
+- Auto-opens panel 5s after login when reward available; tab pulses gold when unclaimed
+- Part budget: +0 permanent → 4,146 / 5,000
