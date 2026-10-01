@@ -59,3 +59,63 @@
 - DISPATCH 19 WRITTEN (Cycle 10): cycle10_weather_dispatch.md -- Full WeatherService build, supersedes cycle5_weather_dispatch.md (which used 'WeatherChange' while cycle8_hub_expansion used 'WeatherSync'; this dispatch fires both remotes for compatibility). 5-state cycle: Clear (3-5min) → Breezy (1.5-2.5min, +15% foraging speed) → Overcast (1-2min, Molasses 10% faster) → Rain (1-1.5min, bees shelter + Molasses 50% faster) → BloomRush (rare 45-60s, +30% yield, Molasses 50% slower). Config.WEATHER + Config.WEATHER_TRANSITIONS with weighted random transitions. WeatherService fires WeatherChange (string) AND WeatherSync ({stateName}) for backward compatibility with WeatherController and WeatherNoticeController. WeatherRunner Script (thin server launcher). WeatherController LocalScript (client Atmosphere density/spread + Lighting ambient/brightness TweenService transitions). 3 ForagingService hooks: Rain blocks new trips (speedMult=0), Breezy shortens tripTime (÷1.15), BloomRush multiplies nectar yield (×1.3). ThreatService hook: molassesRaidPref scales patience ratchet interval (raidPref>1 = Molasses ratchets faster). 3 hub emitter anchor parts (WindEmitterPart/RainEmitterPart/BloomEmitterPart, Transparency=1, CanCollide=false, Enabled=false at startup). BloomRush expected frequency ~1× per 15-20 min server uptime (intentionally rare shared-server moment). Step J combined verification script.
 - DISPATCH 20 WRITTEN (Cycle 11): cycle11_threats_animation_dispatch.md -- GuardBeeController + Smoker in-world interact. GuardBeeController LocalScript: `makeBee()` factory creates 4-part bee model at runtime (Cylinder body Honey Gold, Ball head, 2 Glass wing Parts), `initPerch()` spawns 2 bees per GuardPerch-tagged BasePart, circular orbit + vertical bob animation via RunService.Heartbeat (ORBIT_RADIUS=1.8, BOB_AMPLITUDE=0.35, 180° phase offset between bees), WaspAlert.OnClientEvent → ALERT mode (red-orange ALERT_COLORS, 2.2 rad/s orbit vs idle 0.6, body size 1.1×0.55×0.55 vs 0.9×0.45×0.45), 35s alert duration, CharacterRemoving cleanup, task.delay(5) streaming-safe defer. Zero server cost — client-only runtime-created models. Smoker interact: UseSmoker RemoteEvent, SmokerObject 5-part world prop (SmokerBase Cylinder + SmokerLid + SmokerSpout + SmokerBellows + SmokerHandle) tagged "Smoker" with ProximityPrompt (holdDuration=0.5s, ObjectText="Bee Smoker"), default position Vector3.new(30,4.5,-320) near MolassesDen adjustable. SmokerHandler Script: rate-limited (1 use/5s per player), ConsumableService.SpendSmokerCharge(player) → ThreatService.RepelBear(player), fires Notify with feedback string, PlayerRemoving cleanup for lastUse table. SmokerInteractController LocalScript: CollectionService "Smoker" tag binding, fires UseSmoker:FireServer() on ProximityPrompt.Triggered. Step F: ClientMain wiring notes. Step G: 6-check combined verification script + 3 live smoke tests. Part budget: +5 → ~4,028/5,000.
 - DISPATCH 21 WRITTEN (Cycle 11): cycle11_swarm_dispatch.md -- SUPERSEDES cycle6_swarm_dispatch.md (which patched DataService v4→v5; by execution time DS is at v12). DataService v12→v13: generation field + swarmPerks table, migration[8]. Config.SWARM_PERKS: 3-tier perk tree (foragingBoost gen1 = +15% foraging speed, extraRouteSlot gen2 = +1 simultaneous waggle-dance route, bearCalm gen3 = Old Molasses +25% patience). Config.SWARM_REQ constants (queenTier=3, minCells=15, minHoney=5000). SwarmService ModuleScript: canSwarm() prerequisite check, buildPerks() generates cumulative perk table per generation count, performSwarm() resets profile with 20% honey carry-over + increments generation + awards perks + fires server-wide Notify, GetPerks() public API for perk reads from ForagingService/ThreatService. CombService.WipeAllCells addition (destroy HexCell-tagged parts by PlotIndex, reset CombFloors attribute, fire FloorUnlocked). SwarmRunner Script. SwarmPerchWirer Script (CollectionService-driven, HoldDuration=2.0s intentional). SwarmController LocalScript: departure beam (Beam from LandingBoard to skyAnchor at Y=200, gold-purple ColorSequence), pollen-burst ParticleEmitter, camera wide-shot TweenService pull, silence beat (fade-to-black, "..." reveal), SwarmComplete handler with generation reveal + perk list from PERK_LABELS lookup. Perk hooks in ForagingService (foragingBoost tripTime reduction, extraRouteSlot maxRoutes bump) and ThreatService (bearCalm patience multiplier). SwarmPerch world placement x6: 2-part pedestal (Cylinder base Propolis Brown + TopDisc Neon Honey Gold), one per plot at Z=+50, Y=11.5. Sun Queen T5 genGate=1 already set in cycle10_queen — no QUEEN_TIERS change needed; first swarm to generation=1 automatically unlocks T5. Step K combined verification (12 checks). Smoke test injection script. Part budget: +12 → ~4,040/5,000.
+
+## Cycle 11 — Dispatch 22: CosmeticService + WardrobeGui + WardrobePad
+
+**File:** `cycle11_cosmetics_dispatch.md`  
+**Supersedes:** `cycle6_cosmetics_dispatch.md` (targeted stale DS v5→v6)
+
+### What it adds
+- **DataService v13→v14** — 4 new profile fields: `cosmeticsUnlocked` (array), `equippedSkin` (string), `lifetimeHoney` (number), `molassesRepels` (number); migration[9]
+- **3 new RemoteEvents:** RequestEquip (client→server), EquippedSkinChanged (server→all), WardrobeDataSync (server→client)
+- **Config.COSMETICS** — 7 skins with full property tables: Honeybee (free), Bumble Bee (50k lifetimeHoney), Night Bee (3 repels, Neon), Autumn Bee (Floor 3), Golden Bee (gen≥2), Moon Bee (gamepass), Arctic Bee (gamepass)
+- **Config.COSMETIC_ORDER** — ordered skin list; Config.MONETIZATION.MoonBee=0, ArcticBee=0 (pending real IDs)
+- **CosmeticService ModuleScript** — gamepass cache, isUnlocked, CheckAndGrantUnlocks, handleEquip; broadcasts EquippedSkinChanged + WardrobeDataSync
+- **CosmeticsRunner Script** — thin require launcher
+- **CosmeticController LocalScript** — BeePart tag detection, color2 stripe alternation by part index modulo 2, PointLight children for Neon skins
+- **WardrobeGui** — 5th tab ("WARDROBE") in existing HiveGui; SkinCard_Template with Name/Desc/EquipButton/LockLabel
+- **WardrobeController LocalScript** — refreshCards() clones SkinCard_Template per skin, handles locked/equipped/equip states; tab switching wired
+- **WardrobePad x6** — BASE_Z=35, 2-part pedestal fallback (Propolis Brown Block + Wax Cream Cylinder), ProximityPrompt holdDuration=0, CollectionService tag "WardrobePad"
+- **ResourceService hook** — increments lifetimeHoney in parallel with honey credits
+- **ThreatService hook** — increments molassesRepels on successful smoker repel, calls CheckAndGrantUnlocks
+
+**Part budget:** +12 → ~4,052/5,000
+
+---
+
+## Cycle 11 — Dispatch 23: Daily Quests
+
+**File:** `cycle11_dailyquests_dispatch.md`  
+**Supersedes:** `cycle6_dailyquests_dispatch.md` (targeted stale DS v6→v7, migration[7])
+
+### What it adds
+- **DataService v14→v15** — 4 new profile fields: `questSeed`, `questProgress`, `questsLastReset`, `questMetrics`; migration[10]; CURRENT_VERSION = 15
+- **Config.QUEST_CATALOGUE** — 20 quest templates across 6 categories (Foraging/Building/Economy/Defense/Population/Prestige+Cosmetics); date-seeded LCG Fisher-Yates rotation gives all players identical 3 quests per day
+- **Config.DAILY_QUEST** — NUM_QUESTS=3, RESET_HOUR=0 (midnight UTC)
+- **2 new RemoteEvents:** QuestSync (server→client payload), ClaimQuest (client→server slot number)
+- **QuestService ModuleScript** — dateSeed(), pickDailyQuests(), IncrementMetric() with lazy daily reset, handleClaim() server-authoritative, PlayerAdded hook
+- **QuestRunner Script** — thin require launcher
+- **QuestController LocalScript** — bottom-right corner ScreenGui (QuestGui, DisplayOrder=5), toggle button, slide-up panel with 3 quest rows, progress bars with TweenService animation, Claim/Done state buttons; Warm Wax palette throughout
+- **14 metric hooks** across 8 services: DanceService (danceTrips), ResourceService (honeyHarvested/honeySpent/propolisEarned/pollenGathered), CombService (cellsBuilt/cellsUpgraded), StructureService (structuresBought), ThreatService (waspsRepelled/smokerUses), PopulationService (beesHatched), SwarmService (swarmsPerformed), CosmeticService (skinsEquipped), WeatherService (bloomRushSeen — all players)
+
+**Part budget:** 0 new world parts — UI only. Total unchanged at ~4,052/5,000
+
+## Cycle 11 — Dispatch 24: LeaderboardService + Cork Board + Plot Plaques
+
+**File:** `cycle11_leaderboard_dispatch.md`  
+**Supersedes:** `cycle6_leaderboard_dispatch.md` (had duplicate lifetimeHoney ResourceService hook — dispatch 22 already adds it; stale prerequisite note referencing v5→v6)
+
+### What it adds
+- **No DataService migration** — `profile.lifetimeHoney` and `profile.generation` already exist from dispatches 22 and 21 respectively
+- **Config.LEADERBOARD** — STORE_NAME="GlobalHoney_v1", UPDATE_INTERVAL=60, TOP_N=10
+- **1 new RemoteEvent:** LeaderboardUpdate (server→all clients, top-10 entries array)
+- **HudDataSync RemoteEvent** — created if missing; payload extended with `generation` and `lifetimeHoney` fields
+- **LeaderboardService ModuleScript** — OrderedDataStore writes (pcall-wrapped), GetSortedAsync top-10 refresh, FireAllClients broadcast every 60s
+- **ResourceService hook** — adds `LeaderboardService.RecordHoney(player, profile.lifetimeHoney)` call after existing lifetimeHoney increment (dispatch 22 already adds the increment; this dispatch only adds the RecordHoney call)
+- **LeaderboardRunner Script** — thin require launcher
+- **LeaderboardController LocalScript** — receives LeaderboardUpdate, dynamically creates Row1–Row10 TextLabels in BoardSurface SurfaceGui, gold/silver/bronze Honey Gold coloring for top 3, "You" highlight row at bottom
+- **PlotPlaqueController LocalScript** — receives HudDataSync, finds PlotPlaque-tagged parts by PlotIndex attribute, updates PlaqueText with "Gen N / Xk lifetime"
+- **World — Global Cork Board** (6 parts in Workspace.Hub.LeaderboardBoard): BoardBacking (80×22×1 Wood) + 4 frame parts + BoardSurface (SurfaceGui host) with LeaderboardBoard tag + LeaderboardGui SurfaceGui
+- **World — Plot Plaques x6** (3 parts × 6 = 18 parts in Workspace.Plot[N].PlotDecor): PlaqueBacking + PlaqueFrame + PlaqueSurface (PlotPlaque tag, PlotIndex attribute, PlaqueGui SurfaceGui)
+
+**Part budget:** +24 → ~4,076/5,000
