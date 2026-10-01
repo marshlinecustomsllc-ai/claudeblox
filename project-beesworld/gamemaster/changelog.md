@@ -547,3 +547,19 @@
 - PropolisStorageController: 🧫 tab right col Y=0.50, RESIN_CLR=RGB(160,90,200) purple panel, "Costs Honey" note
 - Combined new honey sinks (storage both tracks): 128,000 honey total
 - Part budget: +0 → 4,146/5,000
+
+## Dispatch 62 — AchievementService (cycle 11)
+- 12 milestone achievements with honey/propolis rewards (total pool: 18,650 honey + 280 propolis)
+- Config: ACHIEVEMENTS table with id/name/desc/honeyReward/propolisReward per entry
+- DataService: unlockedAchievements=[] + lifetimeHoney=0 migration fields
+- AchievementService: Check(player,id) one-shot grant, CheckHoneyMilestones(), Init()
+- AchievementUnlocked RemoteEvent for client notification
+- ForagingService: lifetimeHoney accumulation + CheckHoneyMilestones() after yield cap
+- DailyRewardService: daily_streak_3 + daily_streak_7 after streak increment
+- HiveSkinService: first_skin after purchase
+- QueenUpgradeService: first_upgrade + max_bees after tier increment
+- SpeedUpgradeService: first_upgrade belt-and-suspenders
+- PlotService: all_plots when unlockedPlots >= 8
+- GameManager: AchievementService.Init() early before other services
+- AchievementController: queued gold-border toast (ZIndex=30), slides from top, 3s display, Back/Out in + Quad/In out
+- Part budget: +0 → 4,146/5,000
