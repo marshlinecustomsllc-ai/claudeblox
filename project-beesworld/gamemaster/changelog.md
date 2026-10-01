@@ -438,3 +438,13 @@
 - SeasonService injection: RecordSeason on season change broadcast
 - AchievementToast LocalScript: slide-from-top (Back/Out), 3s hold, Quad/In slide-out, queue prevents overlap
 - Part budget: +0 permanent → 4,146/5,000
+
+## Dispatch 51 — SpeedUpgradeService (cycle 11)
+- Config.SPEED_UPGRADES: 5 tiers, costs 500/2K/8K/25K/75K honey, mult 1.18/1.38/1.63/1.92/2.27×
+- DataService migration: forageSpeedTier default 0
+- SpeedUpgradeService: server-authoritative BuySpeedTier RF, SpeedSync RE broadcasts tier/mult/nextCost; 5-tier max
+- SpeedSync RemoteEvent + BuySpeedTier RemoteFunction in ReplicatedStorage
+- ForagingService injection: actualCycleTime = Config.FORAGE_CYCLE_TIME / speedMult
+- GameManager injection: SpeedUpgradeService.Init() after AchievementService.Init()
+- SpeedUpgradeController: ⚡ tab button, slide-from-right panel, Honey Gold progress bar, Buy/MAX SPEED button states
+- Part budget: +0 permanent → 4,146/5,000

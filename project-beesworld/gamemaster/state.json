@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 50: AchievementService 12 milestones earnedAchievements+seenAllSeasons, CheckAll injected into ForagingService+PlotService+SeasonService, AchievementToast queued slide-from-top",
+  "last_action": "dispatch 51: SpeedUpgradeService 5-tier forageSpeedTier cycle-time divisor, SpeedSync+BuySpeedTier remotes, ForagingService speed injection, SpeedUpgradeController panel",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,6 +75,6 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 50,
+  "dispatch_count": 51,
   "total_parts": 4146
 }
