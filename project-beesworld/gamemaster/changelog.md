@@ -1289,3 +1289,12 @@
 - BearWarning + BearResult RemoteEvents in ReplicatedStorage.RemoteEvents
 - Server increments BearSurviveCount attribute (triggers dispatch 131 "Bear Survivor" milestone)
 - DisplayOrder=45; IgnoreGuiInset=true for full-screen edge coverage
+
+## Dispatch 140 — Hive Prestige System (2026-10-01)
+- Added `PrestigeService` Script in ServerScriptService (+1 permanent; 4,148/5,000)
+- Added `PrestigeController` LocalScript in StarterPlayerScripts
+- Three prestige tiers (P1/P2/P3): exponential thresholds 5k/10k/20k HoneyEarned + 9 comb slots
+- Each prestige resets: CombCellCount→3, HoneyCount→0, PropolisCount→0, PropolisUpgrades→"", CombState→"honey,,"
+- Permanent bonuses: +10%/+20%/+30% honey yield stacking; server-authoritative eligibility check
+- Client: golden "⬆ Prestige Hive" button (left side, below propolis shop) + confirmation modal + golden ceremony (screen flash + headline "✨ Prestige N! Hive reborn!")
+- RequestPrestige + PrestigeGranted RemoteEvents; HoneyEarned attribute as earning counter
