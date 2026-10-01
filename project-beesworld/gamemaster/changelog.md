@@ -426,3 +426,15 @@
 - GameManager injection: HiveExpansionService.Init() after TutorialService.Init()
 - ExpansionController: 🗺️ tab button in MainFrame, slide-from-right expand panel, 2 slot rows with cost + Unlock button, ✓ Owned state after unlock
 - Part budget: +4 permanent → 4,146/5,000
+
+## Dispatch 50 — AchievementService (cycle 11)
+- Config.ACHIEVEMENTS: 12 achievements (honey milestones 1/1K/10K/100K, build 1/10/50 cells, prestige 1/5, streak 7, all seasons, expand plot)
+- DataService migration: earnedAchievements {} + seenAllSeasons bitmask 0→15
+- AchievementService: Check (idempotent), CheckAll bulk scan, RecordSeason bitmask; awards honey + lifetimeHoney, fires AchievementUnlocked RemoteEvent
+- AchievementUnlocked RemoteEvent in ReplicatedStorage
+- GameManager injection: after HiveExpansionService.Init()
+- ForagingService injection: CheckAll after honey credited
+- PlotService injection: CheckAll after hex cell placed
+- SeasonService injection: RecordSeason on season change broadcast
+- AchievementToast LocalScript: slide-from-top (Back/Out), 3s hold, Quad/In slide-out, queue prevents overlap
+- Part budget: +0 permanent → 4,146/5,000
