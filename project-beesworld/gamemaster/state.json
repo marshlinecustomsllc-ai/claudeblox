@@ -80,8 +80,8 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 145,
-  "total_parts": 4152,
-  "last_dispatch": "cycle14_daily_login_dispatch.md",
+  "dispatch_count": 146,
+  "total_parts": 4153,
+  "last_dispatch": "cycle14_hive_temperature_dispatch.md",
   "last_updated": "2026-10-01"
 }

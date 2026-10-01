@@ -1325,3 +1325,9 @@
 ## Dispatch 145 — Daily Login Reward System (2026-10-01)
 - DailyLoginService Script + DailyLoginController LocalScript. 7-day escalating streak: Day 1=50 honey → Day 7=300 honey+20 propolis+⭐. Streak resets to Day 1 on Day 8 (weekly cycle). Day-number comparison via math.floor(os.time()/86400). Panel slides from top, auto-dismisses 4s. Already-claimed guard on rejoin (no double reward).
 - Part budget: +2 permanent → 4,152 / 5,000
+
+## Dispatch 146 — Hive Temperature Mechanic (2026-10-01)
+- HiveTemperatureService Script — polls ClockTime every 30s, writes HiveTemperature="warm"/"cold" per player. Cold = night (ClockTime < 6 or > 20) with no propolis_kiln adjacent to brood in CombState. hasWarmth_146() uses ADJ_146 adjacency map (same grid as dispatch 138).
+- HiveTemperatureController LocalScript — temperature pill at top-center (DisplayOrder=12). Warm: hidden. Cold: ❄️ blue pill with "−20% honey" hint.
+- CombService patch: tempMulti_146 ×0.80 on cold state, stacks with nurseMulti_143.
+- Part budget: +1 permanent → 4,153 / 5,000
