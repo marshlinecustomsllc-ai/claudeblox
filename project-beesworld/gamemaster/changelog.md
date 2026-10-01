@@ -610,3 +610,9 @@
 - Replay Tutorial button → TutorialReset:InvokeServer()
 - Prefs stored as LocalPlayer attributes (session-persistent)
 - Part budget: +0 → 4,146/5,000
+
+## Dispatch 68 — MusicController
+- MusicController LocalScript: 3-track shuffled playlist, 1.5s crossfade, tagged BGM
+- MusicDuck/MusicRestore BindableFunctions in RS
+- DailyRewardController patched: duck on open, restore on close
+- Part budget: +0 → 4,146/5,000
