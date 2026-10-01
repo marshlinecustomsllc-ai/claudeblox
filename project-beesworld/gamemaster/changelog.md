@@ -858,3 +858,11 @@
 - Non-invasive post-processing — does not modify existing row-building logic
 - Re-scan triggered on prestige sync arrival to handle render/data race
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 95 — Daily Reward Expansion (Cycle 13)
+- DailyRewardService: replaced fixed honey grant with 7-day DAILY_REWARDS table
+- DailyRewardService: grants honey + propolis + pollen based on streakDay
+- DailyRewardService: FireClient payload updated to include all three resources
+- DailyRewardController: notification shows 🍯/🔮/🌼 icons for non-zero grants
+- Day 7 streak bonus: 300 honey + 60 propolis + 60 pollen
+- Part budget: +0 → 4,146 / 5,000
