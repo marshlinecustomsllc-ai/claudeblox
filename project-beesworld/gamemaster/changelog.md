@@ -885,3 +885,11 @@
 - HUD shows season name + per-resource bonus percentages, fades in/out
 - Part budget: +0 → 4,146 / 5,000
 - Cycle 14 started
+
+## Dispatch 98 — Plot Unlock Notification (Cycle 14)
+- PlotController: injected showPlotToast() function
+- Toast shows "🏡 Plot N unlocked! 🍯/🔮 −X resource" for 2.5s
+- Slides in from bottom, holds, then fades out — auto-destroys
+- Binds to PlotSync OnClientEvent for local player claimed events
+- Shows propolis cost text for slots 7-8 (🔮)
+- Part budget: +0 → 4,146 / 5,000
