@@ -399,3 +399,12 @@
 - SeasonController LocalScript: SeasonBadge TextLabel in MainFrame (0.16×0.07), colour tween per season
 - Season schedule: UTC day mod 4 → 0=Spring 🌸, 1=Summer ☀️, 2=Autumn 🍂, 3=Winter ❄️
 - Part budget: 0 permanent → cumulative ~4,142/5,000
+
+## Dispatch 47 — LeaderboardGui (cycle 11)
+- LeaderboardService ModuleScript: buildSnapshot() collects lifetimeHoney from all players, sorts descending, trims top-10, 15s periodic FireAllClients + PlayerAdded 4s delayed sync
+- LeaderboardSync RemoteEvent in ReplicatedStorage
+- GameManager injection: require LeaderboardService + LeaderboardService.Init() after SeasonService.Init()
+- LeaderboardGui ScreenGui (DisplayOrder=11): 🏆 ToggleBtn 5.5%×7.5% right edge (0.945/0.30), LeaderboardPanel 22%×55% starts off-screen Position(1.01,0,0.23,0)
+- 10 pre-built Row frames: ranks 1/2/3 gold/silver/bronze background tints, 🥇🥈🥉 Rank labels, PlayerName + HoneyAmt labels
+- LeaderboardController LocalScript: fmtHoney K/M abbreviation, local player ► prefix + bright Honey Gold text, slide-from-right Back/Out open animation, glow pulse on ToggleBtn per broadcast
+- Part budget: +0 permanent → 4,142/5,000

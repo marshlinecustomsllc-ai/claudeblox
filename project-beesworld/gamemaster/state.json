@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 46 written: SeasonService (4 seasons day%4, applyLighting 8s tween, GetHoneyMult/GetPollenMult/GetPropMult, ForagingService season mults, SeasonController badge) \u2014 ~4,142/5,000 parts",
+  "last_action": "dispatch 47: LeaderboardService buildSnapshot 15s broadcast, LeaderboardSync RE, LeaderboardGui 10 rows gold/silver/bronze, LeaderboardController fmtHoney local-player highlight slide-from-right",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,5 +75,5 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 46
+  "dispatch_count": 47
 }
