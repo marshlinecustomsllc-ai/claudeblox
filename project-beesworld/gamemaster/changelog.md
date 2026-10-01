@@ -935,3 +935,9 @@
 **Cycle:** 14
 **Change:** Adds queen_bee upgrade (500 propolis, prereq swift_wings_3, +5 effective bees) and queen_blessing achievement (upgrade_owned condition type) to Config. Patches ForagingService effectiveBeeCount, AchievementService upgrade_owned condition handler, HiveStatsController 👑 crown icon on queen_bee purchase. upgrade_owned is a new achievement condition type.
 **Part budget:** +0 permanent → 4,146/5,000
+
+## Dispatch 106 — Pollen Surge Event
+**File:** cycle14_pollen_surge_event_dispatch.md
+**Cycle:** 14
+**Change:** New PollenSurgeService Script fires ×2 pollen surges every 10-20 min (after 10 min initial delay), 2-min duration. PollenSurgeSync RemoteEvent. ForagingService reads _G.PollenSurgeService.IsActive(). New PollenSurgeController LocalScript shows slide-down banner with os.time() countdown. DisplayOrder=15.
+**Part budget:** +0 permanent → 4,146/5,000
