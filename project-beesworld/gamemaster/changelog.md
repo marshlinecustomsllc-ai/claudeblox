@@ -911,3 +911,9 @@
 **Cycle:** 14
 **Change:** Appends bee milestone checker to HiveStatsController via second OnClientEvent bind on HiveStatsSync. Toasts fire when total bee count crosses 10/25/50/100/250/500/1000. Tracked via LocalPlayer BeeMilestoneReached attribute (session-scoped). Back easing slide-in at Y=0.78, DisplayOrder=21. beeCount field fallback chain handles multiple naming conventions.
 **Part budget:** +0 permanent → 4,146/5,000
+
+## Dispatch 102 — Hive Efficiency Rating
+**File:** cycle14_hive_efficiency_rating_dispatch.md
+**Cycle:** 14
+**Change:** Appends computeHER_102() and HiveEfficiencyLabel to HiveStatsController. Formula: activePlots×0.5 + assignedBees×0.3 + upgrades×0.2. Label lazily injected into existing stats frame with color coding (green ≥90%, gold ≥70%, amber ≥50%, red <50%). Unknown payload fields default to 1.0 contribution. Third OnClientEvent bind on HiveStatsSync.
+**Part budget:** +0 permanent → 4,146/5,000
