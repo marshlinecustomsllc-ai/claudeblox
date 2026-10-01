@@ -505,3 +505,14 @@
   count matches active bees, color matches active skin, cleanup on PlayerRemoving
 - GameManager: BeeVisualService.Init() after HiveSkinService.Init()
 - Part budget: +0 permanent (spheres transient) → 4,146 / 5,000
+
+## Dispatch 58 — PrestigeService (cycle11_prestige_dispatch.md)
+- Config: PRESTIGE_MULT_PER_TIER=1.15, PRESTIGE_MAX_TIER=10, PRESTIGE_COST_BASE=100K
+- DataService migration: prestigeTier = 0 (after unlockedSkins)
+- PrestigeService: DoPrestige RF resets honey, keeps all upgrades/plots/skins,
+  +15% honey mult per tier (max tier 10 = ×4.05), integrates achievement checks
+- ForagingService: honey yield × PrestigeService.GetMult(prestigeTier)
+- GameManager: PrestigeService.Init() after BeeVisualService.Init()
+- PrestigeController: ⭐ right-side tab, lifetime honey progress bar, ×mult display
+- Completes end-game loop: upgrades → cosmetics → prestige ladder (×10 tiers)
+- Part budget: +0 permanent → 4,146 / 5,000
