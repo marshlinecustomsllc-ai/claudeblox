@@ -941,3 +941,15 @@
 **Cycle:** 14
 **Change:** New PollenSurgeService Script fires ×2 pollen surges every 10-20 min (after 10 min initial delay), 2-min duration. PollenSurgeSync RemoteEvent. ForagingService reads _G.PollenSurgeService.IsActive(). New PollenSurgeController LocalScript shows slide-down banner with os.time() countdown. DisplayOrder=15.
 **Part budget:** +0 permanent → 4,146/5,000
+
+## Dispatch 107 — Upgrade Tree Visualization
+- Appended `applyTreeIndicators_107()` to UpgradesController
+- Reads `UpgradeId` attribute from each UpgradeList row to identify upgrades
+- Looks up `Config.UPGRADES[upgradeId].prereq` for chain data
+- Adds `PrereqHint` TextLabel: `"→ Requires: [name]"` when locked, `"✅ [name]"` when unlocked
+- Adds `LockOverlay` semi-transparent Frame (BackgroundTransparency=0.55) when prereq unmet
+- Sets `BuyButton.Active = false` when locked, restores on unlock
+- Second `OnClientEvent` bind on `UpgradeSync` triggers re-scan on upgrade purchase
+- `task.wait(3)` fallback tries `OwnedUpgrades` player attribute on initial load
+- All injected locals use `_107` suffix — no collision with `_92` tab system injection
+- +0 permanent parts → 4,146/5,000
