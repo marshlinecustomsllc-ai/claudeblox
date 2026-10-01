@@ -516,3 +516,12 @@
 - PrestigeController: ⭐ right-side tab, lifetime honey progress bar, ×mult display
 - Completes end-game loop: upgrades → cosmetics → prestige ladder (×10 tiers)
 - Part budget: +0 permanent → 4,146 / 5,000
+
+## Dispatch 59 — NotificationBadge (cycle 11)
+- Patch dispatch: red dot notification badges injected into three existing LocalScript Controllers
+- DailyRewardController: dailyBadge Frame (red circle, ZIndex=26) added to tabBtn; Visible=data.canClaim==true in DailySync handler
+- PrestigeController: prestigeBadge Frame added to tabBtn; Visible=data.canPrestige==true in refreshUI
+- ExpansionController: expansionBadge Frame + currentHoney tracker + HoneySync listener; Visible=true when any locked slot affordable
+- Badge anatomy: 0.28×0.28 Frame at Position(0.72,-0.06), Color3.fromRGB(220,50,50), UICorner radius 0.5 (circular), ZIndex=26
+- Zero new services, zero new RemoteEvents, zero server load — pure client-side patch
+- Part budget: +0 permanent → 4,146/5,000
