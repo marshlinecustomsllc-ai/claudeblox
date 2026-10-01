@@ -1226,3 +1226,12 @@
 - Card states: gold (buyable), grey (locked/insufficient), green ✓ (owned)
 - Dual-appeal text: kid effect + adult stat delta on every card
 - Part budget: +0 permanent → 4,146 / 5,000
+
+## Dispatch 133 — Bee Speed Boost (2026-10-01)
+- Added `BeeSpeedController` LocalScript in StarterPlayerScripts
+- WalkSpeed boost: +8 when Dance Floor cell in CombState (16 → 24)
+- Stacks with Propolis upgrades: Bee Stamina I +2, Bee Stamina II +4 (cap 28)
+- Golden Trail: Lifetime=0.18s, FaceCamera=true, enabled only while boosted
+- Rebuilds trail on CharacterAdded (respawn safe)
+- Listeners on CombState + PropolisUpgrades attributes
+- Part budget: +0 permanent → 4,146 / 5,000
