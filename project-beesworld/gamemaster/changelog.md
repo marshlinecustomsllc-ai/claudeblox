@@ -850,3 +850,11 @@
 - AchievementService: upgrades_bought condition reads totalUpgradesBought
 - Enables upgrades_5 / upgrades_20 / upgrades_all achievements to fire correctly
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 94 — Prestige Leaderboard Stars (Cycle 13)
+- LeaderboardController: injected prestigeBadge() helper (⭐×N for 1-9, 👑 for 10)
+- LeaderboardController: _prestigeMap cache built from PrestigeLeaderboardSync data
+- LeaderboardController: DescendantAdded watcher applies badges to name labels
+- Non-invasive post-processing — does not modify existing row-building logic
+- Re-scan triggered on prestige sync arrival to handle render/data race
+- Part budget: +0 → 4,146 / 5,000
