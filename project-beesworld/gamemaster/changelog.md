@@ -745,3 +745,12 @@
 - Fulfills soft guard in dispatch 79 (PrestigeService)
 - STEP B diagnostic reads PlotService function list to confirm broadcast function name
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 82 — PrestigeReadySync (Cycle 12)
+- Added `PrestigeReadySync` RemoteEvent in ReplicatedStorage
+- Added `PrestigeService.CheckAndBroadcastReady(player)` — calls private `canPrestige()`, fires `{ready=true/false}` to client
+- ForagingService patched: calls CheckAndBroadcastReady after yield applied (task.spawn)
+- PlotService patched: calls CheckAndBroadcastReady after plot.owner assigned (task.spawn); injects PrestigeService require
+- PrestigeController patched: `PrestigeReadySync.OnClientEvent` listener shows/hides PRESTIGE button (task.delay(4.5) for button build timing)
+- All 4 injection steps have idempotency guards
+- Part budget: +0 → 4,146 / 5,000
