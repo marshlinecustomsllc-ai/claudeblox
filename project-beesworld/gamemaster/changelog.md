@@ -1009,3 +1009,17 @@
 - Anchor Part: Anchored, CanCollide=false, CanQuery=false, Transparency=1, AURA_NAME includes userId
 - Rebuilds on `GetAttributeChangedSignal("PrestigeLevel")` and `CharacterAdded`
 - +0 permanent parts (runtime-created, transient) → 4,146/5,000
+
+### Dispatch 114 — Comb Cell Guide (Kid-Friendly Buildable Explanation)
+- New `CellGuideGui` ScreenGui in StarterGui (DisplayOrder=20)
+  - Persistent `🐝 How to Build?` button (bottom-right, always visible)
+  - Slide-in panel with 6 cell-type cards (emoji + name + plain-language description)
+  - Sticky adjacency tip strip ("Put Pollen Cells next to Brood Cells! 🐣")
+  - Cards: 🍯 Honey, 🐛 Brood, 🌼 Pollen, 👑 Royal, 💃 Dance Floor, 🏭 Propolis Kiln
+  - AutomaticCanvasSize=Y ScrollingFrame, Honey Gold / Propolis Brown palette
+- New `CellGuideController` LocalScript in StarterPlayerScripts
+  - TweenService slide-in/slide-out animation (Back easing open, Quad close)
+  - 2-second load pulse on GuideButton to draw first-time attention
+  - 100% client-side, zero server cost
+- Design principle: simple emoji + one sentence per cell for kids; adjacency tip surfaces the placement puzzle depth for adults
+- Part budget: +0 permanent → 4,146 / 5,000
