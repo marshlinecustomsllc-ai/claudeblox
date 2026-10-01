@@ -525,3 +525,14 @@
 - Badge anatomy: 0.28×0.28 Frame at Position(0.72,-0.06), Color3.fromRGB(220,50,50), UICorner radius 0.5 (circular), ZIndex=26
 - Zero new services, zero new RemoteEvents, zero server load — pure client-side patch
 - Part budget: +0 permanent → 4,146/5,000
+
+## Dispatch 60 — HoneyStorageUpgradeService (cycle 11)
+- 5-tier honey storage capacity upgrades: 2,000 → 5,000 → 12,000 → 25,000 → 50,000 → 100,000
+- Config: STORAGE_UPGRADES table, STORAGE_BASE_MAX=2000, STORAGE_MAX_TIER=5
+- DataService: storageTier=0 migration after prestigeTier
+- HoneyStorageUpgradeService: GetMaxHoney(player), BuyStorageTier RF, StorageSync RE
+- ForagingService: honey capped at GetMaxHoney() before crediting yield
+- GameManager: HoneyStorageUpgradeService.Init() after PrestigeService.Init()
+- HoneyStorageController: 🏺 tab left col Y=0.70, sky-blue STORE_CLR panel, toast on upgrade
+- Total honey sinks to max all tracks: ~722,000 honey across full game arc
+- Part budget: +0 → 4,146/5,000
