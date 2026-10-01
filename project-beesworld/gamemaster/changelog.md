@@ -1054,3 +1054,16 @@
   - TweenService Back-easing slide-in + Quad fade-out
 - Design principle: second-person praise for kids ("You did it!"), stat impact for adult optimisers
 - Part budget: +0 permanent → 4,146 / 5,000
+
+### Dispatch 117 — Daily Bee Facts
+- New `BeeFactController` LocalScript in StarterPlayerScripts
+  - 30 real bee-science facts, phrased in plain kid-friendly English with emoji
+  - Deterministic daily rotation: `(day-of-year + year*365) % 30` — same fact for all players on same UTC day
+  - Session guard: `LastFactDay` player attribute (YYYY+day-of-year string), shows once per calendar day
+  - Honey Gold card slides up from bottom at Y=0.88 after 4s load delay (DisplayOrder=15)
+  - Auto-dismisses after 6s; tap/click anywhere on card dismisses immediately
+  - TweenService Back-easing slide-in + Quad slide-out
+- Content examples: UV vision, waggle dance, hexagon maths, queen lifespan, propolis medicine
+- No server scripts, no RemoteEvents, no DataStore — 100% client-side, zero backend cost
+- Design principle: kid "wow" factor + real science for adult curiosity; encourage daily logins
+- Part budget: +0 permanent → 4,146 / 5,000
