@@ -1092,3 +1092,15 @@
 - UNLOCK_CELLS_119 = {0, 6, 12, 18, 24, 30, 38, 46}
 - DisplayOrder=18 (above roster=15, below cell guide=20)
 - Part budget impact: +0 permanent → 4,146 / 5,000
+
+## Dispatch 120 — Hive Leaderboard
+- `LeaderboardSync` RemoteEvent in ReplicatedStorage
+- `LeaderboardService` Script in ServerScriptService: broadcasts sorted top-10 every 15 s via FireAllClients
+- Stats: HoneyCount / CombCellCount / PrestigeLevel (three tabs)
+- `LeaderboardGui` LocalScript: 🏆 toggle button (top-left, 44×44) + 280×360 slide-in panel
+- Three tabs: 🍯 Honey · 🏗️ Cells · 👑 Prestige
+- Each row: crown/rank + name + stat value + "YOU" badge for local player
+- Toggle button auto-hides when < 2 players on server (solo play uncluttered)
+- formatStat_120: K/M suffixes; prestige shows ✦ / ✦✦ / ✦✦✦ glyphs
+- pcall wrapper on broadcast loop — single error doesn't kill service
+- DisplayOrder=16, part budget impact: +0 → 4,146 / 5,000
