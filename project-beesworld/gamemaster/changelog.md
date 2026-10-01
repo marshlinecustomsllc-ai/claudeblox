@@ -1080,3 +1080,15 @@
   - CharacterRemoving cleanup + CharacterAdded restart
 - Integrates with PropolisRainSync (dispatch 109) and HiveMilestoneSync (dispatch 116)
 - Part budget: +0 permanent → 4,146 / 5,000
+
+## Dispatch 119 — Bee Roster Panel
+- `BeeRosterController` LocalScript in StarterPlayerScripts
+- 576 unique deterministic bee names (24 first × 24 last, seeded by UserId+slot)
+- `🐝 My Bees` button (130×44) above GuideButton; slide-in right panel (300×380)
+- Active bee rows: status icon (🌸/💤/🏗️) + name (HONEY_GOLD) + countdown/status (WAX_CREAM)
+- Locked rows: muted colour + "🔒 Slot N · Build X cells to unlock"
+- Return toasts: up to 3 individual bee names + group toast for >3 returning at once
+- Rows rebuild on CombCellCount change (new bee slot unlocked)
+- UNLOCK_CELLS_119 = {0, 6, 12, 18, 24, 30, 38, 46}
+- DisplayOrder=18 (above roster=15, below cell guide=20)
+- Part budget impact: +0 permanent → 4,146 / 5,000

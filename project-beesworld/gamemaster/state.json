@@ -1,7 +1,7 @@
 {
   "current_cycle": 14,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 118: hive sound ambience \u2014 layered audio scaling with cell count + cross-fades",
+  "last_action": "dispatch 119 written \u2014 BeeRosterController with named bees, roster panel, return toasts",
   "pending_fixes": [
     {
       "id": 2,
@@ -80,8 +80,8 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 118,
+  "dispatch_count": 119,
   "total_parts": 4146,
-  "last_dispatch": "cycle14_hive_sound_ambience_dispatch.md",
+  "last_dispatch": "cycle14_bee_roster_dispatch.md",
   "last_updated": "2026-10-01T22:52:29.599556Z"
 }
