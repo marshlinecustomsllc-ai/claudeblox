@@ -338,3 +338,17 @@
 - DailyRewardController: scale-from-centre open (Back/Out), highlightDayCard (past=green✓/today=gold border/future=dimmed)
 - Dimmer backdrop tap closes panel (mobile-friendly)
 - Part budget: 0 permanent → cumulative ~4,142/5,000
+
+## Dispatch 42 — HiveStatsDashboard (Cycle 11)
+- Config.STATS_DISPLAY: sessionTrackingEnabled flag
+- DataService migration: lifetimePlaySeconds, totalCellsBuilt, totalGenerations, sessionStartTime
+- HiveStatsService: Init (PlayerAdded/Removing hooks, 60s periodic sync), FlushSessionTime, AddCellBuilt, SetGenerations, SyncStats
+- StatsSync RemoteEvent in Remotes folder
+- GameManager wiring: require + HiveStatsService.Init()
+- PrestigeService wiring: SetGenerations called after generation increment
+- PlotService wiring: AddCellBuilt called after successful hex cell placement
+- StatsTabBtn (📊) added to MainFrame top-right (10%×8%, Propolis Brown, Honey Gold stroke)
+- StatsPanel (38%×62%, slide-from-right): Header, CloseBtn, 7 RowList stat frames
+- 7 stat rows: Honey Earned / Cells Built / Generations / Play Time / Login Streak / Honey Now / Propolis Now
+- HiveStatsController: fmtNumber (K/M abbreviation), fmtTime (h/m), Back/Out open animation, tab-button glow pulse on data update
+- Part budget: 0 permanent → cumulative ~4,142/5,000
