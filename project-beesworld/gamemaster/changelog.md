@@ -737,3 +737,11 @@
 - Top-3 ranks get 🥇🥈🥉, remainder get row number
 - GameManager: LeaderboardService.Init() injected after PrestigeService
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 81 — PlotService: ResetPlotsForPrestige (Cycle 12)
+- PlotService patched: inject ResetPlotsForPrestige(player, {keepPlotIds}) before return
+- Clears owner/isForaging/beeCount for all of player's plots except kept ones (default: keep plot 1)
+- Calls PlotService.BroadcastPlots() after reset so all clients see cleared state immediately
+- Fulfills soft guard in dispatch 79 (PrestigeService)
+- STEP B diagnostic reads PlotService function list to confirm broadcast function name
+- Part budget: +0 → 4,146 / 5,000
