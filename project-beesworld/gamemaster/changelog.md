@@ -274,3 +274,12 @@
 - **Returns players skip automatically**: `tutorialComplete=true` players receive `TutorialSync` with `tutorialComplete=true` → overlay never shows
 
 **Part budget:** 0 new world parts → ~4,098/5,000 (unchanged)
+
+## Dispatch 36 — QueenUpgradeVFX (cycle 11)
+- **QueenUpgradeVFX RemoteEvent** in `ReplicatedStorage/Remotes`
+- **QueenService injection**: `QueenUpgradeVFX:FireClient(player, {tier, position})` after `profile.queenTier` increment; Notify toast "👑 Queen upgraded to Tier N!"
+- **QueenUpgradeVFXController** LocalScript in StarterPlayerScripts:
+  - `spawnBurst(position, tier)`: invisible anchor Part → Honey Gold+Wax Cream ParticleEmitter "QueenBurst" (LightEmission=0.8, Speed=8–14, Emit 15+tier×5 particles) + white "QueenCrown" emitter (Emit 12); `Debris:AddItem(anchor, 2.5)`
+  - `playSound(position, tier)`: SoundId "rbxassetid://9119713993", PlaybackSpeed=0.8+tier×0.05; `Debris:AddItem(soundPart, 4)`
+  - `screenFlash(tier)`: amber full-screen frame, opacity 0.65+tier×0.02, TweenService FLASH_IN 0.08s / hold 0.12s / FLASH_OUT 0.5s
+- **Part budget**: 0 permanent (Debris-managed) → **~4,098/5,000**
