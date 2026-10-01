@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 47: LeaderboardService buildSnapshot 15s broadcast, LeaderboardSync RE, LeaderboardGui 10 rows gold/silver/bronze, LeaderboardController fmtHoney local-player highlight slide-from-right",
+  "last_action": "dispatch 48: TutorialService hasSeen_tutorial migration, TutorialStart RE + TutorialComplete RF, 7-step FTUE card overlay Back/Out scale-in Honey Gold progress bar Skip btn",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,5 +75,5 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 47
+  "dispatch_count": 48
 }

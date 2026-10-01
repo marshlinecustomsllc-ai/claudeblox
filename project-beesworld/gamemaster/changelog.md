@@ -408,3 +408,11 @@
 - 10 pre-built Row frames: ranks 1/2/3 gold/silver/bronze background tints, 🥇🥈🥉 Rank labels, PlayerName + HoneyAmt labels
 - LeaderboardController LocalScript: fmtHoney K/M abbreviation, local player ► prefix + bright Honey Gold text, slide-from-right Back/Out open animation, glow pulse on ToggleBtn per broadcast
 - Part budget: +0 permanent → 4,142/5,000
+
+## Dispatch 48 — TutorialService FTUE (cycle 11)
+- DataService migration: hasSeen_tutorial boolean default false
+- TutorialService ModuleScript: fires TutorialStart RE 3s after PlayerAdded (hasSeen_tutorial=false only), TutorialComplete RF marks profile permanently
+- TutorialStart RemoteEvent + TutorialComplete RemoteFunction in ReplicatedStorage
+- GameManager injection: TutorialService.Init() after LeaderboardService.Init()
+- TutorialController LocalScript: 7-step card overlay (Welcome→Pollen→Build Cell→Honey→Forge→Leaderboard→Ready!), Honey Gold progress bar, Skip button, Back/Out scale-in + Quad/In close, card destroyed after completion
+- Part budget: +0 permanent → 4,142/5,000
