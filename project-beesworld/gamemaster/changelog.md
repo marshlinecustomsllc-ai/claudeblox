@@ -574,3 +574,11 @@
 - "Your rank" footer with personal lifetime honey score
 - Right column layout complete: skin(0.30) prestige(0.40) propolis-storage(0.50) leaderboard(0.60)
 - Part budget: +0 → 4,146/5,000
+
+## Dispatch 64 — Tab Layout Reflow (cycle 11)
+- Pure UI position patch: reorganizes both tab columns with even spacing
+- Left column (X=0.01, step 0.09): expansion(0.18) speed(0.27) storage(0.36) pollen(0.45) queen(0.54) propolis(0.63) daily(0.72)
+- Right column (X=0.925, step 0.10): skin(0.28) prestige(0.38) propolis-storage(0.48) leaderboard(0.58)
+- Fixes overlap: queen(0.80) and propolis(0.775) had only 2.5% gap
+- No logic changes, no new scripts, no new parts
+- Part budget: +0 → 4,146/5,000
