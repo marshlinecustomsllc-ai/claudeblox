@@ -899,3 +899,9 @@
 **Cycle:** 14
 **Change:** Appends spawnYieldPop() to ForagingController via append injection. When ForagingSync fires with yields, floating BillboardGui labels pop up from the plot (+N 🍯/🔮/🌼) for each non-zero yield. Labels rise 4 studs and fade over 1.5s, auto-destroyed by Debris. Multiple yields stack vertically (stackIndex × 1.6 offset). findPlotPart() handles Plot1/plot_1/Plot 1 naming conventions. All injected locals use _99 suffix.
 **Part budget:** +0 permanent → 4,146/5,000
+
+## Dispatch 100 — Progressive Resource Caps
+**File:** cycle14_progressive_resource_caps_dispatch.md
+**Cycle:** 14
+**Change:** ForagingService yield clamps scale with prestige level. effectiveMaxHoney = MAX_HONEY + (prestigeLevel × 500), effectiveMaxPropolis = MAX_PROPOLIS + (prestigeLevel × 100), effectiveMaxPollen = MAX_POLLEN + (prestigeLevel × 60). At prestige 10: honey 10,000 / propolis 1,500 / pollen 900. Gsub substitution on math.min clamp patterns with append fallback.
+**Part budget:** +0 permanent → 4,146/5,000
