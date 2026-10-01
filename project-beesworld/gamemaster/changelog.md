@@ -260,3 +260,17 @@
 - **Main Script wiring** — `LeaderboardService.Init()` injected (also handles `PlayerRemoving` score writes)
 
 **Part budget:** 0 new world parts → ~4,098/5,000 (unchanged)
+
+## Cycle 11 — Dispatch 35: TutorialService — First-Play Guided Tooltip Overlay
+
+**File:** `cycle11_tutorial_dispatch.md`
+
+### What it adds
+- **Config.TUTORIAL_STEPS** — 4-step sequence: `place_cell` (→TabBuild), `harvest_honey` (→HarvestButton), `open_wardrobe` (→TabWardrobe), `check_floors` (→TabFloors); each step has `id`, `title`, `desc`, `arrow` (target GuiObject name), `autoNext` flag
+- **TutorialService ModuleScript** — `--!strict`; `OnPlayerAdded` waits 4s for profile load, sends steps to client via `TutorialSync` if `profile.tutorialComplete == false`; `MarkStepComplete(player, stepId)` idempotent — inserts to `profile.completedSteps`, sets `tutorialComplete=true` when all done + saves profile; `Init()` wires `TutorialStepComplete` RemoteFunction server handler
+- **TutorialSync RemoteEvent** + **TutorialStepComplete RemoteFunction** in `ReplicatedStorage/Remotes`
+- **TutorialGui ScreenGui** — `DisplayOrder=60` (above all other GUIs); `Dimmer` Frame (semi-transparent black overlay); `Tooltip` panel (60%×16%, bottom-centre): `StepLabel` + `Title` (Honey Gold, FredokaOne) + `Desc` (Wax Cream, TextWrapped) + `SkipBtn`; `Arrow` TextLabel (floating sibling, "⬇" pointing at target)
+- **TutorialController LocalScript** — `--!strict`; `positionArrow(targetName)` resolves AbsolutePosition of target GuiObject in PlayerGui; `nextStep()` finds first incomplete step; `markCurrentComplete()` updates local state + fires `TutorialStepComplete:InvokeServer`; `skipAll()` fires all steps; `Activated` wiring on tab buttons detects when player taps the target; `TweenService` fade in/out (0.3s)
+- **Returns players skip automatically**: `tutorialComplete=true` players receive `TutorialSync` with `tutorialComplete=true` → overlay never shows
+
+**Part budget:** 0 new world parts → ~4,098/5,000 (unchanged)
