@@ -563,3 +563,14 @@
 - GameManager: AchievementService.Init() early before other services
 - AchievementController: queued gold-border toast (ZIndex=30), slides from top, 3s display, Back/Out in + Quad/In out
 - Part budget: +0 → 4,146/5,000
+
+## Dispatch 63 — LeaderboardService (cycle 11)
+- Global top-10 leaderboard by lifetime honey (OrderedDataStore "LifetimeHoney_v1")
+- LeaderboardService: GetSortedAsync top-10, fetchAndBroadcast() every 60s + on join
+- Submit() debounced 10s per player (max ~6 writes/min at 10 players)
+- ForagingService: Submit() after CheckHoneyMilestones
+- GameManager: LeaderboardService.Init() after AchievementService.Init()
+- LeaderboardController: 🏆 tab right col Y=0.60, 10 rank rows gold/silver/bronze
+- "Your rank" footer with personal lifetime honey score
+- Right column layout complete: skin(0.30) prestige(0.40) propolis-storage(0.50) leaderboard(0.60)
+- Part budget: +0 → 4,146/5,000

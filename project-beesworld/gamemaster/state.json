@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 62 \u2014 AchievementService 12 milestones, lifetimeHoney tracking, gold toast queue",
+  "last_action": "dispatch 63 \u2014 LeaderboardService OrderedDataStore top-10 by lifetimeHoney, 60s refresh",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,6 +75,6 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 62,
+  "dispatch_count": 63,
   "total_parts": 4146
 }
