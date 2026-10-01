@@ -1306,3 +1306,8 @@
 - SpecialistBees comma-string attribute; server validates cost, owned check, deducts honey
 - Client: cards attach to existing BeeRoster ScrollingFrame or fallback standalone panel; three states: grey→gold→green
 - RequestUnlockBee + BeeUnlocked RemoteEvents; refreshCards_141 on HoneyCount + SpecialistBees changes
+
+## Dispatch 142 — Guard Bee Integration Hotfix + Leaderboard (2026-10-01)
+- Part A: BearAttackService patch — Guard Bee drain stacking. Formula: base 15% → –5% hive_insulation → –5% guard_bee → math.max(0.05, drainPct) 5% floor. Command Bar string-replace patch with idempotency guard.
+- Part B: LeaderboardController LocalScript — live top-5 honey leaderboard, right-side HUD column below Guide button. Client-side sort of HoneyCount attribute, 10s polling loop, current player row highlighted amber. fmt_142() K/M formatter. DisplayOrder=16.
+- Part budget: +0 permanent → 4,149 / 5,000
