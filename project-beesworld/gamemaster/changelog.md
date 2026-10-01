@@ -1164,3 +1164,14 @@
 - Debris cleanup after particle lifetime expires
 - Falls back to HumanoidRootPart if plot part not found
 - Part budget impact: +0 → 4,146 / 5,000
+
+## Dispatch 127 — Hive Health Display (2026-10-01)
+- Added `HiveHealthController` LocalScript in StarterPlayerScripts
+- Composite health score: diversity(40pts) + honey reserves(35pts) + activity(25pts) = 0-100
+- Top-centre HUD bar (200×44px) at position {0.5,-100,0,8}, DisplayOrder=13
+- Happiness emoji scale: 😟(<20) | 😐(<40) | 🙂(<60) | 😄(<80) | 🐝✨(≥80)
+- Tip line shows lowest-scoring factor hint; hidden when score ≥ 80
+- Container height adapts: 44px with tip, 28px without
+- Listens to CombState + HoneyCount + CombCellCount attributes
+- Six cell types counted for diversity: honey, brood, pollen, royal, dance_floor, kiln
+- Part budget: +0 permanent → 4,146 / 5,000
