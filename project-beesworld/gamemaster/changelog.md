@@ -1244,3 +1244,13 @@
 - Triggered by "royal" substring in CombState attribute
 - CharacterRemoving cleanup; respawn-safe rebuild
 - Part budget: +0 permanent → 4,146 / 5,000
+
+## Dispatch 135 — Honey Overflow Warning (2026-10-01)
+- Added `HoneyOverflowController` LocalScript in StarterPlayerScripts
+- Three warning states: normal (hidden) / near-full ≥90% (amber strip, 1.2s pulse) / full 100% (red strip, 0.4s pulse + amber SelectionBox on plot)
+- Fill formula: `HoneyCount / (CombCellCount × 100)` — consistent with HoneyRipenessController (dispatch 121)
+- Warning strip: 240×22px at {0.5,-120,0,56}, slides in from Y=30 over 0.25s (Back easing)
+- Text: "🍯 Almost full — collect your honey!" (90%) or "🍯 FULL! Honey not collecting!" (100%)
+- `fullSelBox_135`: amber SelectionBox (220,100,20) on comb plot when 100% full — visual sandwich with Royal Cell gold aura (dispatch 134)
+- DisplayOrder=14; listeners on HoneyCount + CombCellCount attributes; CharacterRemoving cleanup
+- Part budget: +0 permanent → running total 4,146 / 5,000
