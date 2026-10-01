@@ -632,3 +632,10 @@
 - ForagingService: friend multiplier stacks with seasonal
 - HiveHUDController: "🐝 +X% friend bonus" indicator label
 - Part budget: +0 → 4,146/5,000
+
+## Dispatch 71 — BeeNameService
+- DataService: queenName = "Queen Bee" migration
+- BeeNameService: SetQueenName RF (TextService filter), QueenNameSync RE
+- GameManager: BeeNameService.Init() injected
+- HiveHUDController: queen name row + ✏️ rename button + dialog overlay
+- Part budget: +0 → 4,146/5,000
