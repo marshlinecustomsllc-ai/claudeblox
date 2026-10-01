@@ -206,3 +206,16 @@
 - **HarvestStall world prop** — 4 parts in `Workspace.SeasonalProps` folder at (-10,4,-115) near Hub: `StallBase` (8×1×3 Wood/SandyYellow), `StallCanopy` (9×0.3×4 harvest red-orange Neon), `StallBanner` (6×1.5×0.2 Honey Gold SmoothPlastic + SurfaceGui TextLabel "🍯 Harvest Festival" FredokaOne), `HoneyJar` (Cylinder r=0.4 h=0.7 Neon Honey Gold); all Anchored=true; Tagged `HarvestStall`
 
 **Part budget:** +4 → ~4,098/5,000
+
+## Cycle 11 — Dispatch 31: WaspService Difficulty Scaling
+
+**File:** `cycle11_wasp_difficulty_dispatch.md`
+
+### What it adds
+- **Config.WASP_DIFFICULTY** — 9-tier table keyed by generation (0–8): `raidCooldown` shrinks from 360s (gen 0) to 90s (gen 8+), `swarmSize` grows from 1 to 5 wasps, `honeyStealRisk` scales from 4% to 12% per raid; `Config.GetWaspDifficulty(generation)` clamped helper returns the correct tier struct
+- **WaspService full replacement** — `--!strict`; per-player `Heartbeat` loops (10s tick interval); `attemptRaid()` looks up `Config.GetWaspDifficulty(profile.generation)`, checks per-player `_lastRaid` cooldown, applies steal server-authoritatively, fires Notify + WaspRaidSync; `WaspService.ReportDefence(player)` API resets cooldown after successful defence (for BeeguardBeehive scripts); `WaspService.GetPlayerDifficulty(player)` debug helper
+- **WaspRaidSync RemoteEvent** — created in `ReplicatedStorage/Remotes` if missing; carries `swarmSize`, `stolenHoney`, `generation` to client for visual feedback
+- **WaspRaidClientFX LocalScript** — in StarterPlayerScripts; amber vignette overlay + "⚠ WASP RAID!" FredokaOne/Honey Gold label; TweenService fade-in (0.15s) / hold (1.2s) / fade-out (0.6s); opacity scales mildly with generation (gen 0 = 55% → gen 8 = 75% opaque)
+- **WaspTierController LocalScript** *(optional Step F)* — updates `WaspTierLabel` in HiveGui corner from `HudDataSync.generation` field; label shows "🐝⚡ Wasp: Gen N" so players understand escalation
+
+**Part budget:** 0 new world parts → ~4,098/5,000 (unchanged)
