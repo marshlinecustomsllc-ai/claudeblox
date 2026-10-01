@@ -774,3 +774,11 @@
 - Prestige 0 cap: 1,925 (was 1,750); Prestige 5: ~2,406; Prestige 10: ~2,887
 - Eliminates false-positive kicks for high-prestige players
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 85 — Prestige Achievements (Cycle 12)
+- Added 4 new Config.ACHIEVEMENTS entries: prestige_1, prestige_3, prestige_5, prestige_10
+- Rewards: 500 / 1,500 / 3,000 / 8,000 honey respectively
+- AchievementService: new `prestige_level` condition branch (`prestigeLevel >= value`)
+- PrestigeService: calls `AchievementService.CheckAchievements` after prestige completes (task.spawn)
+- All 3 patches have idempotency guards
+- Part budget: +0 → 4,146 / 5,000
