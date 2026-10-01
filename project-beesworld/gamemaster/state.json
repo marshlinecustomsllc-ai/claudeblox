@@ -1,7 +1,7 @@
 {
   "current_cycle": 13,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "Wrote dispatch 95: Daily Reward Expansion",
+  "last_action": "Wrote dispatch 96: Sound Effects (upgrade purchase + prestige)",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,7 +75,7 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 95,
+  "dispatch_count": 96,
   "total_parts": 4146,
-  "last_dispatch": "cycle13_daily_reward_expansion_dispatch.md"
+  "last_dispatch": "cycle13_sound_effects_dispatch.md"
 }

@@ -866,3 +866,12 @@
 - DailyRewardController: notification shows 🍯/🔮/🌼 icons for non-zero grants
 - Day 7 streak bonus: 300 honey + 60 propolis + 60 pollen
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 96 — Sound Effects: Upgrade Purchase & Prestige (Cycle 13)
+- New SoundController LocalScript in StarterPlayerScripts
+- Plays chime (rbxassetid://9119816100) on successful upgrade purchase
+- Plays thud (rbxassetid://9120264459) on denied purchase
+- Plays fanfare (rbxassetid://4612394677) on PrestigeSync fire (0.3s delay)
+- SFX SoundGroup created in SoundService (volume 0.5)
+- Fully client-side — binds to UpgradeSync + PrestigeSync RemoteEvents
+- Part budget: +0 → 4,146 / 5,000
