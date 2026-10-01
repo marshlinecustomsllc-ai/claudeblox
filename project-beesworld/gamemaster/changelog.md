@@ -1317,3 +1317,7 @@
 - Nurse Bee: CombService patch — brood produced ×1.15 per tick (+15% honey output from brood cells). Multiplier reads SpecialistBees attribute live so works across prestige.
 - All three specialist bees now mechanically complete (scout/nurse this dispatch, guard_bee dispatch 142).
 - Part budget: +0 permanent → 4,149 / 5,000
+
+## Dispatch 144 — HoneyEarned Tracking Service (2026-10-01)
+- HoneyEarnedService Script — watches HoneyCount attribute delta per player. Increments HoneyEarned on every positive delta (harvest), never decrements on spend/bear drain. 2s join-wait baseline prevents false burst at DataService replication. PlayerRemoving cleanup. Prerequisite for PrestigeService threshold (dispatch 140).
+- Part budget: +1 permanent → 4,150 / 5,000
