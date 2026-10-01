@@ -1001,3 +1001,11 @@
 - HiveStatsController append: `SeasonLabel_112` — season icon+name TextLabel (dim wax cream, 11pt, updates every 30s) below HiveEfficiencyLabel or FullHiveBadge
 - Long-term engagement hook: `all_seasons` achievement requires play across 4 real-world 20-min windows
 - +0 permanent parts → 4,146/5,000
+
+## Dispatch 113 — Prestige Hive Aura
+- New `PrestigeAuraController` LocalScript (StarterPlayerScripts)
+- Reads `PrestigeLevel` attribute; 5-tier Honey Gold ParticleEmitter above plot 1 FloorPart
+- Tiers: 1=4/s faint sparkle → 5+=20/s full aura + omnidirectional GlowEmitter
+- Anchor Part: Anchored, CanCollide=false, CanQuery=false, Transparency=1, AURA_NAME includes userId
+- Rebuilds on `GetAttributeChangedSignal("PrestigeLevel")` and `CharacterAdded`
+- +0 permanent parts (runtime-created, transient) → 4,146/5,000
