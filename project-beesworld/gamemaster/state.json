@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "Dispatch 36 written and committed: QueenUpgradeVFX RemoteEvent, QueenService injection (FireClient on tier upgrade + Notify toast), QueenUpgradeVFXController (spawnBurst Honey Gold+crown emitters Emit burst, playSound ascending pitch by tier, screenFlash amber vignette TweenService), Debris:AddItem cleanup \u2014 zero permanent parts (~4098/5000)",
+  "last_action": "Dispatch 37 written and committed: DanceFloorService (8-min/3-min event, +25% honey, NPC bee bobbing), DanceSync RemoteEvent, dance floor hex props + disco ball (+9 parts ~4107/5000), DanceGui slide-in banner with countdown, DanceController TweenService animations",
   "pending_fixes": [
     {
       "id": 2,
@@ -58,14 +58,14 @@
     "Old Molasses + Wasp threat system: DataService v10->v11, ThreatService 6-stage patience progression + smoker repel + permanent BearOffering fork (appease/banish), WaspService periodic scout loop + guard intercept + swat mechanic, ThreatZone world zone (Treeline/BearLane/MolassesDen/BearAltar/WaspSpawn/GuardPerch ~145 parts -> ~4,020/5,000 total), MolassesController + WaspAlertController LocalScripts, 5 new RemoteEvents"
   ],
   "next_planned": [
-    "Dispatch 37: DanceFloorService periodic 3-min dance event at CombCell(0,0) +25% honey mult + NPC bee crowd props",
+    "Dispatch 38: AchievementBadge world props - 5 trophy pedestals near Hub with BillboardGui achievement names",
+    "Dispatch 39: NotificationCenterGui aggregated toast history panel",
+    "Dispatch 40: BeeColourCustomizer expanded palette (12 preset colours + randomise button)",
     "Dispatch 38: AchievementBadge world props - 5 trophy pedestals near Hub with BillboardGui achievement names",
     "Dispatch 39: NotificationCenterGui aggregated toast history panel",
     "DONE: Dispatch 35 \u2014 TutorialService first-play 4-step guided tooltip overlay",
     "DONE: Dispatch 34 \u2014 LeaderboardService OrderedDataStore + TopBar ScreenGui",
-    "DONE: Dispatch 33 \u2014 PrestigeRewardService generation reset rewards (skin unlock + 5-min +50% rush)",
-    "DONE: Dispatch 32 \u2014 BeeInspectorGui inline ReadyCheck overlay",
-    "DONE: Dispatch 31 \u2014 WaspService difficulty scaling by generation count"
+    "DONE: Dispatch 33 \u2014 PrestigeRewardService generation reset rewards (skin unlock + 5-min +50% rush)"
   ],
   "notes": "New project, kept fully separate from the completed WICKWOOD build and the paused Color Lock project. Git branch: add-beesworld-project. Cloud MCP limitation: Studio MCP runs on user's local Windows machine; cloud container cannot reach it (localhost) -- all Studio builds blocked until local reconnect. All work in this phase = dispatch documents (complete Studio execution guides). DISPATCH EXECUTION ORDER IS CRITICAL -- DataService migrations are sequential (v8->v9->v10->v11) and each dispatch patches the live game state. IMPORTANT LESSON LEARNED: Server-datamodel changes made during Play mode are ephemeral -- all BUILD steps must use genuine Edit-mode calls.",
   "concept": {
@@ -76,9 +76,9 @@
   },
   "stats": {
     "total_scripts": 0,
-    "total_parts": 4098,
+    "total_parts": 4107,
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 36
+  "dispatch_count": 37
 }

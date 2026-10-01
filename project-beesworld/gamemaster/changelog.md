@@ -283,3 +283,14 @@
   - `playSound(position, tier)`: SoundId "rbxassetid://9119713993", PlaybackSpeed=0.8+tier×0.05; `Debris:AddItem(soundPart, 4)`
   - `screenFlash(tier)`: amber full-screen frame, opacity 0.65+tier×0.02, TweenService FLASH_IN 0.08s / hold 0.12s / FLASH_OUT 0.5s
 - **Part budget**: 0 permanent (Debris-managed) → **~4,098/5,000**
+
+## Dispatch 37 — DanceFloorService (cycle 11)
+- **Config.DANCE_EVENT**: intervalSeconds=480, durationSeconds=180, honeyMult=1.25, npcCount=6, label="🕺 DANCE PARTY!"
+- **DanceSync RemoteEvent** in `ReplicatedStorage/Remotes` (fires `{active, endTime, label, honeyMult}`)
+- **DanceFloorService** ModuleScript: `startEvent`/`stopEvent` loop, 6 NPC bee props at hex offsets around FLOOR_CENTRE(0,2,−115), Heartbeat sinusoid bobbing with phase offsets, `GetHoneyMult()` API, lazy-loads optional PrestigeRewardService/SeasonalEventService
+- **GameManager wiring**: require + `DanceFloorService.Init()` after SeasonalEventService
+- **ForagingService wiring**: `danceMult = DanceFloorService.GetHoneyMult()` multiplied into yield
+- **Dance floor props**: 1 central hex tile (Honey Gold) + 6 petal tiles (alternating colours) + disco ball Part (Glass Wax Cream) + PointLight (Honey Gold, Range=28) = **+9 parts**
+- **DanceGui**: DisplayOrder=45; DanceBanner (Propolis Brown, Honey Gold UIStroke, UICorner); TitleLabel (FredokaOne Honey Gold); CountdownLabel (FredokaOne Wax Cream); MultBadge "×1.25" (Honey Gold)
+- **DanceController** LocalScript: `TweenInfo Back/Out` slide-in / `Quad/In` slide-out; Heartbeat countdown `fmtTime()`; "Dance over" 3s linger then auto-hide
+- **Part budget**: +9 permanent → **~4,107/5,000**
