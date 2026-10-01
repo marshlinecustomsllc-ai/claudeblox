@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 65 \u2014 TutorialService 6-step first-session overlay, tutorialSeen flag in profile",
+  "last_action": "dispatch 66 \u2014 PollenStorageUpgradeService 3-tier pollen cap costs propolis",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,6 +75,7 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 65,
-  "total_parts": 4146
+  "dispatch_count": 66,
+  "total_parts": 4146,
+  "last_dispatch": "cycle11_pollen_storage_dispatch.md"
 }

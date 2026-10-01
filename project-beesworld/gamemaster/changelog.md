@@ -591,3 +591,12 @@
 - TutorialController: ScreenGui DisplayOrder=50, semi-transparent overlay, pop-in bubble
 - Steps point at reflowed tab positions from dispatch 64
 - Part budget: +0 → 4,146/5,000
+
+## Dispatch 66 — PollenStorageUpgradeService
+- Config: POLLEN_STORAGE_UPGRADES 3 tiers (300→800→2000→5000 pollen cap, costs 50/200/600 propolis)
+- DataService: pollenStorageTier = 0 migration after tutorialSeen
+- PollenStorageUpgradeService: GetMaxPollen(), BuyPollenStorage RF (costs propolis), PollenStorageSync RE, fires PropolisSync after purchase
+- ForagingService: require PollenStorageUpgradeService; pollen cap enforcement
+- GameManager: PollenStorageUpgradeService.Init() after TutorialService.Init()
+- PollenStorageController: 🌼 tab X=0.085 Y=0.45, POLLEN_CLR yellow-green, panel slides LEFT (PANEL_OPEN_X=0.10), "Costs Propolis 🍬" note
+- Part budget: +0 → 4,146/5,000
