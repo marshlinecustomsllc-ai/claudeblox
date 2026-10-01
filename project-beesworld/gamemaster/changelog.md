@@ -1298,3 +1298,11 @@
 - Permanent bonuses: +10%/+20%/+30% honey yield stacking; server-authoritative eligibility check
 - Client: golden "⬆ Prestige Hive" button (left side, below propolis shop) + confirmation modal + golden ceremony (screen flash + headline "✨ Prestige N! Hive reborn!")
 - RequestPrestige + PrestigeGranted RemoteEvents; HoneyEarned attribute as earning counter
+
+## Dispatch 141 — Bee Roster Expansion (2026-10-01)
+- Added `BeeRosterService` Script in ServerScriptService (+1 permanent; 4,149/5,000)
+- Added `BeeRosterExpansionController` LocalScript in StarterPlayerScripts
+- Three specialist bees: Nurse Bee (200🍯/+15% brood), Scout Bee (350🍯/+20% foraging quality), Guard Bee (500🍯/–5% bear drain)
+- SpecialistBees comma-string attribute; server validates cost, owned check, deducts honey
+- Client: cards attach to existing BeeRoster ScrollingFrame or fallback standalone panel; three states: grey→gold→green
+- RequestUnlockBee + BeeUnlocked RemoteEvents; refreshCards_141 on HoneyCount + SpecialistBees changes
