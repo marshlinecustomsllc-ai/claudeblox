@@ -1235,3 +1235,12 @@
 - Rebuilds trail on CharacterAdded (respawn safe)
 - Listeners on CombState + PropolisUpgrades attributes
 - Part budget: +0 permanent → 4,146 / 5,000
+
+## Dispatch 134 — Royal Cell Aura (2026-10-01)
+- Added `RoyalCellAuraController` LocalScript in StarterPlayerScripts
+- SelectionBox on comb plot: gold wireframe, SurfaceTransparency=0.85
+- LineThickness pulse: 0.04↔0.08 over 2s Sine tween loop
+- PointLight on plot: Color gold, Range 16, Brightness 0.6
+- Triggered by "royal" substring in CombState attribute
+- CharacterRemoving cleanup; respawn-safe rebuild
+- Part budget: +0 permanent → 4,146 / 5,000
