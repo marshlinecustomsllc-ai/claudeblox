@@ -314,3 +314,13 @@
 - **Entry frames** (56px): Title (Honey Gold FredokaOne left-aligned), Message (Wax Cream TextWrapped), Timestamp (relative: "just now"/"Nm ago"/"Nh ago")
 - **NotificationCenterController** LocalScript: MAX_ENTRIES=20 (oldest trimmed), newest-first rebuild, unread resets on open, Clear wipes entries+badge, tab-button auto-close, `Notify.OnClientEvent` hooks into all pre-existing service notifications
 - **Part budget**: 0 permanent → **~4,142/5,000** (no change)
+
+## Dispatch 40 — BeeColourCustomizer (cycle 11)
+- **Config.BEE_COLOURS**: 12 named presets (Honey Gold → Lavender); `Config.BEE_DEFAULT_COLOUR = 1`
+- **DataService migration**: `beeBodyColor = 1` added to DEFAULT_PROFILE
+- **BeeColorSync RemoteEvent** + **SetBeeColor RemoteFunction** in `ReplicatedStorage/Remotes`
+- **BeeColorService** ModuleScript: `GetColor(player)`, `OnServerInvoke` validates index 1–12, applies colour to character body parts, `FireAllClients` broadcasts to all clients; `CharacterAdded` re-applies stored colour on respawn
+- **GameManager wiring**: require + `BeeColorService.Init()`
+- **WardrobePanel UI**: 12 `Swatch_N` TextButtons in 4×3 grid (Size 20%×16%), each with `SelectionRing` UIStroke (hidden until selected), tooltip TextLabel (hover-reveal), `ColorIndex`+`ColorName` attributes; `RandomiseBtn` (🎲, Propolis Brown); `SelectedColourLabel` preview "Selected: Honey Gold"
+- **BeeColourController** LocalScript: `pulseSwatch` (Back/Out scale → Quad/In return), `setSelectedVisual` (ring toggle + preview update), hover tooltip show/hide, `SetBeeColor:InvokeServer`, `BeeColorSync` recolours other players' visible characters client-side
+- **Part budget**: 0 permanent → **~4,142/5,000** (no change)

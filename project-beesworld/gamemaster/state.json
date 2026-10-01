@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "Dispatch 39 written and committed: BellButton+UnreadBadge in HiveGui, NotificationPanel (ScrollingFrame UIListLayout newest-first 20 entries), NotificationCenterController (hooks Notify RemoteEvent, fmtTime, TweenService Back/Out slide, tab auto-close, Clear btn) \u2014 zero new parts (~4142/5000)",
+  "last_action": "Dispatch 40 written and committed: Config.BEE_COLOURS (12 presets), DataService beeBodyColor field, BeeColorSync RE + SetBeeColor RF, BeeColorService (server-authoritative OnServerInvoke + CharacterAdded respawn recolour + FireAllClients broadcast), 12 swatch UI (4x3 grid, pulse animation, hover tooltip, SelectionRing), RandomiseBtn, BeeColourController \u2014 zero new parts (~4142/5000)",
   "pending_fixes": [
     {
       "id": 2,
@@ -58,12 +58,12 @@
     "Old Molasses + Wasp threat system: DataService v10->v11, ThreatService 6-stage patience progression + smoker repel + permanent BearOffering fork (appease/banish), WaspService periodic scout loop + guard intercept + swat mechanic, ThreatZone world zone (Treeline/BearLane/MolassesDen/BearAltar/WaspSpawn/GuardPerch ~145 parts -> ~4,020/5,000 total), MolassesController + WaspAlertController LocalScripts, 5 new RemoteEvents"
   ],
   "next_planned": [
-    "Dispatch 40: BeeColourCustomizer \u2014 12 preset colours + Randomise button in WardrobeGui",
+    "Dispatch 41: DailyRewardService login streak calendar (7-day cycle, honey+propolis rewards, streak reset on miss)",
+    "Dispatch 42: HiveStatsDashboard tab in HiveGui showing lifetime stats (total honey, bees placed, generations, play time)",
+    "Dispatch 43: WeatherService extended - add Thunderstorm event (\u221230% honey, lightning flash VFX + rumble sound)",
     "Dispatch 41: DailyRewardService login streak calendar (7-day cycle, honey+propolis rewards)",
     "Dispatch 42: HiveStatsDashboard tab in HiveGui showing lifetime stats (total honey, bees placed, generations, play time)",
-    "Dispatch 40: BeeColourCustomizer expanded 12-preset palette + randomise button in WardrobeGui",
     "Dispatch 41: DailyRewardService login streak calendar (7-day cycle, honey+propolis rewards)",
-    "Dispatch 40: BeeColourCustomizer expanded palette (12 preset colours + randomise button)",
     "DONE: Dispatch 35 \u2014 TutorialService first-play 4-step guided tooltip overlay",
     "DONE: Dispatch 34 \u2014 LeaderboardService OrderedDataStore + TopBar ScreenGui"
   ],
@@ -80,5 +80,5 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 39
+  "dispatch_count": 40
 }
