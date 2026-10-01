@@ -1,7 +1,7 @@
 {
   "current_cycle": 14,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 117: daily bee facts \u2014 rotating real-science kid-friendly fact card",
+  "last_action": "dispatch 118: hive sound ambience \u2014 layered audio scaling with cell count + cross-fades",
   "pending_fixes": [
     {
       "id": 2,
@@ -59,7 +59,8 @@
     "Dispatch 114: Comb Cell Guide (kid-friendly buildable explanation)",
     "Dispatch 115: Comb Placement Bonus Preview (star tooltip + adult detail toggle)",
     "Dispatch 116: Hive Progress Celebration (14 milestone tiers, kid headline + adult detail)",
-    "Dispatch 117: Daily Bee Facts (30 real facts, daily rotation, tap-to-dismiss)"
+    "Dispatch 117: Daily Bee Facts (30 real facts, daily rotation, tap-to-dismiss)",
+    "Dispatch 118: Hive Sound Ambience (meadow+buzz+forager+rain+fanfare layered audio)"
   ],
   "next_planned": [
     "dispatch 47: LeaderboardGui top-10 server honey leaderboard",
@@ -79,8 +80,8 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 117,
+  "dispatch_count": 118,
   "total_parts": 4146,
-  "last_dispatch": "cycle14_daily_bee_facts_dispatch.md",
-  "last_updated": "2026-10-01T22:51:05.947234Z"
+  "last_dispatch": "cycle14_hive_sound_ambience_dispatch.md",
+  "last_updated": "2026-10-01T22:52:29.599556Z"
 }

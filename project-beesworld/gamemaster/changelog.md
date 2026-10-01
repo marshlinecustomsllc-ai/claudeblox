@@ -1067,3 +1067,16 @@
 - No server scripts, no RemoteEvents, no DataStore — 100% client-side, zero backend cost
 - Design principle: kid "wow" factor + real science for adult curiosity; encourage daily logins
 - Part budget: +0 permanent → 4,146 / 5,000
+
+### Dispatch 118 — Hive Sound Ambience Polish
+- New `HiveAmbienceController` LocalScript in StarterPlayerScripts
+  - 5 audio layers: Meadow(constant 0.08), HiveBuzz(scales 0→0.35 with CombCellCount), ForagerReturn(one-shot on HoneyCount increase), PropolisRain(cross-fades during event), Celebration fanfare(major milestones only)
+  - HiveBuzz PlaybackSpeed also scales 1.0→1.15 (busier hive = higher pitch, mirrors real colony physics)
+  - tweenVol_118: smooth 1.5s volume cross-fades, no jarring cuts
+  - foragerCooldown debounce (0.5s) prevents rapid-fire on batch honey awards
+  - Propolis Rain cross-fade: meadow→0.03, rain in at 0.15 (consistent total loudness)
+  - Fanfare fires only for 5 major milestones (cells_50, prestige 1/2/3, honey_1000)
+  - All sounds in PlayerGui Folder (client-only, not replicated), RollOffMaxDistance=0 (2D audio)
+  - CharacterRemoving cleanup + CharacterAdded restart
+- Integrates with PropolisRainSync (dispatch 109) and HiveMilestoneSync (dispatch 116)
+- Part budget: +0 permanent → 4,146 / 5,000
