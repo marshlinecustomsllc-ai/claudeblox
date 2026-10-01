@@ -1254,3 +1254,11 @@
 - `fullSelBox_135`: amber SelectionBox (220,100,20) on comb plot when 100% full — visual sandwich with Royal Cell gold aura (dispatch 134)
 - DisplayOrder=14; listeners on HoneyCount + CombCellCount attributes; CharacterRemoving cleanup
 - Part budget: +0 permanent → running total 4,146 / 5,000
+
+## Dispatch 136 — Propolis Collection VFX (2026-10-01)
+- Added `PropolisVfxController` LocalScript in StarterPlayerScripts
+- Triggers on positive `PropolisCount` attribute delta (gains only; spend ignored)
+- Three-track effect: "+N 🟤" rise label (0.9s, GothamBold, Propolis Brown) + 6-8 amber dot burst (0.6-0.9s, random scatter ±50px) + propolis HUD icon ×1.15 bounce
+- Flood protection: MAX_LABELS_136=5, oldest-first eviction (pruneLabels_136)
+- `prevPropolis_136` initialised post-join to prevent false burst on attribute replication
+- DisplayOrder=55; +0 permanent parts → running total 4,146 / 5,000
