@@ -1,683 +1,688 @@
-# CYCLE 11 — ACHIEVEMENTS DISPATCH (DISPATCH 25)
-## AchievementService + Badge Toast Widget
+# Dispatch 50 — AchievementService (Milestone Badges)
+**Cycle 11 | A Bee's World**
 
-> **SUPERSEDES cycle7_achievements_dispatch.md** — that dispatch targets stale
-> DataService v7→v8 (migration[8]). By execution time DataService is at v15 and
-> migration[8] is already taken by dispatch 21 (SwarmService, v12→v13).
-> Do NOT also execute cycle7_achievements_dispatch.md.
-
-**Prerequisites:** Dispatches 1–24 executed in order. DataService at v15.
-`profile.questMetrics` already exists (dispatch 23, v14→v15).
-`QuestService.IncrementMetric` fully wired with 14 metric hooks (dispatch 23).  
-**Profile fields added:** `achievementsUnlocked` (array of string IDs)  
-**DataService:** v15 → v16 (migration[11], CURRENT_VERSION = 16)  
-**Part budget impact:** 0 new world parts (UI toast only)
+> Self-contained Studio execution guide.
+> Execute every STEP in order in the Roblox Studio **Command Bar** (View → Command Bar).
 
 ---
 
 ## OVERVIEW
 
-20 achievements tied to the emotional journey of the game. They piggyback on the same
-`profile.questMetrics` table that daily quests use — no separate metric storage needed.
-`AchievementService.CheckAll(player)` is called lazily from inside `QuestService.IncrementMetric`
-and the new `QuestService.SetMetric` (for non-cumulative metrics like tier and floor numbers).
-A badge toast slides in from the top-right when an achievement is earned, then auto-dismisses.
-Achievements are permanent — they survive Swarms and never reset.
+Achievements give players long-term progression goals beyond the core loop.
+Each achievement unlocks once and awards a honey bonus on completion.
+
+**12 achievements** across four categories: Honey, Building, Bee Activity, Seasons.
+
+Key design constraints:
+- Achievements are **server-side checked** — no client can spoof completion
+- **Persistent**: stored in `profile.earnedAchievements` (set of IDs)
+- **Toast notification**: client-side overlay pops 3s on unlock, then fades
+- **No grind loops**: checks run on natural events (forge complete, hex placed, season change, etc.) — no polling loops
+- **Part budget**: +0 permanent parts
 
 ---
 
-## EXECUTION ORDER
+## ACHIEVEMENT TABLE
 
-```
-STEP A  Config.ACHIEVEMENTS
-STEP B  DataService v15→v16 (migration[11])
-STEP C  2 new RemoteEvents (AchievementUnlocked, AchievementSync)
-STEP D  AchievementService ModuleScript
-STEP E  AchievementsRunner Script
-STEP F  QuestService.SetMetric + AchievementService.CheckAll hook in QuestService
-STEP G  Additional metric hooks in CombService/QueenService/SwarmService/ThreatService/CosmeticService/QuestService
-STEP H  AchievementController LocalScript
-STEP I  Verification
-```
+| ID | Icon | Name | Description | Condition | Reward |
+|---|---|---|---|---|---|
+| `first_honey` | 🍯 | First Drop | Earn 1 honey | honey >= 1 | +100 honey |
+| `honey_1k` | 🍯 | Sweet Harvest | Earn 1,000 honey (lifetime) | lifetimeHoney >= 1000 | +500 honey |
+| `honey_10k` | 🏺 | Golden Hive | Earn 10,000 honey (lifetime) | lifetimeHoney >= 10000 | +2000 honey |
+| `honey_100k` | 👑 | Honey Baron | Earn 100,000 honey (lifetime) | lifetimeHoney >= 100000 | +10000 honey |
+| `first_cell` | 🔷 | Foundation | Build 1 hex cell | totalCellsBuilt >= 1 | +50 honey |
+| `cells_10` | 🔷 | Architect | Build 10 hex cells | totalCellsBuilt >= 10 | +300 honey |
+| `cells_50` | 🏗️ | Master Builder | Build 50 hex cells | totalCellsBuilt >= 50 | +2500 honey |
+| `first_gen` | ⭐ | New Generation | Complete 1 prestige | totalGenerations >= 1 | +1000 honey |
+| `gen_5` | ⭐ | Veteran | Complete 5 prestiges | totalGenerations >= 5 | +5000 honey |
+| `streak_7` | 🔥 | Dedicated Bee | Login 7 days in a row | loginStreak >= 7 | +3000 honey |
+| `all_seasons` | 🌍 | Worldly Bee | Experience all 4 seasons | allSeasons flag | +2000 honey |
+| `plot_unlock` | 🗺️ | Expanding Mind | Unlock an expansion plot | any unlockedPlots[7] or [8] | +500 honey |
 
 ---
 
-## STEP A — Config.ACHIEVEMENTS
+## DATA MODEL
 
-Add to Config ModuleScript (clone-replace pattern):
+New profile fields:
 
-```lua
-Config.ACHIEVEMENTS = {
-    -- First steps
-    {id="first_cell",    label="First Cell",           desc="Build your first comb cell.",              metric="cellsBuilt",       threshold=1,     icon="[cell]"},
-    {id="first_dance",   label="Follow the Waggle",    desc="Complete your first waggle dance.",        metric="danceTrips",        threshold=1,     icon="[dance]"},
-    {id="first_harvest", label="Golden Haul",           desc="Harvest honey for the first time.",        metric="honeyHarvested",    threshold=1,     icon="[honey]"},
-    {id="first_repel",   label="Stand Your Ground",    desc="Repel a wasp raid.",                       metric="waspsRepelled",     threshold=1,     icon="[shield]"},
-    -- Progress milestones
-    {id="cells_25",      label="Hex Architect",         desc="Build 25 comb cells.",                     metric="cellsBuilt",        threshold=25,    icon="[hex]"},
-    {id="cells_100",     label="Master Builder",        desc="Build 100 comb cells.",                    metric="cellsBuilt",        threshold=100,   icon="[build]"},
-    {id="honey_10k",     label="Honey Hoard",           desc="Harvest 10,000 honey in total.",           metric="honeyHarvested",    threshold=10000, icon="[star]"},
-    {id="honey_100k",    label="The Golden River",      desc="Harvest 100,000 honey in total.",          metric="honeyHarvested",    threshold=100000,icon="[wave]"},
-    {id="dances_50",     label="Dance Master",          desc="Complete 50 waggle dances.",               metric="danceTrips",        threshold=50,    icon="[music]"},
-    {id="wasps_10",      label="Guardian of the Hive",  desc="Repel 10 wasp raids.",                     metric="waspsRepelled",     threshold=10,    icon="[sword]"},
-    -- System unlocks
-    {id="floor_2",       label="Going Up",              desc="Unlock Floor 2.",                          metric="floorsUnlocked",    threshold=2,     icon="[up]"},
-    {id="floor_3",       label="Sky Hive",              desc="Unlock Floor 3.",                          metric="floorsUnlocked",    threshold=3,     icon="[sky]"},
-    {id="queen_tier3",   label="Queen Crowned",         desc="Reach Queen Tier 3.",                      metric="queenTierReached",  threshold=3,     icon="[crown]"},
-    {id="bloom_rush_3",  label="Storm Chaser",          desc="Witness 3 Bloom Rush events.",             metric="bloomRushSeen",     threshold=3,     icon="[bloom]"},
-    {id="structure_all", label="Full Apiary",           desc="Purchase every structure upgrade.",        metric="structuresBought",  threshold=8,     icon="[apiary]"},
-    -- Prestige / late game
-    {id="first_swarm",   label="Born Again",            desc="Perform your first Swarm.",                metric="swarmsPerformed",   threshold=1,     icon="[swarm]"},
-    {id="gen_3",         label="Dynasty",               desc="Reach Generation 3.",                      metric="generationReached", threshold=3,     icon="[scroll]"},
-    {id="molasses_end",  label="Bear Proof",            desc="Complete the Molasses storyline.",         metric="molassesEnded",     threshold=1,     icon="[bear]"},
-    {id="all_skins",     label="Wardrobe Complete",     desc="Unlock all 7 bee skins.",                  metric="skinsOwned",        threshold=7,     icon="[wardrobe]"},
-    -- Daily quest milestone
-    {id="quests_25",     label="Diligent Beekeeper",   desc="Complete 25 daily quests.",                metric="questsCompleted",   threshold=25,    icon="[quest]"},
-}
 ```
-
-> **Note on icons:** The icon strings shown above are placeholders in square brackets.
-> Replace with actual Unicode emoji in the live Source if desired (the original cycle7
-> dispatch used emoji; use those or simple text). The AchievementController displays
-> the icon field in the toast.
-
-Command Bar:
-
-```lua
-local RS = game:GetService("ReplicatedStorage")
-local oldCfg = RS.Modules.Config
-local newCfg = oldCfg:Clone()
-newCfg.Name = "Config_new"
-newCfg.Parent = RS.Modules
-
-local src = oldCfg.Source
-local insertPoint = src:find("\nreturn Config")
-if insertPoint then
-    local addition = [[
-
-Config.ACHIEVEMENTS = {
-    {id="first_cell",    label="First Cell",           desc="Build your first comb cell.",              metric="cellsBuilt",       threshold=1,     icon="🐝"},
-    {id="first_dance",   label="Follow the Waggle",    desc="Complete your first waggle dance.",        metric="danceTrips",        threshold=1,     icon="💃"},
-    {id="first_harvest", label="Golden Haul",           desc="Harvest honey for the first time.",        metric="honeyHarvested",    threshold=1,     icon="🍯"},
-    {id="first_repel",   label="Stand Your Ground",    desc="Repel a wasp raid.",                       metric="waspsRepelled",     threshold=1,     icon="🛡️"},
-    {id="cells_25",      label="Hex Architect",         desc="Build 25 comb cells.",                     metric="cellsBuilt",        threshold=25,    icon="🔷"},
-    {id="cells_100",     label="Master Builder",        desc="Build 100 comb cells.",                    metric="cellsBuilt",        threshold=100,   icon="🏗️"},
-    {id="honey_10k",     label="Honey Hoard",           desc="Harvest 10,000 honey in total.",           metric="honeyHarvested",    threshold=10000, icon="✨"},
-    {id="honey_100k",    label="The Golden River",      desc="Harvest 100,000 honey in total.",          metric="honeyHarvested",    threshold=100000,icon="🌊"},
-    {id="dances_50",     label="Dance Master",          desc="Complete 50 waggle dances.",               metric="danceTrips",        threshold=50,    icon="🎭"},
-    {id="wasps_10",      label="Guardian of the Hive",  desc="Repel 10 wasp raids.",                     metric="waspsRepelled",     threshold=10,    icon="⚔️"},
-    {id="floor_2",       label="Going Up",              desc="Unlock Floor 2.",                          metric="floorsUnlocked",    threshold=2,     icon="🏢"},
-    {id="floor_3",       label="Sky Hive",              desc="Unlock Floor 3.",                          metric="floorsUnlocked",    threshold=3,     icon="🌤️"},
-    {id="queen_tier3",   label="Queen Crowned",         desc="Reach Queen Tier 3.",                      metric="queenTierReached",  threshold=3,     icon="👑"},
-    {id="bloom_rush_3",  label="Storm Chaser",          desc="Witness 3 Bloom Rush events.",             metric="bloomRushSeen",     threshold=3,     icon="🌸"},
-    {id="structure_all", label="Full Apiary",           desc="Purchase every structure upgrade.",        metric="structuresBought",  threshold=8,     icon="🏛️"},
-    {id="first_swarm",   label="Born Again",            desc="Perform your first Swarm.",                metric="swarmsPerformed",   threshold=1,     icon="🌀"},
-    {id="gen_3",         label="Dynasty",               desc="Reach Generation 3.",                      metric="generationReached", threshold=3,     icon="📜"},
-    {id="molasses_end",  label="Bear Proof",            desc="Complete the Molasses storyline.",         metric="molassesEnded",     threshold=1,     icon="🐻"},
-    {id="all_skins",     label="Wardrobe Complete",     desc="Unlock all 7 bee skins.",                  metric="skinsOwned",        threshold=7,     icon="🎨"},
-    {id="quests_25",     label="Diligent Beekeeper",   desc="Complete 25 daily quests.",                metric="questsCompleted",   threshold=25,    icon="📋"},
-}
-]]
-    newCfg.Source = src:sub(1, insertPoint - 1) .. addition .. "\nreturn Config"
-else
-    warn("Config: could not find 'return Config'")
-end
-newCfg.Name = "Config"
-oldCfg.Name = "Config_old"
-oldCfg.Parent = nil
-print("Config.ACHIEVEMENTS added, count:", #require(RS.Modules.Config).ACHIEVEMENTS)
+profile.earnedAchievements  {[string]: boolean}  default: {}
+profile.seenAllSeasons      number               default: 0  (bitmask: Spring=1 Summer=2 Autumn=4 Winter=8)
 ```
 
 ---
 
-## STEP B — DataService v15 → v16
+## STEP A — Config injection
 
-Clone-replace DataService. Add migration[11] and bump CURRENT_VERSION to 16.
+Paste in Command Bar:
 
 ```lua
+-- STEP A: inject ACHIEVEMENTS table into Config
 local SSS = game:GetService("ServerScriptService")
-local oldDS = SSS.Systems.DataService
-local newDS = oldDS:Clone()
-newDS.Name = "DataService_new"
-newDS.Parent = SSS.Systems
+local cfg = SSS:FindFirstChild("Config")
+assert(cfg, "Config not found")
 
-local src = oldDS.Source
+local src = cfg.Source
 
--- Bump version
-src = src:gsub("CURRENT_VERSION%s*=%s*15", "CURRENT_VERSION = 16")
+if src:find("ACHIEVEMENTS", 1, true) then
+    print("Config already has ACHIEVEMENTS — skip STEP A")
+else
+    local anchor = "return Config"
+    assert(src:find(anchor, 1, true), "anchor 'return Config' not found")
 
--- Add migration[11] (achievementsUnlocked field; questMetrics already exists from migration[10])
-local mig11 = [[
-    [11] = function(profile: Profile)
-        profile.achievementsUnlocked = {}
-    end,
-]]
--- Anchor: end of migration[10] body — find "questMetrics    = {}" then closing "end," then "}"
--- Safe fallback: insert before 'return DataService'
-if src:find("questSeed") then
-    -- migration[10] exists; add after its closing end,
-    -- The migration[10] function ends with: profile.questMetrics    = {}\n    end,
-    local anchor = "profile.questMetrics    = {}\n\t\tend,"
-    local replacement = "profile.questMetrics    = {}\n\t\tend,\n" .. mig11
-    local patched = src:gsub(anchor, replacement, 1)
-    if patched ~= src then
-        src = patched
-    else
-        -- Try simpler anchor
-        local anchor2 = "profile.questMetrics = {}\n\t\tend,"
-        local patched2 = src:gsub(anchor2, "profile.questMetrics = {}\n\t\tend,\n" .. mig11, 1)
-        if patched2 ~= src then
-            src = patched2
-        else
-            warn("Could not find migration[10] anchor — add migration[11] manually")
-        end
-    end
-end
+    local injection = [[
+Config.ACHIEVEMENTS = {
+    { id = "first_honey",  icon = "🍯", name = "First Drop",       desc = "Earn your first honey",        reward = 100   },
+    { id = "honey_1k",     icon = "🍯", name = "Sweet Harvest",    desc = "Earn 1,000 honey (lifetime)",  reward = 500   },
+    { id = "honey_10k",    icon = "🏺", name = "Golden Hive",      desc = "Earn 10,000 honey (lifetime)", reward = 2000  },
+    { id = "honey_100k",   icon = "👑", name = "Honey Baron",      desc = "Earn 100K honey (lifetime)",   reward = 10000 },
+    { id = "first_cell",   icon = "🔷", name = "Foundation",       desc = "Build your first hex cell",    reward = 50    },
+    { id = "cells_10",     icon = "🔷", name = "Architect",        desc = "Build 10 hex cells",           reward = 300   },
+    { id = "cells_50",     icon = "🏗️", name = "Master Builder",  desc = "Build 50 hex cells",           reward = 2500  },
+    { id = "first_gen",    icon = "⭐", name = "New Generation",   desc = "Complete 1 prestige",          reward = 1000  },
+    { id = "gen_5",        icon = "⭐", name = "Veteran",          desc = "Complete 5 prestiges",         reward = 5000  },
+    { id = "streak_7",     icon = "🔥", name = "Dedicated Bee",    desc = "Login 7 days in a row",        reward = 3000  },
+    { id = "all_seasons",  icon = "🌍", name = "Worldly Bee",      desc = "Experience all 4 seasons",     reward = 2000  },
+    { id = "plot_unlock",  icon = "🗺️", name = "Expanding Mind",  desc = "Unlock an expansion plot",     reward = 500   },
+}
 
-newDS.Source = src
-newDS.Name = "DataService"
-oldDS.Name = "DataService_old"
-oldDS.Parent = nil
-print("DataService v15→v16, migration[11] achievementsUnlocked")
-```
+return Config]]
 
-**Verify:**
-```lua
-local src = game:GetService("ServerScriptService").Systems.DataService.Source
-print("Version:", src:match("CURRENT_VERSION%s*=%s*(%d+)"))
-print("Has migration[11]:", tostring(src:find("achievementsUnlocked") ~= nil))
-```
-→ Version: 16, Has migration[11]: true
+    local clone = cfg:Clone()
+    cfg.Name = "Config_OLD_NX"
+    cfg.Parent = nil
 
----
-
-## STEP C — New RemoteEvents
-
-```lua
-local remotes = game:GetService("ReplicatedStorage"):WaitForChild("Remotes")
-for _, name in {"AchievementUnlocked", "AchievementSync"} do
-    if not remotes:FindFirstChild(name) then
-        local e = Instance.new("RemoteEvent")
-        e.Name = name
-        e.Parent = remotes
-        print("Created:", name)
-    else
-        print("Already exists:", name)
-    end
+    clone.Source = src:gsub(anchor, injection, 1)
+    clone.Name = "Config"
+    clone.Parent = SSS
+    print("STEP A done — Config.ACHIEVEMENTS injected")
 end
 ```
 
 ---
 
-## STEP D — AchievementService ModuleScript
+## STEP B — DataService migration
 
-**Location:** `ServerScriptService.Systems.AchievementService`  
-**Type:** ModuleScript  
-**Strict:** `--!strict`
+Paste in Command Bar:
 
 ```lua
+-- STEP B: inject earnedAchievements + seenAllSeasons into DataService
+local SSS = game:GetService("ServerScriptService")
+local ds  = SSS:FindFirstChild("DataService")
+assert(ds, "DataService not found")
+
+local src = ds.Source
+
+if src:find("earnedAchievements", 1, true) then
+    print("DataService already has earnedAchievements — skip STEP B")
+else
+    local anchor = "unlockedPlots = {[1]=true,[2]=true,[3]=true,[4]=true,[5]=true,[6]=true},"
+    assert(src:find(anchor, 1, true), "anchor not found — check DataService source")
+
+    local injection = anchor .. [[
+
+        earnedAchievements = {},
+        seenAllSeasons = 0,]]
+
+    local clone = ds:Clone()
+    ds.Name = "DataService_OLD_NX"
+    ds.Parent = nil
+
+    clone.Source = src:gsub(anchor, injection, 1)
+    clone.Name = "DataService"
+    clone.Parent = SSS
+    print("STEP B done — earnedAchievements + seenAllSeasons injected")
+end
+```
+
+---
+
+## STEP C — AchievementService ModuleScript
+
+Paste in Command Bar:
+
+```lua
+-- STEP C: create AchievementService in ServerScriptService
+local SSS = game:GetService("ServerScriptService")
+assert(not SSS:FindFirstChild("AchievementService"), "AchievementService already exists — skip STEP C")
+
+local m = Instance.new("ModuleScript")
+m.Name   = "AchievementService"
+m.Parent = SSS
+m.Source = [[
 --!strict
-local Players             = game:GetService("Players")
-local ReplicatedStorage   = game:GetService("ReplicatedStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
+local Players  = game:GetService("Players")
+local RepStore = game:GetService("ReplicatedStorage")
+local SSS      = game:GetService("ServerScriptService")
 
-local Config      = require(ReplicatedStorage.Modules.Config)
-local DataService = require(ServerScriptService.Systems.DataService)
+local DataService = require(SSS:WaitForChild("DataService"))
+local Config      = require(SSS:WaitForChild("Config"))
 
 local AchievementService = {}
 
-local Remotes               = ReplicatedStorage:WaitForChild("Remotes")
-local AchievementUnlocked: RemoteEvent = Remotes:WaitForChild("AchievementUnlocked")
-local AchievementSync:     RemoteEvent = Remotes:WaitForChild("AchievementSync")
+local AchievementUnlocked: RemoteEvent
 
-type Achievement = {id: string, label: string, desc: string, metric: string, threshold: number, icon: string}
+-- Award an achievement (idempotent — silent if already earned)
+function AchievementService.Check(player: Player, id: string)
+    local profile = DataService.GetProfile(player)
+    if not profile then return end
+    if not profile.earnedAchievements then profile.earnedAchievements = {} end
+    if profile.earnedAchievements[id] then return end  -- already earned
 
--- Called from QuestService.IncrementMetric and QuestService.SetMetric after any metric update
-function AchievementService.CheckAll(player: Player): ()
+    -- Find config entry
+    local entry = nil
+    for _, a in Config.ACHIEVEMENTS do
+        if a.id == id then entry = a break end
+    end
+    if not entry then return end
+
+    -- Mark earned
+    profile.earnedAchievements[id] = true
+
+    -- Award honey
+    profile.honey = (profile.honey or 0) + entry.reward
+    profile.lifetimeHoney = (profile.lifetimeHoney or 0) + entry.reward
+
+    -- Notify client
+    AchievementUnlocked:FireClient(player, {
+        id     = id,
+        icon   = entry.icon,
+        name   = entry.name,
+        reward = entry.reward,
+    })
+
+    print(string.format("[AchievementService] %s earned '%s' (+%d honey)", player.Name, entry.name, entry.reward))
+end
+
+-- Bulk-check all achievements for a player (called after any stat change)
+function AchievementService.CheckAll(player: Player)
     local profile = DataService.GetProfile(player)
     if not profile then return end
 
-    local unlocked = (profile.achievementsUnlocked or {}) :: {string}
-    local metrics  = (profile.questMetrics or {}) :: {[string]: number}
+    local lh  = profile.lifetimeHoney  or 0
+    local cb  = profile.totalCellsBuilt or 0
+    local gen = profile.totalGenerations or 0
+    local ls  = profile.loginStreak     or 0
+    local up  = profile.unlockedPlots   or {}
+    local sas = profile.seenAllSeasons  or 0
 
-    -- Fast lookup set
-    local unlockedSet: {[string]: boolean} = {}
-    for _, id in unlocked do unlockedSet[id] = true end
+    -- Honey milestones
+    if lh >= 1     then AchievementService.Check(player, "first_honey") end
+    if lh >= 1000  then AchievementService.Check(player, "honey_1k")   end
+    if lh >= 10000 then AchievementService.Check(player, "honey_10k")  end
+    if lh >= 100000 then AchievementService.Check(player, "honey_100k") end
 
-    local newlyEarned: {Achievement} = {}
-    for _, ach in Config.ACHIEVEMENTS :: {Achievement} do
-        if not unlockedSet[ach.id] then
-            local current = metrics[ach.metric] or 0
-            if current >= ach.threshold then
-                table.insert(unlocked, ach.id)
-                unlockedSet[ach.id] = true
-                table.insert(newlyEarned, ach)
-            end
-        end
-    end
+    -- Build milestones
+    if cb >= 1  then AchievementService.Check(player, "first_cell") end
+    if cb >= 10 then AchievementService.Check(player, "cells_10")   end
+    if cb >= 50 then AchievementService.Check(player, "cells_50")   end
 
-    if #newlyEarned > 0 then
-        profile.achievementsUnlocked = unlocked
-        DataService.Save(player)
-        for _, ach in newlyEarned do
-            AchievementUnlocked:FireClient(player, {
-                id    = ach.id,
-                label = ach.label,
-                desc  = ach.desc,
-                icon  = ach.icon,
-            })
-        end
-    end
+    -- Prestige milestones
+    if gen >= 1 then AchievementService.Check(player, "first_gen") end
+    if gen >= 5 then AchievementService.Check(player, "gen_5")     end
+
+    -- Login streak
+    if ls >= 7 then AchievementService.Check(player, "streak_7") end
+
+    -- All 4 seasons seen (bitmask = 1+2+4+8 = 15)
+    if sas == 15 then AchievementService.Check(player, "all_seasons") end
+
+    -- Expansion plot unlocked
+    if up[7] or up[8] then AchievementService.Check(player, "plot_unlock") end
 end
 
--- Broadcast current unlocked list to client (called on join)
-function AchievementService.SyncClient(player: Player): ()
+-- Record a season being seen (bitmask: 0=Spring 1=Summer 2=Autumn 3=Winter)
+function AchievementService.RecordSeason(player: Player, seasonIndex: number)
     local profile = DataService.GetProfile(player)
     if not profile then return end
-    AchievementSync:FireClient(player, profile.achievementsUnlocked or {})
+    local bit = 2 ^ seasonIndex   -- 1, 2, 4, or 8
+    local current = profile.seenAllSeasons or 0
+    if current == 15 then return end  -- already complete
+    local newVal = bit32.bor(current, bit)
+    profile.seenAllSeasons = newVal
+    if newVal == 15 then
+        AchievementService.Check(player, "all_seasons")
+    end
 end
 
-Players.PlayerAdded:Connect(function(player: Player)
-    task.wait(4)
-    AchievementService.SyncClient(player)
-end)
+function AchievementService.Init()
+    AchievementUnlocked = RepStore:WaitForChild("AchievementUnlocked") :: RemoteEvent
+
+    -- Check achievements 5 seconds after player loads (catch any already-earned from prior sessions)
+    Players.PlayerAdded:Connect(function(player: Player)
+        task.delay(5, function()
+            if player.Parent then AchievementService.CheckAll(player) end
+        end)
+    end)
+
+    print("[AchievementService] initialised")
+end
 
 return AchievementService
-```
-
-Create:
-
-```lua
-local SSS = game:GetService("ServerScriptService")
-local achMod = Instance.new("ModuleScript")
-achMod.Name = "AchievementService"
-achMod.Parent = SSS.Systems
-achMod.Source = [[ ... paste full source above ... ]]
-print("AchievementService created at", achMod:GetFullName())
-```
-
----
-
-## STEP E — AchievementsRunner Script
-
-```lua
-local SSS = game:GetService("ServerScriptService")
-local runner = Instance.new("Script")
-runner.Name = "AchievementsRunner"
-runner.Parent = SSS
-runner.Source = [[--!strict
-local ServerScriptService = game:GetService("ServerScriptService")
-require(ServerScriptService.Systems.AchievementService)
--- Module self-connects Players.PlayerAdded on require; no Start() needed
 ]]
-print("AchievementsRunner created")
+
+print("STEP C done — AchievementService created")
 ```
 
 ---
 
-## STEP F — QuestService: add SetMetric + AchievementService.CheckAll hook
+## STEP D — AchievementUnlocked RemoteEvent
 
-Clone-replace QuestService to add two things:
-
-### F1 — Add QuestService.SetMetric function
-
-Add this function to QuestService ModuleScript after `QuestService.IncrementMetric`:
+Paste in Command Bar:
 
 ```lua
--- For non-cumulative metrics (floors, queen tier, generation) — sets value directly
-function QuestService.SetMetric(player: Player, metric: string, value: number): ()
-    local profile = DataService.GetProfile(player)
-    if not profile then return end
-    local metrics = (profile.questMetrics or {}) :: {[string]: number}
-    metrics[metric] = value
-    profile.questMetrics = metrics
-    -- Lazy require to avoid circular dependency
-    local AchievementService = require(game:GetService("ServerScriptService").Systems.AchievementService)
-    AchievementService.CheckAll(player)
+-- STEP D: create AchievementUnlocked RemoteEvent
+local Rep = game:GetService("ReplicatedStorage")
+if not Rep:FindFirstChild("AchievementUnlocked") then
+    local re = Instance.new("RemoteEvent")
+    re.Name   = "AchievementUnlocked"
+    re.Parent = Rep
+    print("AchievementUnlocked created")
+else print("AchievementUnlocked already exists") end
+```
+
+---
+
+## STEP E — GameManager injection
+
+Paste in Command Bar:
+
+```lua
+-- STEP E: inject AchievementService.Init() into GameManager
+local SSS = game:GetService("ServerScriptService")
+local gm  = SSS:FindFirstChild("GameManager")
+assert(gm, "GameManager not found")
+
+local src = gm.Source
+
+if src:find("AchievementService", 1, true) then
+    print("GameManager already has AchievementService — skip STEP E")
+else
+    local anchor = "HiveExpansionService.Init()"
+    assert(src:find(anchor, 1, true), "anchor 'HiveExpansionService.Init()' not found")
+
+    local injection = [[
+HiveExpansionService.Init()
+    local AchievementService = require(ServerScriptService:WaitForChild("AchievementService"))
+    AchievementService.Init()]]
+
+    local clone = gm:Clone()
+    gm.Name = "GameManager_OLD_NX"
+    gm.Parent = nil
+
+    clone.Source = src:gsub(anchor, injection, 1)
+    clone.Name = "GameManager"
+    clone.Parent = SSS
+    print("STEP E done — AchievementService.Init() injected")
 end
 ```
 
-### F2 — Add AchievementService.CheckAll call inside IncrementMetric
+---
 
-At the end of `QuestService.IncrementMetric`, after the `if changed then QuestSync:FireClient` block,
-add a lazy-require CheckAll call:
+## STEP F — Injection points into other services
 
-```lua
--- Check achievements on every metric update
-local AchievementService = require(game:GetService("ServerScriptService").Systems.AchievementService)
-AchievementService.CheckAll(player)
-```
+These inject `AchievementService.CheckAll` calls at natural event points.
 
-> **Circular dependency note:** Both calls use a local `require()` inside the function body
-> (not at module top). Luau's module cache means the second require() call is instantaneous;
-> the lazy pattern avoids the circular-require error that would occur if either module tried
-> to require the other at load time.
+### F1 — ForagingService (honey earned trigger)
 
-Command Bar to patch QuestService:
+Paste in Command Bar:
 
 ```lua
+-- STEP F1: inject CheckAll into ForagingService after honey is credited
 local SSS = game:GetService("ServerScriptService")
-local oldQS = SSS.Systems.QuestService
-local newQS = oldQS:Clone()
-newQS.Name = "QuestService_new"
-newQS.Parent = SSS.Systems
+local fs  = SSS:FindFirstChild("ForagingService")
+assert(fs, "ForagingService not found")
 
-local src = oldQS.Source
+local src = fs.Source
 
--- Add SetMetric after IncrementMetric function (find 'end\n\nClaimQuest' pattern)
-local setMetricCode = [[
+if src:find("AchievementService", 1, true) then
+    print("ForagingService already has AchievementService — skip F1")
+else
+    -- Find the require block at top and add AchievementService
+    local reqAnchor = 'local DataService = require(SSS:WaitForChild("DataService"))'
+    assert(src:find(reqAnchor, 1, true), "require anchor not found in ForagingService")
 
-function QuestService.SetMetric(player: Player, metric: string, value: number): ()
-    local profile = DataService.GetProfile(player)
-    if not profile then return end
-    local metrics = (profile.questMetrics or {}) :: {[string]: number}
-    metrics[metric] = value
-    profile.questMetrics = metrics
-    local AchievementService = require(game:GetService("ServerScriptService").Systems.AchievementService)
-    AchievementService.CheckAll(player)
+    local reqInjection = reqAnchor .. '\nlocal AchievementService = require(SSS:WaitForChild("AchievementService"))'
+
+    -- Find where honey is credited to profile (profile.honey = ...)
+    -- Inject CheckAll after the credit line
+    local creditAnchor = "profile.lifetimeHoney = (profile.lifetimeHoney or 0) + honeyYield"
+    if not src:find(creditAnchor, 1, true) then
+        -- Try alternate pattern
+        creditAnchor = "profile.honey = profile.honey + "
+    end
+    assert(src:find(creditAnchor, 1, true), "honey credit anchor not found in ForagingService")
+
+    local creditInjection = creditAnchor .. "\n        AchievementService.CheckAll(player)"
+
+    local clone = fs:Clone()
+    fs.Name = "ForagingService_OLD_NX"
+    fs.Parent = nil
+
+    local newSrc = src:gsub(reqAnchor, reqInjection, 1)
+    newSrc = newSrc:gsub(creditAnchor, creditInjection, 1)
+    clone.Source = newSrc
+    clone.Name = "ForagingService"
+    clone.Parent = SSS
+    print("STEP F1 done — AchievementService.CheckAll injected into ForagingService")
 end
-
-]]
-
--- Add CheckAll at end of IncrementMetric (find 'if changed then' block end)
-local checkAllCode = [[
-    -- Achievements check (lazy require avoids circular dependency)
-    local AchievementService = require(game:GetService("ServerScriptService").Systems.AchievementService)
-    AchievementService.CheckAll(player)
-]]
-
--- Insert SetMetric before 'ClaimQuest.OnServerEvent'
-src = src:gsub("(ClaimQuest%.OnServerEvent)", setMetricCode .. "%1", 1)
-
--- Insert CheckAll at end of IncrementMetric body (before final 'end' of that function)
--- Find the unique 'if changed then' → 'end\nend\n\nlocal function handleClaim' pattern
-src = src:gsub("(if changed then\n%s+QuestSync:FireClient%(player, buildSyncPayload%(player%)%)\n%s+end\nend)", "%1\n" .. checkAllCode, 1)
-
-newQS.Source = src
-newQS.Name = "QuestService"
-oldQS.Name = "QuestService_old"
-oldQS.Parent = nil
-print("QuestService patched with SetMetric + AchievementService.CheckAll")
 ```
 
-**Verify:**
+### F2 — PlotService (cell built trigger)
+
+Paste in Command Bar:
+
 ```lua
-local src = game:GetService("ServerScriptService").Systems.QuestService.Source
-print("SetMetric:", tostring(src:find("SetMetric") ~= nil))
-print("CheckAll:", tostring(src:find("AchievementService.CheckAll") ~= nil))
+-- STEP F2: inject CheckAll into PlotService after hex cell is placed
+local SSS = game:GetService("ServerScriptService")
+local ps  = SSS:FindFirstChild("PlotService")
+assert(ps, "PlotService not found")
+
+local src = ps.Source
+
+if src:find("AchievementService", 1, true) then
+    print("PlotService already has AchievementService — skip F2")
+else
+    local reqAnchor = 'local DataService = require(SSS:WaitForChild("DataService"))'
+    assert(src:find(reqAnchor, 1, true), "require anchor not found in PlotService")
+
+    local reqInjection = reqAnchor .. '\nlocal AchievementService = require(SSS:WaitForChild("AchievementService"))'
+
+    -- Inject after totalCellsBuilt increment
+    local cellAnchor = 'profile.totalCellsBuilt = (profile.totalCellsBuilt or 0) + 1'
+    assert(src:find(cellAnchor, 1, true), "totalCellsBuilt anchor not found in PlotService")
+
+    local cellInjection = cellAnchor .. "\n        AchievementService.CheckAll(player)"
+
+    local clone = ps:Clone()
+    ps.Name = "PlotService_OLD_NX"
+    ps.Parent = nil
+
+    local newSrc = src:gsub(reqAnchor, reqInjection, 1)
+    newSrc = newSrc:gsub(cellAnchor, cellInjection, 1)
+    clone.Source = newSrc
+    clone.Name = "PlotService"
+    clone.Parent = SSS
+    print("STEP F2 done — AchievementService.CheckAll injected into PlotService")
+end
+```
+
+### F3 — SeasonService (season seen trigger)
+
+Paste in Command Bar:
+
+```lua
+-- STEP F3: inject RecordSeason into SeasonService when season changes
+local SSS = game:GetService("ServerScriptService")
+local ss  = SSS:FindFirstChild("SeasonService")
+assert(ss, "SeasonService not found")
+
+local src = ss.Source
+
+if src:find("AchievementService", 1, true) then
+    print("SeasonService already has AchievementService — skip F3")
+else
+    local reqAnchor = 'local DataService = require(SSS:WaitForChild("DataService"))'
+    assert(src:find(reqAnchor, 1, true), "require anchor not found in SeasonService")
+
+    local reqInjection = reqAnchor .. '\nlocal AchievementService = require(SSS:WaitForChild("AchievementService"))'
+
+    -- Inject RecordSeason call inside syncAll() → for each player
+    -- Find the SeasonSync FireAllClients call and inject before it
+    local syncAnchor = "SeasonSync:FireAllClients("
+    assert(src:find(syncAnchor, 1, true), "SeasonSync:FireAllClients anchor not found in SeasonService")
+
+    local syncInjection = [[
+for _, p in Players:GetPlayers() do
+        AchievementService.RecordSeason(p, _currentSeason)
+    end
+    ]] .. syncAnchor
+
+    local clone = ss:Clone()
+    ss.Name = "SeasonService_OLD_NX"
+    ss.Parent = nil
+
+    local newSrc = src:gsub(reqAnchor, reqInjection, 1)
+    newSrc = newSrc:gsub(syncAnchor, syncInjection, 1)
+    clone.Source = newSrc
+    clone.Name = "SeasonService"
+    clone.Parent = SSS
+    print("STEP F3 done — AchievementService.RecordSeason injected into SeasonService")
+end
 ```
 
 ---
 
-## STEP G — Additional metric hooks (new metrics not in daily quest catalogue)
+## STEP G — AchievementToast LocalScript
 
-These 6 metrics are used by achievements but not by daily quests. Add
-`QuestService.SetMetric` or `QuestService.IncrementMetric` calls at the
-indicated points. `QuestService` must be required (lazy inside function or at top
-of each modified script).
-
-| Service | Event | Function | Metric | Value |
-|---------|-------|----------|--------|-------|
-| CombService | floor N unlocked (UnlockFloor success) | `SetMetric` | `"floorsUnlocked"` | floor number (2 or 3) |
-| QueenService | queen tier advances | `SetMetric` | `"queenTierReached"` | new tier (1–5) |
-| SwarmService | performSwarm, after generation increment | `SetMetric` | `"generationReached"` | new generation number |
-| ThreatService | Molasses storyline ends (appease or banish) | `IncrementMetric` | `"molassesEnded"` | 1 |
-| CosmeticService | skin granted (CheckAndGrantUnlocks success, non-GP) | `IncrementMetric` | `"skinsOwned"` | 1 |
-| QuestService | handleClaim: after prog.claimed = true | `IncrementMetric` | `"questsCompleted"` | 1 |
-
-**Example patch for QuestService.handleClaim** (add after `prog.claimed = true`):
+Paste in Command Bar:
 
 ```lua
--- Already inside QuestService, so call directly (no require needed)
-local metricsTable = (profile.questMetrics or {}) :: {[string]: number}
-metricsTable["questsCompleted"] = (metricsTable["questsCompleted"] or 0) + 1
-profile.questMetrics = metricsTable
-```
+-- STEP G: create AchievementToast LocalScript in StarterPlayerScripts
+local SPS = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
+assert(SPS, "StarterPlayerScripts not found")
+assert(not SPS:FindFirstChild("AchievementToast"), "AchievementToast exists — skip STEP G")
 
-(No need to call QuestService.IncrementMetric from inside itself — update the table directly
-and let the existing AchievementService.CheckAll call at the end of IncrementMetric handle it
-on the next triggered metric.)
-
----
-
-## STEP H — AchievementController LocalScript
-
-**Location:** `StarterPlayerScripts.AchievementController`  
-**Type:** LocalScript  
-**Strict:** `--!strict`
-
-```lua
+local ls = Instance.new("LocalScript")
+ls.Name   = "AchievementToast"
+ls.Parent = SPS
+ls.Source = [[
 --!strict
-local Players           = game:GetService("Players")
-local TweenService      = game:GetService("TweenService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- AchievementToast: pop-up notification when an achievement is earned
+local Players      = game:GetService("Players")
+local RepStore     = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
-local player = Players.LocalPlayer
+local player    = Players.LocalPlayer
+local PlayerGui = player:WaitForChild("PlayerGui")
 
-local Remotes             = ReplicatedStorage:WaitForChild("Remotes")
-local AchievementUnlocked = Remotes:WaitForChild("AchievementUnlocked") :: RemoteEvent
-local AchievementSync     = Remotes:WaitForChild("AchievementSync")     :: RemoteEvent
+local AchievementUnlocked = RepStore:WaitForChild("AchievementUnlocked") :: RemoteEvent
 
--- Warm Wax palette
-local C_BROWN = Color3.fromRGB(122, 74, 34)
-local C_GOLD  = Color3.fromRGB(242, 168, 28)
-local C_CREAM = Color3.fromRGB(232, 212, 154)
-local C_AMBER = Color3.fromRGB(90, 53, 16)
+-- Toast queue (prevent overlap)
+local queue: {{icon:string, name:string, reward:number}} = {}
+local showing = false
 
-local _unlockedIds: {[string]: boolean} = {}
-local _toastActive = false
-local _toastQueue: {{label:string, desc:string, icon:string}} = {}
+local HONEY_GOLD = Color3.fromRGB(242, 168, 28)
+local DARK_BG    = Color3.fromRGB(25, 15, 5)
 
-AchievementSync.OnClientEvent:Connect(function(ids: {string})
-    for _, id in ids do _unlockedIds[id] = true end
-end)
+local function showToast(data: {icon:string, name:string, reward:number})
+    -- Build ScreenGui per-toast (destroyed after animation)
+    local sg = Instance.new("ScreenGui")
+    sg.Name           = "AchievementToastGui"
+    sg.DisplayOrder   = 200
+    sg.ResetOnSpawn   = false
+    sg.IgnoreGuiInset = true
+    sg.Parent         = PlayerGui
 
-local function showToast(data: {label:string, desc:string, icon:string}): ()
-    _toastActive = true
+    local toast = Instance.new("Frame")
+    toast.Name             = "Toast"
+    toast.AnchorPoint      = Vector2.new(0.5, 0)
+    toast.Position         = UDim2.new(0.5, 0, -0.12, 0)  -- starts above screen
+    toast.Size             = UDim2.new(0, 320, 0, 70)
+    toast.BackgroundColor3 = DARK_BG
+    toast.BorderSizePixel  = 0
+    toast.ZIndex           = 5
+    toast.Parent           = sg
 
-    local gui = Instance.new("ScreenGui")
-    gui.Name           = "AchievementToast"
-    gui.ResetOnSpawn   = false
-    gui.DisplayOrder   = 25
-    gui.IgnoreGuiInset = true
-    gui.Parent         = player.PlayerGui
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 14)
+    corner.Parent       = toast
 
-    local frame = Instance.new("Frame")
-    frame.Name                   = "ToastFrame"
-    frame.Size                   = UDim2.new(0, 300, 0, 72)
-    frame.Position               = UDim2.new(1, 10, 0, 80)  -- starts off-screen right
-    frame.AnchorPoint            = Vector2.new(1, 0)
-    frame.BackgroundColor3       = C_AMBER
-    frame.BackgroundTransparency = 0.08
-    frame.Parent                 = gui
-    local fc = Instance.new("UICorner")
-    fc.CornerRadius = UDim.new(0, 8)
-    fc.Parent = frame
-    local fs = Instance.new("UIStroke")
-    fs.Color     = C_GOLD
-    fs.Thickness = 1.5
-    fs.Parent    = frame
+    local stroke = Instance.new("UIStroke")
+    stroke.Color     = HONEY_GOLD
+    stroke.Thickness = 2
+    stroke.Parent    = toast
 
-    -- Icon box (left side)
-    local iconLabel = Instance.new("TextLabel")
-    iconLabel.Name              = "Icon"
-    iconLabel.Size              = UDim2.new(0, 52, 1, -8)
-    iconLabel.Position          = UDim2.new(0, 4, 0, 4)
-    iconLabel.BackgroundColor3  = C_BROWN
-    iconLabel.Text              = data.icon
-    iconLabel.Font              = Enum.Font.GothamBold
-    iconLabel.TextScaled        = true
-    iconLabel.TextColor3        = C_GOLD
-    iconLabel.TextXAlignment    = Enum.TextXAlignment.Center
-    iconLabel.Parent            = frame
-    local ic = Instance.new("UICorner")
-    ic.CornerRadius = UDim.new(0, 6)
-    ic.Parent = iconLabel
+    -- Icon
+    local iconLbl = Instance.new("TextLabel")
+    iconLbl.Position             = UDim2.new(0, 12, 0.5, 0)
+    iconLbl.AnchorPoint          = Vector2.new(0, 0.5)
+    iconLbl.Size                 = UDim2.new(0, 44, 0, 44)
+    iconLbl.BackgroundTransparency = 1
+    iconLbl.Text                 = data.icon
+    iconLbl.TextScaled           = true
+    iconLbl.Font                 = Enum.Font.GothamBold
+    iconLbl.ZIndex               = 6
+    iconLbl.Parent               = toast
 
-    -- Title
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Name                   = "Title"
-    titleLabel.Size                   = UDim2.new(1, -66, 0.45, 0)
-    titleLabel.Position               = UDim2.new(0, 62, 0, 4)
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Font                   = Enum.Font.GothamBold
-    titleLabel.TextScaled             = true
-    titleLabel.TextColor3             = C_GOLD
-    titleLabel.TextXAlignment         = Enum.TextXAlignment.Left
-    titleLabel.Text                   = "Achievement: " .. data.label
-    titleLabel.Parent                 = frame
+    -- Achievement name
+    local nameLbl = Instance.new("TextLabel")
+    nameLbl.Position             = UDim2.new(0, 64, 0.08, 0)
+    nameLbl.Size                 = UDim2.new(0.70, 0, 0.44, 0)
+    nameLbl.BackgroundTransparency = 1
+    nameLbl.Text                 = "🏅 " .. data.name
+    nameLbl.TextScaled           = true
+    nameLbl.Font                 = Enum.Font.GothamBold
+    nameLbl.TextColor3           = HONEY_GOLD
+    nameLbl.TextXAlignment       = Enum.TextXAlignment.Left
+    nameLbl.ZIndex               = 6
+    nameLbl.Parent               = toast
 
-    -- Description
-    local descLabel = Instance.new("TextLabel")
-    descLabel.Name                   = "Desc"
-    descLabel.Size                   = UDim2.new(1, -66, 0.45, 0)
-    descLabel.Position               = UDim2.new(0, 62, 0.52, 0)
-    descLabel.BackgroundTransparency = 1
-    descLabel.Font                   = Enum.Font.Gotham
-    descLabel.TextScaled             = true
-    descLabel.TextColor3             = C_CREAM
-    descLabel.TextXAlignment         = Enum.TextXAlignment.Left
-    descLabel.Text                   = data.desc
-    descLabel.Parent                 = frame
+    -- Reward line
+    local rewardLbl = Instance.new("TextLabel")
+    rewardLbl.Position           = UDim2.new(0, 64, 0.52, 0)
+    rewardLbl.Size               = UDim2.new(0.70, 0, 0.38, 0)
+    rewardLbl.BackgroundTransparency = 1
+    rewardLbl.Text               = "+" .. tostring(data.reward) .. " 🍯 honey bonus"
+    rewardLbl.TextScaled         = true
+    rewardLbl.Font               = Enum.Font.Gotham
+    rewardLbl.TextColor3         = Color3.fromRGB(200, 180, 120)
+    rewardLbl.TextXAlignment     = Enum.TextXAlignment.Left
+    rewardLbl.ZIndex             = 6
+    rewardLbl.Parent             = toast
 
-    -- Slide in from right
-    TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Position = UDim2.new(1, -12, 0, 80)
-    }):Play()
+    -- Slide in
+    local slideIn = TweenService:Create(toast,
+        TweenInfo.new(0.40, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        { Position = UDim2.new(0.5, 0, 0.05, 0) }
+    )
+    slideIn:Play()
+    slideIn.Completed:Wait()
 
-    task.wait(4)
+    task.wait(3)
 
     -- Slide out
-    TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-        Position = UDim2.new(1, 10, 0, 80)
-    }):Play()
-    task.wait(0.35)
-    gui:Destroy()
+    local slideOut = TweenService:Create(toast,
+        TweenInfo.new(0.30, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        { Position = UDim2.new(0.5, 0, -0.12, 0) }
+    )
+    slideOut:Play()
+    slideOut.Completed:Wait()
 
-    _toastActive = false
+    sg:Destroy()
+end
 
-    -- Drain queue
-    if #_toastQueue > 0 then
-        local next = table.remove(_toastQueue, 1)
-        task.spawn(showToast, next)
+local function processQueue()
+    if showing then return end
+    if #queue == 0 then return end
+    showing = true
+    local item = table.remove(queue, 1)
+    showToast(item)
+    showing = false
+    -- Process next item
+    if #queue > 0 then
+        task.delay(0.3, processQueue)
     end
 end
 
-AchievementUnlocked.OnClientEvent:Connect(function(data: {id:string, label:string, desc:string, icon:string})
-    _unlockedIds[data.id] = true
-    if _toastActive then
-        table.insert(_toastQueue, data)
-    else
-        task.spawn(showToast, data)
-    end
+AchievementUnlocked.OnClientEvent:Connect(function(data: {id:string, icon:string, name:string, reward:number})
+    table.insert(queue, { icon = data.icon, name = data.name, reward = data.reward })
+    task.spawn(processQueue)
 end)
-```
+]]
 
-Create:
-
-```lua
-local SPS = game:GetService("StarterPlayer").StarterPlayerScripts
-local ac = Instance.new("LocalScript")
-ac.Name = "AchievementController"
-ac.Parent = SPS
-ac.Source = [[ ... paste full source above ... ]]
-print("AchievementController created")
+print("STEP G done — AchievementToast created")
 ```
 
 ---
 
-## STEP I — Verification
+## STEP H — Full verification
+
+Paste in Command Bar:
 
 ```lua
+-- STEP H: full verification
 local SSS = game:GetService("ServerScriptService")
-local RS  = game:GetService("ReplicatedStorage")
-local SPS = game:GetService("StarterPlayer").StarterPlayerScripts
-local results = {}
-local issues  = {}
+local Rep = game:GetService("ReplicatedStorage")
+local SPS = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
 
--- DataService version
-local dsSrc = SSS.Systems.DataService.Source
-local ver = dsSrc:match("CURRENT_VERSION%s*=%s*(%d+)")
-table.insert(results, "DataService version: " .. (ver or "NOT FOUND"))
-if ver ~= "16" then table.insert(issues, "WRONG version: expected 16, got " .. tostring(ver)) end
-table.insert(results, "migration[11] achievementsUnlocked: " .. tostring(dsSrc:find("achievementsUnlocked") ~= nil))
+local checks = {
+    {"Config.ACHIEVEMENTS",
+        SSS:FindFirstChild("Config") and
+        SSS:FindFirstChild("Config").Source:find("ACHIEVEMENTS", 1, true) ~= nil},
+    {"DataService.earnedAchievements",
+        SSS:FindFirstChild("DataService") and
+        SSS:FindFirstChild("DataService").Source:find("earnedAchievements", 1, true) ~= nil},
+    {"AchievementService",
+        SSS:FindFirstChild("AchievementService") ~= nil},
+    {"AchievementUnlocked RemoteEvent",
+        Rep:FindFirstChild("AchievementUnlocked") ~= nil},
+    {"GameManager has AchievementService",
+        SSS:FindFirstChild("GameManager") and
+        SSS:FindFirstChild("GameManager").Source:find("AchievementService", 1, true) ~= nil},
+    {"ForagingService has AchievementService",
+        SSS:FindFirstChild("ForagingService") and
+        SSS:FindFirstChild("ForagingService").Source:find("AchievementService", 1, true) ~= nil},
+    {"PlotService has AchievementService",
+        SSS:FindFirstChild("PlotService") and
+        SSS:FindFirstChild("PlotService").Source:find("AchievementService", 1, true) ~= nil},
+    {"SeasonService has AchievementService",
+        SSS:FindFirstChild("SeasonService") and
+        SSS:FindFirstChild("SeasonService").Source:find("AchievementService", 1, true) ~= nil},
+    {"AchievementToast LocalScript",
+        SPS and SPS:FindFirstChild("AchievementToast") ~= nil},
+}
 
--- Config
-local ok, cfg = pcall(require, RS.Modules.Config)
-if ok and cfg.ACHIEVEMENTS then
-    local n = #cfg.ACHIEVEMENTS
-    table.insert(results, "Config.ACHIEVEMENTS: " .. n .. " entries (expected 20)")
-    if n ~= 20 then table.insert(issues, "WRONG count: Config.ACHIEVEMENTS has " .. n .. " entries, expected 20") end
-else
-    table.insert(issues, "MISSING Config.ACHIEVEMENTS")
+local pass, fail = 0, 0
+for _, c in checks do
+    local label, result = c[1], c[2]
+    if result then print("  PASS: " .. label) pass = pass + 1
+    else           warn("  FAIL: " .. label)  fail = fail + 1 end
 end
-
--- RemoteEvents
-local remotes = RS:FindFirstChild("Remotes")
-for _, name in {"AchievementUnlocked", "AchievementSync"} do
-    local e = remotes and remotes:FindFirstChild(name)
-    table.insert(results, name .. ": " .. (e and e.ClassName or "MISSING"))
-    if not e then table.insert(issues, "MISSING RemoteEvent: " .. name) end
-end
-
--- Server scripts
-local achMod = SSS.Systems and SSS.Systems:FindFirstChild("AchievementService")
-table.insert(results, "AchievementService: " .. (achMod and achMod.ClassName or "MISSING"))
-if not achMod then table.insert(issues, "MISSING AchievementService ModuleScript") end
-if achMod then
-    local src = achMod.Source
-    for _, pair in {{"--!strict","--!strict"},{"CheckAll","CheckAll function"},{"SyncClient","SyncClient"},{"PlayerAdded","PlayerAdded"}} do
-        if not src:find(pair[1]) then table.insert(issues, "MISSING in AchievementService: " .. pair[2]) end
-    end
-end
-
-local runner = SSS:FindFirstChild("AchievementsRunner")
-table.insert(results, "AchievementsRunner: " .. (runner and runner.ClassName or "MISSING"))
-if not runner then table.insert(issues, "MISSING AchievementsRunner Script") end
-
--- QuestService patches
-local qsMod = SSS.Systems and SSS.Systems:FindFirstChild("QuestService")
-if qsMod then
-    local src = qsMod.Source
-    table.insert(results, "QuestService.SetMetric: " .. tostring(src:find("SetMetric") ~= nil))
-    table.insert(results, "QuestService CheckAll hook: " .. tostring(src:find("AchievementService.CheckAll") ~= nil))
-    if not src:find("SetMetric") then table.insert(issues, "MISSING QuestService.SetMetric") end
-    if not src:find("AchievementService.CheckAll") then table.insert(issues, "MISSING AchievementService.CheckAll call in QuestService") end
-end
-
--- AchievementController
-local ac = SPS:FindFirstChild("AchievementController")
-table.insert(results, "AchievementController: " .. (ac and ac.ClassName or "MISSING"))
-if not ac then table.insert(issues, "MISSING AchievementController LocalScript") end
-
-local out = table.concat(results, "\n")
-if #issues > 0 then
-    out = out .. "\n\nISSUES (" .. #issues .. "):\n" .. table.concat(issues, "\n")
-else
-    out = out .. "\n\nALL CHECKS PASSED"
-end
-print(out)
-```
-
-Expected:
-
-```
-DataService version: 16
-migration[11] achievementsUnlocked: true
-Config.ACHIEVEMENTS: 20 entries
-AchievementUnlocked: RemoteEvent
-AchievementSync: RemoteEvent
-AchievementService: ModuleScript
-AchievementsRunner: Script
-QuestService.SetMetric: true
-QuestService CheckAll hook: true
-AchievementController: LocalScript
-
-ALL CHECKS PASSED
+print(string.format("\n%d/%d checks passed — %s",
+    pass, #checks, fail == 0 and "DISPATCH 50 COMPLETE ✓" or "NEEDS ATTENTION"))
 ```
 
 ---
 
-## PART BUDGET NOTE
+## EXPECTED OUTPUT
 
-No new world parts. Running total unchanged at **~4,076/5,000**.
+```
+  PASS: Config.ACHIEVEMENTS
+  PASS: DataService.earnedAchievements
+  PASS: AchievementService
+  PASS: AchievementUnlocked RemoteEvent
+  PASS: GameManager has AchievementService
+  PASS: ForagingService has AchievementService
+  PASS: PlotService has AchievementService
+  PASS: SeasonService has AchievementService
+  PASS: AchievementToast LocalScript
+
+9/9 checks passed — DISPATCH 50 COMPLETE ✓
+```
+
+---
+
+## PART BUDGET
+
+| Change | Parts |
+|---|---|
+| AchievementService / Toast / Remotes | 0 |
+| Config / DataService injection | 0 |
+| Toast ScreenGui (PlayerGui runtime, destroyed after 3s) | 0 |
+| **Running total** | **4,146 / 5,000** |
+
+---
+
+## BEHAVIOUR NOTES
+
+- **Idempotent checks**: `AchievementService.Check` guards against double-awards with `if profile.earnedAchievements[id] then return end`.
+- **CheckAll on login**: 5-second delayed CheckAll on `PlayerAdded` catches any achievements a returning player earned in a previous session that didn't fire the injection points (e.g. they already hit 50 cells before this dispatch was deployed).
+- **Season bitmask**: `seenAllSeasons` uses `bit32.bor` to set flags 1/2/4/8 for Spring/Summer/Autumn/Winter. `== 15` means all four seen.
+- **Toast queue**: if multiple achievements unlock simultaneously (e.g. at login CheckAll), each toast waits 0.3s after the previous one finishes — no overlapping toasts.
+- **Honey reward stacks into lifetimeHoney**: the reward honey is also added to `lifetimeHoney` so it can trigger higher-tier achievements on the same `CheckAll` call.
+- **No polling loops**: the only timer is the 5s `PlayerAdded` delay — all other checks fire on natural events (foraging result, hex placed, season changed).
+
+---
+
+*Dispatch 50 complete — execute Steps A → H in order. Proceed to Dispatch 51 after 9/9 checks pass.*
