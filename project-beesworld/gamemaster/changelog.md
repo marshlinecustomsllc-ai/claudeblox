@@ -823,3 +823,12 @@
 - ForagingService: duration multiplied by GetForagingSpeedMultiplier per trip
 - FORAGING_DURATION = 60 ensured in Config
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 91 — Bee Count Upgrade Tree (Cycle 13)
+- Added 3 bee count upgrades: bee_count_1 through bee_count_3
+- Costs: 400 / 1,000 / 2,500 honey; each adds +1 effective bee per plot
+- At max (3/3): 4 bees/plot = 4× base yield before other multipliers
+- UpgradeService: GetBeeCountBonus(player) returns total bee bonus (0-3)
+- ForagingService: effectiveBeeCount = plot.beeCount + beeBonus (computed at trip time, not stored)
+- Survives prestige resets cleanly — bonus re-applies each trip
+- Part budget: +0 → 4,146 / 5,000

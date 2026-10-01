@@ -1,7 +1,7 @@
 {
   "current_cycle": 13,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "Dispatch 90: Foraging speed tree \u2014 Wing Strength I-IV, honey cost, reduce trip time by 10%/tier",
+  "last_action": "Dispatch 91: Bee count upgrade tree \u2014 Larger Colony I-III, +1 bee/plot/tier, 4 bees max",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,7 +75,7 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 90,
+  "dispatch_count": 91,
   "total_parts": 4146,
-  "last_dispatch": "cycle13_foraging_speed_dispatch.md"
+  "last_dispatch": "cycle13_bee_count_upgrade_dispatch.md"
 }
