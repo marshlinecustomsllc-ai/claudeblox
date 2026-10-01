@@ -305,3 +305,12 @@
 - **BillboardGui** on each cup: AchievementTitle + LockStatus labels, starts grey "🔒 Locked" → Honey Gold "✅ Unlocked!" via TweenService
 - **AchievementController** LocalScript: `unlockPedestal` twines all model parts to Honey Gold, adds PointLight, updates BillboardGui; `allUnlocked[]` in payload restores full state from single event
 - **Part budget**: +35 permanent → **~4,142/5,000**
+
+## Dispatch 39 — NotificationCenterGui (cycle 11)
+- **BellButton** (🔔): TextButton in HiveGui.MainFrame top-right (10%×8%), Propolis Brown bg, Honey Gold UIStroke, UICorner
+- **UnreadBadge**: red circle TextLabel on BellButton corner, shows count or "99+", hides when count=0
+- **NotificationPanel**: Frame slides in from right (Back/Out 0.30s TweenService); deep dark brown bg, Honey Gold UIStroke border, Propolis Brown header bar with "Clear" TextButton
+- **ScrollingFrame**: UIListLayout (VerticalFill, 4px padding), AutomaticCanvasSize=Y, Honey Gold scrollbar, UIPadding 6px all sides; empty state "No notifications yet." label
+- **Entry frames** (56px): Title (Honey Gold FredokaOne left-aligned), Message (Wax Cream TextWrapped), Timestamp (relative: "just now"/"Nm ago"/"Nh ago")
+- **NotificationCenterController** LocalScript: MAX_ENTRIES=20 (oldest trimmed), newest-first rebuild, unread resets on open, Clear wipes entries+badge, tab-button auto-close, `Notify.OnClientEvent` hooks into all pre-existing service notifications
+- **Part budget**: 0 permanent → **~4,142/5,000** (no change)
