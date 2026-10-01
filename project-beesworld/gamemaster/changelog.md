@@ -1311,3 +1311,9 @@
 - Part A: BearAttackService patch — Guard Bee drain stacking. Formula: base 15% → –5% hive_insulation → –5% guard_bee → math.max(0.05, drainPct) 5% floor. Command Bar string-replace patch with idempotency guard.
 - Part B: LeaderboardController LocalScript — live top-5 honey leaderboard, right-side HUD column below Guide button. Client-side sort of HoneyCount attribute, 10s polling loop, current player row highlighted amber. fmt_142() K/M formatter. DisplayOrder=16.
 - Part budget: +0 permanent → 4,149 / 5,000
+
+## Dispatch 143 — Specialist Bee Service Integration (2026-10-01)
+- Scout Bee: ForagingService patch — +20 quality bonus on foraging roll (60-100 vs baseline 40-80), capped at 100 via math.min.
+- Nurse Bee: CombService patch — brood produced ×1.15 per tick (+15% honey output from brood cells). Multiplier reads SpecialistBees attribute live so works across prestige.
+- All three specialist bees now mechanically complete (scout/nurse this dispatch, guard_bee dispatch 142).
+- Part budget: +0 permanent → 4,149 / 5,000
