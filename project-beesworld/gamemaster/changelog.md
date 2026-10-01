@@ -725,3 +725,15 @@
 - DataService: prestigeLevel + totalPrestigeCount fields added
 - GameManager: PrestigeService.Init() injected
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 80 — LeaderboardService (Cycle 12)
+- New ModuleScript `LeaderboardService` using OrderedDataStore
+- Two ODS keys: LeaderboardHoney_v1 (totalHoneyEarned), LeaderboardPrestige_v1 (prestigeLevel)
+- Top-10 broadcast via LeaderboardSync RE every 60 seconds + initial 10s delay
+- Updated on PlayerAdded (3s delay for profile load) and PlayerRemoving (final score)
+- New LocalScript `LeaderboardController`: LeaderboardGui ScreenGui DisplayOrder=18
+- 🏆 tab button at X=0.945 Y=0.55 on HiveHUD, panel slides from right
+- Two tabs: 🍯 Honey and ⭐ Prestige, each with 10 rows (rank emoji/number, name, score)
+- Top-3 ranks get 🥇🥈🥉, remainder get row number
+- GameManager: LeaderboardService.Init() injected after PrestigeService
+- Part budget: +0 → 4,146 / 5,000
