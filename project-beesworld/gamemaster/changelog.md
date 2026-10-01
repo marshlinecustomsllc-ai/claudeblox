@@ -689,3 +689,16 @@
   before yield application
 - PlayerRemoving cleanup prevents stale table accumulation
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 77 — AchievementsExpansion (Cycle 11)
+- 13 new achievement entries appended to Config.ACHIEVEMENTS:
+  - Upgrades Bought: Tinkerer(5), Engineer(20), Master Builder(42)
+  - Days Played: Returning Bee(3), Dedicated Keeper(7), Hive Elder(30)
+  - Social: Bee Friends(1 friend session), Queen's Court(3+ friends)
+  - Seasonal: Spring/Summer/Autumn/Winter Harvest (forage during each event)
+  - Mega: Millionaire Bee (1M total honey, reward 5000)
+- HiveStatsService patched: calls AchievementService.CheckAchievements after every BroadcastStats
+- DataService: 3 new tracking fields (seasonalSeen, friendBonusSessions, maxFriendBonusReached)
+- ForagingService: records seasonal event flags and friend bonus trip counts
+- All 4 steps have idempotency guards for safe re-execution
+- Part budget: +0 → 4,146 / 5,000
