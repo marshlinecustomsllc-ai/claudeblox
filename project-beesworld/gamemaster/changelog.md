@@ -168,7 +168,7 @@
 
 **Part budget:** 0 new world parts → ~4,094/5,000 (unchanged)
 
-## Cycle 11 — Dispatch 28: FloorProgressGui — FLOORS tab in HiveGui
+## Cycle 11 — Dispatch 28: FloorProgressGui — FLOORS tab in HiveGui — FLOORS tab in HiveGui
 
 **File:** `cycle11_floor_progress_dispatch.md`
 
@@ -177,5 +177,18 @@
 - **HudDataSync payload extension** — server now sends 3 additional fields: `floorUnlocked` (current highest floor), `cellsBuilt` (total CombCell-tagged parts), `honeySpent` (profile.honeySpent running total); existing listeners are unaffected (trailing fields)
 - **FloorsPage UI** — 5th tab in HiveGui MainFrame PageContainer: `TabFloors` button in TabBar (Warm Wax palette), `FloorsPage` frame; `FloorCard_2` and `FloorCard_3` each containing Title, `RowCells` / `RowHoney` / `RowQueen` frames (each with a Bar fill + Label), and `UnlockedBadge` (hidden until unlocked)
 - **FloorProgressController LocalScript** — `--!strict`; listens on HudDataSync; `updateFloorCard(floorNum, req, floorUnlocked, cellsBuilt, honeySpent, queenTier)` animates bar widths via TweenService (Quad/Out, 0.4s), turns bar green (Color3.fromRGB(60,120,40)) when fraction ≥ 1; shows/hides UnlockedBadge; all sizing Scale-based (mobile-safe); 5th tab switching wired in same pattern as tabs 1–4
+
+**Part budget:** 0 new world parts → ~4,094/5,000 (unchanged)
+
+## Cycle 11 — Dispatch 29: MonetizationService Gamepass Purchase Wiring
+
+**File:** `cycle11_monetization_gamepass_dispatch.md`
+
+### What it adds
+- **MonetizationService update** — `grantGamepassSkin(player, configKey)` idempotent helper: checks `profile.cosmeticsUnlocked`, inserts skin id, fires `WardrobeDataSync` + Notify toast; `PromptGamePassPurchaseFinished` listener fires immediately on confirmed purchase; `Players.PlayerAdded` join-time `UserOwnsGamePassAsync` check (after 5s profile-load delay) ensures ownership granted even without re-purchase
+- **Config.COSMETICS changes** — `gamepassKey = "MoonBee"` added to moon_bee entry; `gamepassKey = "ArcticBee"` added to arctic_bee entry (lookup key used by `grantGamepassSkin`)
+- **WardrobeDataSync RemoteEvent** — created if missing (guard for cases where dispatch 22 hasn't been executed yet)
+- **WardrobeController (optional Step D)** — locked gamepass skin click now prompts `MarketplaceService:PromptGamePassPurchase` instead of only showing lock label
+- **User action reminder** — full table of 6 gamepasses + 2 developer products to create in Creator Dashboard; IDs remain `0` (safe no-op) until pasted in
 
 **Part budget:** 0 new world parts → ~4,094/5,000 (unchanged)
