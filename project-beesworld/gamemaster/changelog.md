@@ -1321,3 +1321,7 @@
 ## Dispatch 144 — HoneyEarned Tracking Service (2026-10-01)
 - HoneyEarnedService Script — watches HoneyCount attribute delta per player. Increments HoneyEarned on every positive delta (harvest), never decrements on spend/bear drain. 2s join-wait baseline prevents false burst at DataService replication. PlayerRemoving cleanup. Prerequisite for PrestigeService threshold (dispatch 140).
 - Part budget: +1 permanent → 4,150 / 5,000
+
+## Dispatch 145 — Daily Login Reward System (2026-10-01)
+- DailyLoginService Script + DailyLoginController LocalScript. 7-day escalating streak: Day 1=50 honey → Day 7=300 honey+20 propolis+⭐. Streak resets to Day 1 on Day 8 (weekly cycle). Day-number comparison via math.floor(os.time()/86400). Panel slides from top, auto-dismisses 4s. Already-claimed guard on rejoin (no double reward).
+- Part budget: +2 permanent → 4,152 / 5,000
