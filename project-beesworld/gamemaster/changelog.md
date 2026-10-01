@@ -373,3 +373,16 @@
 - GetPlotState RemoteFunction in Remotes folder
 - PlotService injection: GetMiniMapData converts profile.hexCells + ForagerBee world positions to grid coords
 - Part budget: 0 permanent → cumulative ~4,142/5,000
+
+## Dispatch 45 — BeeNaming (Cycle 11)
+- Config.BEE_NAME: maxLength=24, minLength=1, default="Queen Bee", renameCost=500 honey, profanity list
+- DataService migration: queenName="Queen Bee", hasNamedOnce=false
+- BeeNameSync RemoteEvent + SetQueenName RemoteFunction in Remotes folder
+- BeeNameService: sanitise (whitespace trim, length check, profanity filter), first rename free (hasNamedOnce guard), 500 honey cost thereafter
+- BeeNameSync:FireAllClients broadcasts userId+name so all players update nearby billboards
+- PlayerAdded hook fires current name to joining players
+- GameManager wiring: BeeNameService.Init()
+- BeeNameController: BillboardGui above queen HumanoidRootPart (StudsOffset Y=3.5, 120×32px, FredokaOne, Honey Gold)
+- QueenNameLabel (top-left of MainFrame) + ✏️ RenameBtn
+- RenameDialog: scale-from-centre animation, TextBox, confirm/cancel, status label (first-free info/error/success)
+- Part budget: 0 permanent → cumulative ~4,142/5,000
