@@ -1270,3 +1270,13 @@
 - States: counting → "🐝 Bees returning…" (final 3s) → "🐝 Welcome back!" (1.5s) → hide
 - timerRunning_137 guard prevents double loops; ForagingEndTime listener handles hive_insulation mid-run updates
 - DisplayOrder=11; CharacterRemoving cleanup; +0 permanent parts → running total 4,146 / 5,000
+
+## Dispatch 138 — Adjacency Bonus Visualizer (2026-10-01)
+- Added `AdjacencyVisualizerController` LocalScript in StarterPlayerScripts
+- Tap any Cell_N button in the CombGrid UI to see adjacency contributors highlighted
+- HEX_ADJ_138: hard-coded 3×3 hex adjacency map (9 slots, 0-indexed)
+- BONUS_RULES_138: per-cell-type bonus rules (5-10% per qualifying neighbour, capped at 40%)
+- Three-track visual: white UIStroke pulse on tapped cell + amber overlay + "+X%" label on each contributor + "Adj bonus: +X%" tooltip
+- All overlays self-destruct after 1.8s via Completed:Connect chains
+- Lazy cell wiring via DescendantAdded watcher; connectedCells_138 prevents duplicate connections
+- +0 permanent parts → running total 4,146 / 5,000
