@@ -1147,3 +1147,11 @@
 - prevAchievements_124 diff tracks new unlocks — no toast on login re-load
 - Goals button at {1,-160,1,-160} (above Bee Roster at -108, above Guide at -56)
 - Part budget impact: +0 → 4,146 / 5,000
+
+## Dispatch 125 — Stat Tracking Wires
+- Appends TotalForages increment to ForagingService (ForagingActive true→false detection)
+- Appends BearSurviveCount increment to ThreatService (honey snapshot comparison at raid end)
+- Both use idempotency sentinels: dispatch125_inject_forages / dispatch125_inject_bear
+- ⚠️ steps print "skip" if target service not yet in Studio — safe to re-run after those dispatches
+- Wires the achievement stats referenced by SeasonalAchievementService (dispatch 124)
+- Part budget impact: +0 → 4,146 / 5,000
