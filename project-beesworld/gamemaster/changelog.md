@@ -352,3 +352,14 @@
 - 7 stat rows: Honey Earned / Cells Built / Generations / Play Time / Login Streak / Honey Now / Propolis Now
 - HiveStatsController: fmtNumber (K/M abbreviation), fmtTime (h/m), Back/Out open animation, tab-button glow pulse on data update
 - Part budget: 0 permanent → cumulative ~4,142/5,000
+
+## Dispatch 43 — WeatherService Thunderstorm (Cycle 11)
+- Config.WEATHER_TYPES.thunderstorm: 210s duration, honeyMult=0.70, pollenMult=0.50, lightningInterval=18s±12
+- ThunderService: Init, StartStrikes (random-interval loop), StopStrikes, LightningSync:FireAllClients
+- LightningSync RemoteEvent in Remotes folder
+- LightningController LocalScript: double-flash screen overlay (TweenService), PointLight sky burst, delayed thunder sound
+- WeatherController: ambient rain loop (rbxassetid://2676178274) play/stop on thunderstorm active/inactive
+- WeatherService injection: ThunderService.StartStrikes/StopStrikes hooks on event start/stop
+- ForagingService injection: stormPollenMult applied to pollen yield during thunderstorm
+- GameManager wiring: ThunderService.Init()
+- Part budget: +0 permanent → cumulative ~4,142/5,000
