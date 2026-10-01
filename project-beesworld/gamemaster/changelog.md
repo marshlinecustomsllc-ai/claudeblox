@@ -363,3 +363,13 @@
 - ForagingService injection: stormPollenMult applied to pollen yield during thunderstorm
 - GameManager wiring: ThunderService.Init()
 - Part budget: +0 permanent → cumulative ~4,142/5,000
+
+## Dispatch 44 — MiniMapGui Hex-Grid Radar (Cycle 11)
+- MiniMapGui ScreenGui: DisplayOrder=12, bottom-right corner (0.81/0.77 position, 0.18×0.22 size)
+- MiniMapPanel: dark bg, Honey Gold UIStroke border, HexCanvas (0.92×0.72 of panel), CellCount label
+- MiniMapController LocalScript: 2s poll interval, pooled Frame hex cells (reused across renders)
+- Pointy-top hex math: col*cellW + (row%2==1 and cellW/2), row*cellH*0.75
+- Queen cell shown with 👑 icon (COLOR_QUEEN bright gold), forager bees shown with 🐝 icon
+- GetPlotState RemoteFunction in Remotes folder
+- PlotService injection: GetMiniMapData converts profile.hexCells + ForagerBee world positions to grid coords
+- Part budget: 0 permanent → cumulative ~4,142/5,000
