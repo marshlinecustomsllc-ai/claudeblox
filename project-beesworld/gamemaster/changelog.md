@@ -790,3 +790,10 @@
 - Creates meaningful propolis sink independent of prestige condition
 - UI label update (showing "propolis" in HUD) deferred to future dispatch
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 87 — Plot Cost Label Propolis Display (Cycle 12)
+- PlotController: cost label now shows "🔮 X propolis" for cost.propolis plots
+- Includes diagnostic STEP A to identify current label pattern before patching
+- formatCostLabel fallback helper injected if primary pattern-match fails
+- Completes Cycle 12 expansion plot propolis economy
+- Part budget: +0 → 4,146 / 5,000
