@@ -1,7 +1,7 @@
 {
   "current_cycle": 11,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "dispatch 53: QueenUpgradeService \u2014 GetMaxBees(tier), queenTier DataService migration, QueenSync RE + BuyQueenTier RF, ForagingService dynamic bee cap via getMaxBees(player), QueenUpgradeController \ud83d\udc51 tab soft pink panel",
+  "last_action": "dispatch 54: PropolisYieldUpgradeService \u2014 propolisTier DataService, GetMult(tier), BuyPropTier RF (honey cost), PropolisSync RE, ForagingService propolisYield mult, PropolisUpgradeController \ud83e\uddea amber tab \u2014 completes 4-track upgrade economy",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,6 +75,6 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 53,
+  "dispatch_count": 54,
   "total_parts": 4146
 }

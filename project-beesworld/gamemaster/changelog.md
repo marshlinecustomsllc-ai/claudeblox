@@ -467,3 +467,13 @@
 - GameManager: QueenUpgradeService.Init() after PollenYieldUpgradeService.Init()
 - QueenUpgradeController: 👑 tab at Y=0.80, soft pink panel, MAX QUEEN state at tier 5
 - Part budget: +0 permanent → 4,146 / 5,000
+
+## Dispatch 54 — PropolisYieldUpgradeService (cycle11_propolis_upgrade_dispatch.md)
+- Config.PROPOLIS_UPGRADES: tier 1-5, mult 1.22→2.73, honey costs 800/3K/9K/25K/65K
+- DataService migration: propolisTier = 0 (after queenTier)
+- PropolisYieldUpgradeService: GetMult(tier), BuyPropTier RF, PropolisSync RE
+- ForagingService: propolisYield *= GetMult(propolisTier) stacked multiplier
+- GameManager: PropolisYieldUpgradeService.Init() after QueenUpgradeService.Init()
+- PropolisUpgradeController: 🧪 tab at Y=0.775, amber panel, MAX PROPOLIS state
+- Completes 4-track upgrade economy: speed/queen/propolis sink honey; pollen sinks propolis
+- Part budget: +0 permanent → 4,146 / 5,000
