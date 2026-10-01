@@ -600,3 +600,13 @@
 - GameManager: PollenStorageUpgradeService.Init() after TutorialService.Init()
 - PollenStorageController: 🌼 tab X=0.085 Y=0.45, POLLEN_CLR yellow-green, panel slides LEFT (PANEL_OPEN_X=0.10), "Costs Propolis 🍬" note
 - Part budget: +0 → 4,146/5,000
+
+## Dispatch 67 — SettingsController
+- TutorialService: TutorialReset RemoteFunction injected — clears tutorialSeen + fires TutorialSync {seen=false}
+- SettingsController LocalScript: ScreenGui DisplayOrder=28, tab ⚙️ at X=0.935 Y=0.01
+- BGM on/off toggle (applies to CS:GetTagged("BGM") Sound objects)
+- SFX volume slider tap-to-cycle 0/25/50/75/100% (applies to CS:GetTagged("SFX"))
+- Graphics quality 3-button row Low/Med/High → QualityLevel3/5/7
+- Replay Tutorial button → TutorialReset:InvokeServer()
+- Prefs stored as LocalPlayer attributes (session-persistent)
+- Part budget: +0 → 4,146/5,000
