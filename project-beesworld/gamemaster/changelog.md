@@ -841,3 +841,12 @@
 - Tab selection persisted to PlayerGui attribute within session
 - task.wait(5) ensures UpgradeList is built before TabRow injection
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 93 — HiveStats Upgrade Count Integration (Cycle 13)
+- DataService: added totalUpgradesBought = 0 to default profile schema
+- UpgradeService: increments profile.totalUpgradesBought after each purchase
+- UpgradeService: task.spawn → AchievementService.CheckAchievements after purchase
+- HiveStatsService: added totalUpgrades field to BroadcastStats payload
+- AchievementService: upgrades_bought condition reads totalUpgradesBought
+- Enables upgrades_5 / upgrades_20 / upgrades_all achievements to fire correctly
+- Part budget: +0 → 4,146 / 5,000
