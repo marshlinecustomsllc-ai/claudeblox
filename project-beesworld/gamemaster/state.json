@@ -1,7 +1,7 @@
 {
   "current_cycle": 12,
   "game_status": "development \u2014 30 dispatch docs written, awaiting local Studio MCP reconnect for execution",
-  "last_action": "Dispatch 83: Tutorial expansion \u2014 prestige_intro, prestige_done, seasonal_intro steps",
+  "last_action": "Dispatch 84: AntiCheat dynamic prestige cap \u2014 MAX_BASE_HONEY replaces hardcoded 1750",
   "pending_fixes": [
     {
       "id": 2,
@@ -75,7 +75,7 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 83,
+  "dispatch_count": 84,
   "total_parts": 4146,
-  "last_dispatch": "cycle12_tutorial_expansion_dispatch.md"
+  "last_dispatch": "cycle12_anticheat_config_dispatch.md"
 }

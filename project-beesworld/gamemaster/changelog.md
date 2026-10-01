@@ -766,3 +766,11 @@
 - HiveStatsService: calls ShowSeasonalIntro after first seasonalSeen entry (task.spawn)
 - All 5 patches have idempotency guards
 - Part budget: +0 → 4,146 / 5,000
+
+## Dispatch 84 — AntiCheat Dynamic Prestige Cap (Cycle 12)
+- Renamed `MAX_YIELD_HONEY` → `MAX_BASE_HONEY` (500-unit base constant)
+- Injected `PrestigeService` require into AntiCheatService
+- `CheckForagingRequest` now computes per-player `dynamicHoneyCap = MAX_BASE_HONEY * MULTIPLIER_CAP * prestigeMultiplier * 1.10`
+- Prestige 0 cap: 1,925 (was 1,750); Prestige 5: ~2,406; Prestige 10: ~2,887
+- Eliminates false-positive kicks for high-prestige players
+- Part budget: +0 → 4,146 / 5,000
