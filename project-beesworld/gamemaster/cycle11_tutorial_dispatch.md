@@ -1,637 +1,413 @@
-# Dispatch 48 — TutorialService (First-Time FTUE Overlay)
-**Cycle 11 | A Bee's World**
+# Dispatch 65 — TutorialService
+## Cycle 11 · A Bee's World
 
-> Self-contained Studio execution guide.
-> Execute every STEP in order in the Roblox Studio **Command Bar** (View → Command Bar).
-> Each step is a single Lua snippet — paste and press Enter.
-
----
-
-## OVERVIEW
-
-New players land in the hive with no context. This dispatch adds a guided overlay
-that walks them through: collecting their first pollen → spending propolis to build
-a cell → watching honey generate → unlocking the forge.
-
-Key design constraints:
-- **Server-authoritative trigger**: `hasSeen_tutorial = true` written to DataService profile → never shown twice
-- **Client-side display**: all UI runs in LocalScript; server only sets the flag
-- **Non-blocking**: player can move and interact while the overlay is visible
-- **7 steps** total, each auto-advances OR waits for a player action to occur
-- **Part budget**: +0 permanent parts
+**Feature:** First-session guided tutorial — a 6-step overlay that walks new players through: plot claiming, honey collection, spending honey on upgrades, claiming daily reward, prestige concept, and the full game loop. Shown once, dismissed by DataStore flag. Skippable at any step.
+**Part budget impact:** +0 permanent parts → **4,146 / 5,000**
+**Execution order:** After dispatch 64 (Tab Layout Reflow)
 
 ---
 
-## DATA MODEL (DataService migration)
+## DESIGN
 
-New profile field added via clone-and-replace migration injection:
+Tutorial is **purely client-side**: a ScreenGui overlay with a spotlight mask, arrow pointer, and text bubble. Driven by a LocalScript that listens for `TutorialSync` RE from the server (server sends `{seen: true}` if the player has already completed it, `{seen: false}` if first session).
 
-```
-profile.hasSeen_tutorial  boolean  default: false
-```
+Server-side only: records `tutorialSeen = true` in profile when the client fires `TutorialComplete`.
+
+### Steps
+
+| Step | Highlight | Message |
+|------|-----------|---------|
+| 1 | Plot grid | "Welcome to your hive! Tap a hex to claim your first plot." |
+| 2 | Honey HUD counter | "Bees are foraging! Watch your honey grow. 🍯" |
+| 3 | ⚡ Speed tab | "Tap ⚡ to upgrade bee speed — faster bees, more honey!" |
+| 4 | 📅 Daily tab | "Claim a daily reward every day to build your streak! 📅" |
+| 5 | ⭐ Prestige tab | "When honey overflows, Prestige for a permanent bonus. ⭐" |
+| 6 | (center) | "You're ready! Build the greatest hive in the world. 🐝" |
+
+Steps advance on tap/click anywhere. Skip button always visible.
 
 ---
 
-## STEP A — DataService migration injection
+## FILES CHANGED
 
-Paste in Command Bar:
+| File | Change |
+|------|--------|
+| `DataService` | `tutorialSeen = false` migration |
+| `TutorialService` (new Script in SSS) | check + record, TutorialSync RE, TutorialComplete RF |
+| `GameManager` | Init call |
+| `TutorialController` (new LocalScript) | overlay, steps, skip |
+
+---
+
+## STEP A — DataService migration
+
+Command Bar:
 
 ```lua
--- STEP A: inject hasSeen_tutorial into DataService profile template
 local SSS = game:GetService("ServerScriptService")
-local ds  = SSS:FindFirstChild("DataService")
+local ds = SSS:FindFirstChild("DataService")
 assert(ds, "DataService not found")
 
-local src = ds.Source
+local clone = ds:Clone()
+clone.Name = "DataService_WORKING"
 
--- Guard: already patched?
-if src:find("hasSeen_tutorial") then
-    print("DataService already has hasSeen_tutorial — skip STEP A")
-else
-    -- Find the profile defaults table and inject after loginStreak default
-    -- Pattern: find "loginStreak = 0," and insert after
-    local anchor = "loginStreak = 0,"
-    assert(src:find(anchor, 1, true), "anchor 'loginStreak = 0,' not found — check DataService source")
+local anchor = 'unlockedAchievements = {}'
+local found = clone.Source:find(anchor, 1, true)
+assert(found, "unlockedAchievements anchor not found")
+local lineEnd = clone.Source:find("\n", found, true)
+clone.Source = clone.Source:sub(1, lineEnd) .. "\n\t\ttutorialSeen = false,       -- true after first tutorial completion" .. clone.Source:sub(lineEnd + 1)
 
-    local injection = "\n        hasSeen_tutorial = false,"
+ds.Name = "DataService_OLD_NX"
+ds.Parent = nil
+clone.Name = "DataService"
+clone.Parent = SSS
 
-    local clone = ds:Clone()
-    ds.Name = "DataService_OLD_NX"
-    ds.Parent = nil
-
-    clone.Source = src:gsub(
-        anchor,
-        anchor .. injection,
-        1  -- replace only first occurrence
-    )
-    clone.Name = "DataService"
-    clone.Parent = SSS
-    print("STEP A done — hasSeen_tutorial injected into DataService profile defaults")
-end
-```
-
-### Verify STEP A
-```lua
-local src = game:GetService("ServerScriptService"):FindFirstChild("DataService").Source
-print(src:find("hasSeen_tutorial") and "PASS: hasSeen_tutorial found" or "FAIL: not found")
+print("DataService tutorialSeen migration applied")
 ```
 
 ---
 
-## STEP B — TutorialService ModuleScript
+## STEP B — TutorialService (new Script)
 
-Paste in Command Bar:
+Command Bar:
 
 ```lua
--- STEP B: create TutorialService ModuleScript in ServerScriptService
 local SSS = game:GetService("ServerScriptService")
-assert(not SSS:FindFirstChild("TutorialService"), "TutorialService already exists — skip STEP B")
+local RS  = game:GetService("ReplicatedStorage")
 
-local m = Instance.new("ModuleScript")
-m.Name = "TutorialService"
-m.Parent = SSS
-m.Source = [[
+local TutorialSync     = Instance.new("RemoteEvent")
+TutorialSync.Name      = "TutorialSync"
+TutorialSync.Parent    = RS
+
+local TutorialComplete = Instance.new("RemoteFunction")
+TutorialComplete.Name  = "TutorialComplete"
+TutorialComplete.Parent = RS
+
+local svc = Instance.new("Script")
+svc.Name   = "TutorialService"
+svc.Parent = SSS
+svc.Source = [[
 --!strict
--- TutorialService: marks tutorial complete server-side
-local Players   = game:GetService("Players")
-local SSS       = game:GetService("ServerScriptService")
-local RepStore  = game:GetService("ReplicatedStorage")
+-- TutorialService
+-- Checks if a player has seen the tutorial and records completion.
 
-local DataService = require(SSS:WaitForChild("DataService"))
+local SSS = game:GetService("ServerScriptService")
+local RS  = game:GetService("ReplicatedStorage")
+local PS  = game:GetService("Players")
+
+local DataService      = require(SSS:WaitForChild("DataService"))
+local TutorialSync     = RS:WaitForChild("TutorialSync")
+local TutorialComplete = RS:WaitForChild("TutorialComplete")
 
 local TutorialService = {}
 
--- RemoteEvent: server → client  (trigger display)
--- RemoteFunction: client → server (mark complete)
+local function sendState(player: Player)
+	local profile = DataService.GetProfile(player)
+	if not profile then return end
+	TutorialSync:FireClient(player, {seen = profile.tutorialSeen == true})
+end
 
-local TutorialStart: RemoteEvent
-local TutorialComplete: RemoteFunction
+TutorialComplete.OnServerInvoke = function(player: Player): boolean
+	local profile = DataService.GetProfile(player)
+	if not profile then return false end
+	profile.tutorialSeen = true
+	return true
+end
 
 function TutorialService.Init()
-    TutorialStart    = RepStore:WaitForChild("TutorialStart")    :: RemoteEvent
-    TutorialComplete = RepStore:WaitForChild("TutorialComplete") :: RemoteFunction
-
-    TutorialComplete.OnServerInvoke = function(player: Player): boolean
-        local profile = DataService.GetProfile(player)
-        if not profile then return false end
-        if profile.hasSeen_tutorial then return true end  -- already done
-        profile.hasSeen_tutorial = true
-        return true
-    end
-
-    Players.PlayerAdded:Connect(function(player: Player)
-        -- Wait for DataService to load profile (up to 10s)
-        local waited = 0
-        while waited < 10 do
-            local profile = DataService.GetProfile(player)
-            if profile then
-                if not profile.hasSeen_tutorial then
-                    task.delay(3, function()
-                        -- Re-check — player may have disconnected
-                        if player.Parent then
-                            TutorialStart:FireClient(player)
-                        end
-                    end)
-                end
-                return
-            end
-            task.wait(0.5)
-            waited = waited + 0.5
-        end
-    end)
-
-    print("[TutorialService] initialised")
+	PS.PlayerAdded:Connect(function(player)
+		task.wait(3)   -- wait for profile to load
+		sendState(player)
+	end)
+	for _, player in PS:GetPlayers() do
+		task.spawn(sendState, player)
+	end
+	print("[TutorialService] ready")
 end
 
 return TutorialService
 ]]
 
-print("STEP B done — TutorialService created")
-```
-
-### Verify STEP B
-```lua
-local m = game:GetService("ServerScriptService"):FindFirstChild("TutorialService")
-print(m and "PASS: TutorialService exists" or "FAIL: not found")
+print("TutorialService created")
 ```
 
 ---
 
-## STEP C — RemoteEvent + RemoteFunction
+## STEP C — GameManager Init
 
-Paste in Command Bar:
-
-```lua
--- STEP C: create TutorialStart RE and TutorialComplete RF in ReplicatedStorage
-local Rep = game:GetService("ReplicatedStorage")
-
-if not Rep:FindFirstChild("TutorialStart") then
-    local re = Instance.new("RemoteEvent")
-    re.Name = "TutorialStart"
-    re.Parent = Rep
-    print("TutorialStart created")
-else
-    print("TutorialStart already exists")
-end
-
-if not Rep:FindFirstChild("TutorialComplete") then
-    local rf = Instance.new("RemoteFunction")
-    rf.Name = "TutorialComplete"
-    rf.Parent = Rep
-    print("TutorialComplete created")
-else
-    print("TutorialComplete already exists")
-end
-```
-
-### Verify STEP C
-```lua
-local Rep = game:GetService("ReplicatedStorage")
-local re = Rep:FindFirstChild("TutorialStart")
-local rf = Rep:FindFirstChild("TutorialComplete")
-print(re and rf and "PASS: both remotes exist" or "FAIL: missing remotes")
-```
-
----
-
-## STEP D — GameManager injection
-
-Paste in Command Bar:
+Command Bar:
 
 ```lua
--- STEP D: inject TutorialService.Init() into GameManager after LeaderboardService.Init()
 local SSS = game:GetService("ServerScriptService")
-local gm  = SSS:FindFirstChild("GameManager")
+local gm = SSS:FindFirstChild("GameManager")
 assert(gm, "GameManager not found")
 
-local src = gm.Source
+local clone = gm:Clone()
+clone.Name = "GameManager_WORKING"
 
-if src:find("TutorialService", 1, true) then
-    print("GameManager already has TutorialService — skip STEP D")
-else
-    local anchor = "LeaderboardService.Init()"
-    assert(src:find(anchor, 1, true), "anchor 'LeaderboardService.Init()' not found")
+local anchor = 'local LeaderboardService'
+local found = clone.Source:find(anchor, 1, true)
+assert(found, "LeaderboardService require not found in GameManager")
+local lineEnd = clone.Source:find("\n", found, true)
+clone.Source = clone.Source:sub(1, lineEnd) .. "\nlocal TutorialService = require(SSS:WaitForChild(\"TutorialService\"))" .. clone.Source:sub(lineEnd + 1)
 
-    local injection = [[
-LeaderboardService.Init()
-    local TutorialService = require(ServerScriptService:WaitForChild("TutorialService"))
-    TutorialService.Init()]]
+local initAnchor = 'LeaderboardService.Init()'
+local found2 = clone.Source:find(initAnchor, 1, true)
+assert(found2, "LeaderboardService.Init() not found")
+local lineEnd2 = clone.Source:find("\n", found2, true)
+clone.Source = clone.Source:sub(1, lineEnd2) .. "\nTutorialService.Init()" .. clone.Source:sub(lineEnd2 + 1)
 
-    local clone = gm:Clone()
-    gm.Name = "GameManager_OLD_NX"
-    gm.Parent = nil
+gm.Name = "GameManager_OLD_NX"
+gm.Parent = nil
+clone.Name = "GameManager"
+clone.Parent = SSS
 
-    clone.Source = src:gsub(anchor, injection, 1)
-    clone.Name = "GameManager"
-    clone.Parent = SSS
-    print("STEP D done — TutorialService.Init() injected into GameManager")
-end
-```
-
-### Verify STEP D
-```lua
-local src = game:GetService("ServerScriptService"):FindFirstChild("GameManager").Source
-print(src:find("TutorialService", 1, true) and "PASS: TutorialService in GameManager" or "FAIL")
+print("GameManager TutorialService.Init() injected")
 ```
 
 ---
 
-## STEP E — TutorialController LocalScript
+## STEP D — TutorialController (new LocalScript)
 
-Paste in Command Bar:
+Command Bar:
 
 ```lua
--- STEP E: create TutorialController in StarterPlayerScripts
 local SPS = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
 assert(SPS, "StarterPlayerScripts not found")
-assert(not SPS:FindFirstChild("TutorialController"), "TutorialController already exists — skip STEP E")
 
-local ls = Instance.new("LocalScript")
-ls.Name = "TutorialController"
-ls.Parent = SPS
-ls.Source = [[
+local ctrl = Instance.new("LocalScript")
+ctrl.Name = "TutorialController"
+ctrl.Parent = SPS
+ctrl.Source = [[
 --!strict
--- TutorialController: 7-step FTUE overlay
-local Players      = game:GetService("Players")
-local RepStore     = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
-local UIS          = game:GetService("UserInputService")
+-- TutorialController — first-session guided tutorial overlay
 
-local player     = Players.LocalPlayer
-local PlayerGui  = player:WaitForChild("PlayerGui")
+local PS            = game:GetService("Players")
+local RS            = game:GetService("ReplicatedStorage")
+local TweenService  = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
-local TutorialStart    = RepStore:WaitForChild("TutorialStart")    :: RemoteEvent
-local TutorialComplete = RepStore:WaitForChild("TutorialComplete") :: RemoteFunction
+local player       = PS.LocalPlayer
+local playerGui    = player:WaitForChild("PlayerGui")
+local TutorialSync     = RS:WaitForChild("TutorialSync")
+local TutorialComplete = RS:WaitForChild("TutorialComplete")
 
--- ── STEP DEFINITIONS ──────────────────────────────────────────────────────────
--- type: "auto" — show for N seconds then advance
---       "action" — show until a specific RemoteEvent fires (or poll condition)
-local STEPS: {{
-    title: string,
-    body: string,
-    icon: string,
-    type: string,
-    duration: number?,
-    waitFor: string?,
-}} = {
-    {
-        title = "Welcome to your Hive!",
-        body  = "You're a bee. Your hive needs honey.\nLet's learn the basics.",
-        icon  = "🐝",
-        type  = "auto",
-        duration = 4,
-    },
-    {
-        title = "Collect Pollen",
-        body  = "Walk near a flower patch to send your\nbees foraging. Watch the pollen rise!",
-        icon  = "🌼",
-        type  = "auto",
-        duration = 6,
-    },
-    {
-        title = "Build a Hex Cell",
-        body  = "Tap an empty hex on your plot to build\na cell. Cells cost Propolis.",
-        icon  = "🔷",
-        type  = "auto",
-        duration = 6,
-    },
-    {
-        title = "Watch Honey Flow",
-        body  = "Cells convert pollen → honey over time.\nMore cells = more honey per second.",
-        icon  = "🍯",
-        type  = "auto",
-        duration = 6,
-    },
-    {
-        title = "Open the Forge",
-        body  = "Tap the ⚙️ Forge button to craft upgrades\nthat boost your production speed.",
-        icon  = "⚙️",
-        type  = "auto",
-        duration = 6,
-    },
-    {
-        title = "Check the Leaderboard",
-        body  = "Tap the 🏆 button to see the top honey\nearners on this server.",
-        icon  = "🏆",
-        type  = "auto",
-        duration = 5,
-    },
-    {
-        title = "You're ready!",
-        body  = "Grow your hive, unlock queens, and\nclimb the leaderboard. Good luck! 🐝",
-        icon  = "✨",
-        type  = "auto",
-        duration = 4,
-    },
+local HONEY_GOLD = Color3.fromRGB(242, 168, 28)
+local PROP_BROWN = Color3.fromRGB(80, 50, 20)
+local WAX_CREAM  = Color3.fromRGB(232, 212, 154)
+local OVERLAY_BG = Color3.fromRGB(0, 0, 0)
+
+-- Tutorial steps: {message, arrowDir, arrowX, arrowY}
+-- arrowDir: "left", "right", "up", "down", "none"
+local STEPS: {{msg: string, arrowDir: string, arrowX: number, arrowY: number}} = {
+	{msg = "Welcome to your hive! 🐝\nTap a hex cell to claim your first plot.",   arrowDir="none",    arrowX=0.5,  arrowY=0.5},
+	{msg = "Your bees are foraging!\nWatch your honey grow. 🍯",                   arrowDir="up",      arrowX=0.5,  arrowY=0.10},
+	{msg = "Tap ⚡ to upgrade bee speed —\nfaster bees, more honey!",              arrowDir="left",    arrowX=0.08, arrowY=0.27},
+	{msg = "Claim a daily reward every day\nto build your streak! 📅",             arrowDir="left",    arrowX=0.08, arrowY=0.72},
+	{msg = "When honey is plentiful,\nPrestige ⭐ for a permanent bonus!",         arrowDir="right",   arrowX=0.89, arrowY=0.38},
+	{msg = "You're ready!\nBuild the greatest hive in the world. 🐝🍯",            arrowDir="none",    arrowX=0.5,  arrowY=0.5},
 }
 
--- ── GUI BUILD ─────────────────────────────────────────────────────────────────
+local currentStep = 0
+local tutorialGui: ScreenGui?  = nil
+local bubble: Frame? = nil
+local msgLbl: TextLabel? = nil
+local stepLbl: TextLabel? = nil
 
-local function buildGui(): (ScreenGui, Frame, TextLabel, TextLabel, TextLabel, Frame, TextButton)
-    local sg = Instance.new("ScreenGui")
-    sg.Name           = "TutorialGui"
-    sg.DisplayOrder   = 100   -- above everything
-    sg.ResetOnSpawn   = false
-    sg.IgnoreGuiInset = true
-    sg.Parent         = PlayerGui
+local function buildGui()
+	local sg = Instance.new("ScreenGui")
+	sg.Name            = "TutorialGui"
+	sg.ResetOnSpawn    = false
+	sg.DisplayOrder    = 50   -- above all other UI
+	sg.IgnoreGuiInset  = true
+	sg.Parent          = playerGui
+	tutorialGui = sg
 
-    -- Dim overlay
-    local dim = Instance.new("Frame")
-    dim.Name              = "Dim"
-    dim.Size              = UDim2.new(1, 0, 1, 0)
-    dim.BackgroundColor3  = Color3.new(0, 0, 0)
-    dim.BackgroundTransparency = 0.55
-    dim.BorderSizePixel   = 0
-    dim.ZIndex            = 1
-    dim.Parent            = sg
+	-- semi-transparent overlay
+	local overlay = Instance.new("Frame")
+	overlay.Name              = "Overlay"
+	overlay.Size              = UDim2.new(1, 0, 1, 0)
+	overlay.BackgroundColor3  = OVERLAY_BG
+	overlay.BackgroundTransparency = 0.55
+	overlay.BorderSizePixel   = 0
+	overlay.ZIndex             = 51
+	overlay.Parent             = sg
 
-    -- Card panel
-    local card = Instance.new("Frame")
-    card.Name             = "Card"
-    card.AnchorPoint      = Vector2.new(0.5, 0.5)
-    card.Position         = UDim2.new(0.5, 0, 0.5, 0)
-    card.Size             = UDim2.new(0, 0, 0, 0)   -- starts invisible (scale-in)
-    card.BackgroundColor3 = Color3.fromRGB(30, 20, 10)
-    card.BorderSizePixel  = 0
-    card.ZIndex           = 2
-    card.Parent           = sg
+	-- click anywhere to advance
+	local clickBtn = Instance.new("TextButton")
+	clickBtn.Size              = UDim2.new(1, 0, 1, 0)
+	clickBtn.BackgroundTransparency = 1
+	clickBtn.Text              = ""
+	clickBtn.ZIndex            = 52
+	clickBtn.Parent            = overlay
+	clickBtn.MouseButton1Click:Connect(function() advanceStep() end)
 
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 18)
-    corner.Parent       = card
+	-- text bubble
+	local bub = Instance.new("Frame")
+	bub.Name              = "Bubble"
+	bub.Size              = UDim2.new(0.55, 0, 0.20, 0)
+	bub.Position          = UDim2.new(0.225, 0, 0.38, 0)
+	bub.BackgroundColor3  = PROP_BROWN
+	bub.BorderSizePixel   = 0
+	bub.ZIndex             = 53
+	bub.Parent             = sg
+	do local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0.08, 0); c.Parent = bub end
+	do local s = Instance.new("UIStroke"); s.Color = HONEY_GOLD; s.Thickness = 3; s.Parent = bub end
+	bubble = bub
 
-    local stroke = Instance.new("UIStroke")
-    stroke.Color     = Color3.fromRGB(242, 168, 28)   -- Honey Gold
-    stroke.Thickness = 2
-    stroke.Parent    = card
+	local ml = Instance.new("TextLabel")
+	ml.Name              = "Message"
+	ml.Size              = UDim2.new(0.90, 0, 0.65, 0)
+	ml.Position          = UDim2.new(0.05, 0, 0.05, 0)
+	ml.BackgroundTransparency = 1
+	ml.Text              = ""
+	ml.TextColor3        = WAX_CREAM
+	ml.TextScaled        = true
+	ml.Font              = Enum.Font.Gotham
+	ml.TextWrapped       = true
+	ml.ZIndex             = 54
+	ml.Parent             = bub
+	msgLbl = ml
 
-    -- Icon
-    local iconLbl = Instance.new("TextLabel")
-    iconLbl.Name                 = "Icon"
-    iconLbl.AnchorPoint          = Vector2.new(0.5, 0)
-    iconLbl.Position             = UDim2.new(0.5, 0, 0, 18)
-    iconLbl.Size                 = UDim2.new(0, 60, 0, 60)
-    iconLbl.BackgroundTransparency = 1
-    iconLbl.Text                 = "🐝"
-    iconLbl.TextScaled           = true
-    iconLbl.Font                 = Enum.Font.GothamBold
-    iconLbl.TextColor3           = Color3.new(1, 1, 1)
-    iconLbl.ZIndex               = 3
-    iconLbl.Parent               = card
+	local sl = Instance.new("TextLabel")
+	sl.Name              = "StepIndicator"
+	sl.Size              = UDim2.new(0.5, 0, 0.22, 0)
+	sl.Position          = UDim2.new(0.05, 0, 0.72, 0)
+	sl.BackgroundTransparency = 1
+	sl.Text              = "1 / 6"
+	sl.TextColor3        = HONEY_GOLD
+	sl.TextScaled        = true
+	sl.Font              = Enum.Font.GothamBold
+	sl.ZIndex             = 54
+	sl.Parent             = bub
+	stepLbl = sl
 
-    -- Title
-    local titleLbl = Instance.new("TextLabel")
-    titleLbl.Name                = "Title"
-    titleLbl.AnchorPoint         = Vector2.new(0.5, 0)
-    titleLbl.Position            = UDim2.new(0.5, 0, 0, 84)
-    titleLbl.Size                = UDim2.new(0.88, 0, 0, 32)
-    titleLbl.BackgroundTransparency = 1
-    titleLbl.Text                = "Welcome!"
-    titleLbl.TextScaled          = true
-    titleLbl.Font                = Enum.Font.GothamBold
-    titleLbl.TextColor3          = Color3.fromRGB(242, 168, 28)
-    titleLbl.ZIndex              = 3
-    titleLbl.Parent              = card
+	-- tap to continue hint
+	local tapHint = Instance.new("TextLabel")
+	tapHint.Size              = UDim2.new(0.45, 0, 0.22, 0)
+	tapHint.Position          = UDim2.new(0.50, 0, 0.72, 0)
+	tapHint.BackgroundTransparency = 1
+	tapHint.Text              = "tap to continue →"
+	tapHint.TextColor3        = Color3.fromRGB(180, 150, 80)
+	tapHint.TextScaled        = true
+	tapHint.Font              = Enum.Font.Gotham
+	tapHint.TextXAlignment    = Enum.TextXAlignment.Right
+	tapHint.ZIndex             = 54
+	tapHint.Parent             = bub
 
-    -- Body
-    local bodyLbl = Instance.new("TextLabel")
-    bodyLbl.Name                 = "Body"
-    bodyLbl.AnchorPoint          = Vector2.new(0.5, 0)
-    bodyLbl.Position             = UDim2.new(0.5, 0, 0, 124)
-    bodyLbl.Size                 = UDim2.new(0.88, 0, 0, 72)
-    bodyLbl.BackgroundTransparency = 1
-    bodyLbl.Text                 = ""
-    bodyLbl.TextScaled           = true
-    bodyLbl.Font                 = Enum.Font.Gotham
-    bodyLbl.TextColor3           = Color3.fromRGB(232, 212, 154)
-    bodyLbl.TextWrapped          = true
-    bodyLbl.ZIndex               = 3
-    bodyLbl.Parent               = card
-
-    -- Progress bar background
-    local barBg = Instance.new("Frame")
-    barBg.Name             = "BarBg"
-    barBg.AnchorPoint      = Vector2.new(0.5, 0)
-    barBg.Position         = UDim2.new(0.5, 0, 0, 206)
-    barBg.Size             = UDim2.new(0.80, 0, 0, 8)
-    barBg.BackgroundColor3 = Color3.fromRGB(60, 40, 20)
-    barBg.BorderSizePixel  = 0
-    barBg.ZIndex           = 3
-    barBg.Parent           = card
-
-    local barCorner = Instance.new("UICorner")
-    barCorner.CornerRadius = UDim.new(1, 0)
-    barCorner.Parent       = barBg
-
-    local barFill = Instance.new("Frame")
-    barFill.Name             = "BarFill"
-    barFill.Size             = UDim2.new(0, 0, 1, 0)
-    barFill.BackgroundColor3 = Color3.fromRGB(242, 168, 28)
-    barFill.BorderSizePixel  = 0
-    barFill.ZIndex           = 4
-    barFill.Parent           = barBg
-
-    local barFillCorner = Instance.new("UICorner")
-    barFillCorner.CornerRadius = UDim.new(1, 0)
-    barFillCorner.Parent       = barFill
-
-    -- Skip button
-    local skipBtn = Instance.new("TextButton")
-    skipBtn.Name             = "SkipBtn"
-    skipBtn.AnchorPoint      = Vector2.new(0.5, 0)
-    skipBtn.Position         = UDim2.new(0.5, 0, 0, 224)
-    skipBtn.Size             = UDim2.new(0.38, 0, 0, 34)
-    skipBtn.BackgroundColor3 = Color3.fromRGB(80, 55, 25)
-    skipBtn.BorderSizePixel  = 0
-    skipBtn.Text             = "Skip Tutorial"
-    skipBtn.TextColor3       = Color3.fromRGB(180, 140, 80)
-    skipBtn.TextScaled       = true
-    skipBtn.Font             = Enum.Font.Gotham
-    skipBtn.ZIndex           = 3
-    skipBtn.Parent           = card
-
-    local skipCorner = Instance.new("UICorner")
-    skipCorner.CornerRadius = UDim.new(0, 8)
-    skipCorner.Parent       = skipBtn
-
-    return sg, card, iconLbl, titleLbl, bodyLbl, barBg, skipBtn
+	-- skip button
+	local skipBtn = Instance.new("TextButton")
+	skipBtn.Name              = "SkipBtn"
+	skipBtn.Size              = UDim2.new(0.15, 0, 0.06, 0)
+	skipBtn.Position          = UDim2.new(0.83, 0, 0.01, 0)
+	skipBtn.BackgroundColor3  = Color3.fromRGB(100, 50, 50)
+	skipBtn.BorderSizePixel   = 0
+	skipBtn.Text              = "Skip"
+	skipBtn.TextColor3        = WAX_CREAM
+	skipBtn.TextScaled        = true
+	skipBtn.Font              = Enum.Font.Gotham
+	skipBtn.ZIndex             = 55
+	skipBtn.Parent             = sg
+	do local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0.3, 0); c.Parent = skipBtn end
+	skipBtn.MouseButton1Click:Connect(function() completeTutorial() end)
 end
 
--- ── ANIMATION HELPERS ────────────────────────────────────────────────────────
+local function showStep(n: number)
+	if n > #STEPS then
+		completeTutorial()
+		return
+	end
+	currentStep = n
+	local step = STEPS[n]
+	if msgLbl then msgLbl.Text = step.msg end
+	if stepLbl then stepLbl.Text = n .. " / " .. #STEPS end
 
-local CARD_W = 340
-local CARD_H = 270
-
-local function openCard(card: Frame)
-    card.Size = UDim2.new(0, 1, 0, 1)
-    local ti = TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-    TweenService:Create(card, ti, {
-        Size = UDim2.new(0, CARD_W, 0, CARD_H)
-    }):Play()
+	-- pop bubble in
+	if bubble then
+		bubble.Size = UDim2.new(0.55, 0, 0.01, 0)
+		TweenService:Create(bubble, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0.55, 0, 0.20, 0)}):Play()
+	end
 end
 
-local function closeCard(card: Frame): ()
-    local ti = TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-    local tw = TweenService:Create(card, ti, {
-        Size = UDim2.new(0, 1, 0, 1)
-    })
-    tw:Play()
-    tw.Completed:Wait()
+function advanceStep()
+	showStep(currentStep + 1)
 end
 
-local function animateBar(barFill: Frame, fraction: number, duration: number)
-    local ti = TweenInfo.new(duration * 0.90, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    TweenService:Create(barFill, ti, {
-        Size = UDim2.new(fraction, 0, 1, 0)
-    }):Play()
+function completeTutorial()
+	if tutorialGui then
+		TweenService:Create(tutorialGui, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {}):Play()
+		task.wait(0.35)
+		tutorialGui:Destroy()
+		tutorialGui = nil
+	end
+	pcall(function() TutorialComplete:InvokeServer() end)
 end
 
--- ── MAIN FLOW ─────────────────────────────────────────────────────────────────
-
-local function runTutorial()
-    local sg, card, iconLbl, titleLbl, bodyLbl, barBg, skipBtn = buildGui()
-    openCard(card)
-
-    local skipped = false
-    skipBtn.Activated:Connect(function()
-        skipped = true
-    end)
-
-    local barFill = barBg:FindFirstChild("BarFill") :: Frame
-
-    for i, step in STEPS do
-        if skipped then break end
-
-        iconLbl.Text  = step.icon
-        titleLbl.Text = step.title
-        bodyLbl.Text  = step.body
-
-        local fraction = i / #STEPS
-        local dur = step.duration or 5
-        animateBar(barFill, fraction, dur)
-
-        if step.type == "auto" then
-            task.wait(dur)
-        end
-
-        if skipped then break end
-    end
-
-    -- Mark complete on server
-    TutorialComplete:InvokeServer()
-
-    closeCard(card)
-    task.wait(0.05)
-    sg:Destroy()
-end
-
--- ── ENTRY POINT ───────────────────────────────────────────────────────────────
-
-TutorialStart.OnClientEvent:Connect(function()
-    task.spawn(runTutorial)
+TutorialSync.OnClientEvent:Connect(function(data: {seen: boolean})
+	if data.seen then return end   -- already completed — do nothing
+	task.wait(1.5)   -- let game UI finish loading
+	buildGui()
+	showStep(1)
 end)
 ]]
 
-print("STEP E done — TutorialController created")
-```
-
-### Verify STEP E
-```lua
-local SPS = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
-local ls  = SPS and SPS:FindFirstChild("TutorialController")
-print(ls and "PASS: TutorialController exists" or "FAIL: not found")
+print("TutorialController created")
 ```
 
 ---
 
-## STEP F — Verification
+## STEP E — Verification sweep
 
-Paste in Command Bar:
+Command Bar:
 
 ```lua
--- STEP F: full verification
 local SSS = game:GetService("ServerScriptService")
-local Rep = game:GetService("ReplicatedStorage")
+local RS  = game:GetService("ReplicatedStorage")
 local SPS = game:GetService("StarterPlayer"):FindFirstChild("StarterPlayerScripts")
 
-local checks = {
-    {"DataService.hasSeen_tutorial",
-        SSS:FindFirstChild("DataService") and
-        SSS:FindFirstChild("DataService").Source:find("hasSeen_tutorial") ~= nil},
+local checks = {}
 
-    {"TutorialService exists",
-        SSS:FindFirstChild("TutorialService") ~= nil},
+local ds = SSS:FindFirstChild("DataService")
+table.insert(checks, (ds and ds.Source:find("tutorialSeen") and "✅" or "❌") .. " DataService tutorialSeen")
 
-    {"TutorialStart RemoteEvent",
-        Rep:FindFirstChild("TutorialStart") ~= nil and
-        Rep:FindFirstChild("TutorialStart"):IsA("RemoteEvent")},
+local svc = SSS:FindFirstChild("TutorialService")
+table.insert(checks, (svc and "✅" or "❌") .. " TutorialService script")
 
-    {"TutorialComplete RemoteFunction",
-        Rep:FindFirstChild("TutorialComplete") ~= nil and
-        Rep:FindFirstChild("TutorialComplete"):IsA("RemoteFunction")},
+local tsync = RS:FindFirstChild("TutorialSync")
+table.insert(checks, (tsync and "✅" or "❌") .. " TutorialSync RemoteEvent")
 
-    {"GameManager has TutorialService",
-        SSS:FindFirstChild("GameManager") and
-        SSS:FindFirstChild("GameManager").Source:find("TutorialService", 1, true) ~= nil},
+local tcomplete = RS:FindFirstChild("TutorialComplete")
+table.insert(checks, (tcomplete and "✅" or "❌") .. " TutorialComplete RemoteFunction")
 
-    {"TutorialController LocalScript",
-        SPS and SPS:FindFirstChild("TutorialController") ~= nil},
-}
+local gm = SSS:FindFirstChild("GameManager")
+table.insert(checks, (gm and gm.Source:find("TutorialService") and "✅" or "❌") .. " GameManager Init")
 
-local pass, fail = 0, 0
-for _, c in checks do
-    local label, result = c[1], c[2]
-    if result then
-        print("  PASS: " .. label)
-        pass = pass + 1
-    else
-        warn("  FAIL: " .. label)
-        fail = fail + 1
-    end
-end
-print(string.format("\n%d/%d checks passed — %s",
-    pass, #checks, fail == 0 and "DISPATCH 48 COMPLETE ✓" or "NEEDS ATTENTION"))
-```
+local ctrl = SPS and SPS:FindFirstChild("TutorialController")
+table.insert(checks, (ctrl and "✅" or "❌") .. " TutorialController")
 
----
-
-## EXPECTED VERIFICATION OUTPUT
-
-```
-  PASS: DataService.hasSeen_tutorial
-  PASS: TutorialService exists
-  PASS: TutorialStart RemoteEvent
-  PASS: TutorialComplete RemoteFunction
-  PASS: GameManager has TutorialService
-  PASS: TutorialController LocalScript
-
-6/6 checks passed — DISPATCH 48 COMPLETE ✓
+print("=== DISPATCH 65 VERIFICATION ===")
+for _, line in checks do print(line) end
+local allOK = not table.concat(checks, ""):find("❌")
+print(allOK and "✅ ALL CHECKS PASS — dispatch 65 complete" or "❌ SOME CHECKS FAILED")
 ```
 
 ---
 
 ## PART BUDGET
 
-| Change | Parts |
-|---|---|
-| TutorialService ModuleScript | 0 |
-| TutorialController LocalScript | 0 |
-| RemoteEvent + RemoteFunction | 0 |
-| GUI (PlayerGui — runtime only, not permanent) | 0 |
-| **Running total** | **4,142 / 5,000** |
+| Item | Parts |
+|------|-------|
+| UI elements (no BaseParts) | 0 |
+| **Dispatch 65 total** | **+0** |
+| **Running total** | **4,146 / 5,000** |
 
 ---
 
-## BEHAVIOUR NOTES
+## NOTES
 
-- **First join only**: server fires `TutorialStart` to client only when `profile.hasSeen_tutorial == false`.
-  After the player reaches step 7 (or skips), `TutorialComplete:InvokeServer()` sets `hasSeen_tutorial = true` permanently.
-- **Dim overlay**: semi-transparent black layer at full screen — player can still see the hive while reading.
-- **Skip button**: immediately exits the tutorial and marks complete on server. No penalty.
-- **Progress bar**: Honey Gold fill advances with each step, giving a visual "how much longer" cue.
-- **Rejoin safety**: if the player disconnects mid-tutorial, `hasSeen_tutorial` is still `false` → tutorial fires again on next join. Once `TutorialComplete` is invoked and saved by DataService, it will never fire again.
-- **No part cost**: the `TutorialGui` lives in `PlayerGui` at runtime. It is destroyed after tutorial ends. Not counted in world part budget.
-
----
-
-*Dispatch 48 complete — execute Steps A → F in order. Proceed to Dispatch 49 after all 6/6 checks pass.*
+- Tutorial only fires on first session (`tutorialSeen = false`). Returning players see nothing.
+- `IgnoreGuiInset = true` on TutorialGui ensures the overlay covers the full screen including the Roblox top bar area.
+- DisplayOrder=50 puts it above all other game UI (highest existing is 26 for badges).
+- The overlay click target is a transparent TextButton (not Frame) so `MouseButton1Click` fires on mobile tap correctly.
+- Steps 3 and 4 point at actual tab positions (X=0.08 left column) — these match the reflowed layout from dispatch 64. Step 5 points at the right column (X=0.89).
+- `completeTutorial()` is a module-level upvalue so `clickBtn` can call `advanceStep()` without capturing it in the closure; both work from the same local environment.
