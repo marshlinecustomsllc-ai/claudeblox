@@ -167,3 +167,15 @@
 - **Optional Step D** — ForagingService `profile.lastRates` storage (so offline calc uses the player's actual production rate rather than the fallback default)
 
 **Part budget:** 0 new world parts → ~4,094/5,000 (unchanged)
+
+## Cycle 11 — Dispatch 28: FloorProgressGui — FLOORS tab in HiveGui
+
+**File:** `cycle11_floor_progress_dispatch.md`
+
+### What it adds
+- **Config.FLOOR_REQUIREMENTS** — floor gate table added to Config ModuleScript: Floor 2 (12 cells on floor 1, 5,000 totalHoneySpent, queenTierMin=2); Floor 3 (6 cells on floor 2, 25,000 totalHoneySpent, queenTierMin=4)
+- **HudDataSync payload extension** — server now sends 3 additional fields: `floorUnlocked` (current highest floor), `cellsBuilt` (total CombCell-tagged parts), `honeySpent` (profile.honeySpent running total); existing listeners are unaffected (trailing fields)
+- **FloorsPage UI** — 5th tab in HiveGui MainFrame PageContainer: `TabFloors` button in TabBar (Warm Wax palette), `FloorsPage` frame; `FloorCard_2` and `FloorCard_3` each containing Title, `RowCells` / `RowHoney` / `RowQueen` frames (each with a Bar fill + Label), and `UnlockedBadge` (hidden until unlocked)
+- **FloorProgressController LocalScript** — `--!strict`; listens on HudDataSync; `updateFloorCard(floorNum, req, floorUnlocked, cellsBuilt, honeySpent, queenTier)` animates bar widths via TweenService (Quad/Out, 0.4s), turns bar green (Color3.fromRGB(60,120,40)) when fraction ≥ 1; shows/hides UnlockedBadge; all sizing Scale-based (mobile-safe); 5th tab switching wired in same pattern as tabs 1–4
+
+**Part budget:** 0 new world parts → ~4,094/5,000 (unchanged)
