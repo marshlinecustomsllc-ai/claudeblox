@@ -923,3 +923,9 @@
 **Cycle:** 14
 **Change:** New HoneycombOverlayController LocalScript. Draws Honey Gold Beam lines between adjacent hex plots (within 22 studs). H key toggle or BeehiveOverlayEnabled player attribute. Beams parented to Workspace.HoneycombOverlay folder; destroyed on toggle-off. PlotSync listener rebuilds overlay when new plot is claimed. Width=0.08, Trans=0.6, LightEmission=0.3.
 **Part budget:** +0 permanent → 4,146/5,000
+
+## Dispatch 104 — Foraging Trip Duration Upgrade (Swift Wings)
+**File:** cycle14_foraging_duration_upgrade_dispatch.md
+**Cycle:** 14
+**Change:** Adds swift_wings_1/2/3 upgrades to Config (honey cost 300/750/1600, prereq chain, tripDurationMult 0.90/0.80/0.65). Injects getEffectiveDuration_104() into ForagingService with 5s minimum floor. task.wait(Config.FORAGING_DURATION) replaced with profile-aware call.
+**Part budget:** +0 permanent → 4,146/5,000
