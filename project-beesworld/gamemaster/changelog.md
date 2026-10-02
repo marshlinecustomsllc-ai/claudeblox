@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 233 — Honey Milestone Celebration Pop (2026-10-02)
+- Written: cycle25_honey_milestone_dispatch.md
+- HoneyMilestoneController LocalScript (StarterPlayerScripts): monitors Honey player attribute. Fires a celebratory ScreenGui overlay (DisplayOrder=50) when player crosses 100/500/1000/5000/10000/25000/50000 honey for the first time per session. Card shows milestone label + large honey count. Scale-pop (EasingStyle.Back) entry + fade dismiss in 2.5s. Jingle sound in PlayerGui Vol=0.55. Pre-marks already-exceeded milestones on join to prevent retroactive firings.
+- Part budget: 4,218 / 5,000 (unchanged — ScreenGui in PlayerGui).
+
 ## Dispatch 232 — Wasp Alert Sound Controller (2026-10-02)
 - Written: cycle24_wasp_alert_sound_dispatch.md
 - WaspAlertSoundController LocalScript (StarterPlayerScripts): listens to WaspAlert boolean player attribute (written by ThreatService D221). Plays alert sting (sharp buzz, Vol=0.65, pitch=1.15) on true; all-clear chime (soft, Vol=0.35, pitch=0.92) on false. Both sounds parented to PlayerGui for non-spatial full-volume delivery. 4s/2s cooldown prevents spam on rapid toggles. Joins during active alert get immediate sting.
