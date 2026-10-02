@@ -1608,3 +1608,13 @@
 - CollectionService Added/Removed hooks + 2.5s Heartbeat re-scan.
 - `MAX_ROUTES_198 = 3` hard-coded constant (must match `Config.MAX_ROUTES`); dispatch notes optional Config require pattern.
 - Part budget: +0 server-side permanent → 4,204 / 5,000.
+
+## Dispatch 199 — Honey Crown BillboardGui (cycle19_honey_crown_dispatch.md) (2026-10-02)
+- Added **HoneyCrownController** LocalScript (StarterPlayerScripts).
+- 80×36 BillboardGui 8 studs above the PlotRoot of the current honey leader; displays display name (max 12 chars) + honey count + 🍯 emoji.
+- `findLeader_199()`: scans all Players' `HoneyCount` attribute; crown appears at MIN_LEAD_HONEY_199=10 minimum.
+- `startPulse_199()`: Heartbeat sine pulse on UIStroke colour (HONEY_GOLD ↔ WAX_CREAM, rate 1.8/s).
+- `placeCrown_199()`: updates label in-place if same plot; destroys and rebuilds if leadership moved.
+- `GetAttributeChangedSignal("HoneyCount")` on all players + `PlayerAdded`/`PlayerRemoving` hooks for near-instant reaction.
+- 5s Heartbeat safety-net re-poll.
+- Part budget: +0 server-side permanent → 4,204 / 5,000.
