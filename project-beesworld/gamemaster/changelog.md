@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 211 — Population Cap Warning (2026-10-02)
+- Written: cycle21_pop_cap_dispatch.md
+- PopCapController LocalScript (StarterPlayerScripts): persistent HUD pill (180×42px) at bottom-left (UDim2(0,8,1,-90)) that appears when MaxBees - CurrentBees ≤ WARN_MARGIN_211 (3). Shows "🐝 X / Y bees" in WARN_AMBER (220,100,20) or AT_CAP_RED (200,40,20) when exactly at cap. UIStroke colour matches label. Kid-friendly hint: "Nearly full — add a Brood Cell" / "At capacity — add Brood Cells!". Fade in/out 0.25s TweenService. Reacts instantly to CurrentBees + MaxBees attribute changes; 5s safety scan. DisplayOrder=19 (above RouteLimitController at D198, below main HUD).
+- Part budget: 4,204 / 5,000 (unchanged — ScreenGui only).
+
 ## Dispatch 210 — Harvest Ready Beacon (2026-10-02)
 - Written: cycle21_harvest_beacon_dispatch.md
 - HarvestBeaconController LocalScript (StarterPlayerScripts): pulsing BillboardGui beacon (120×38px) above LandingBoard when HoneyCount ≥ HARVEST_THRESHOLD_210 (50). Shows "🍯 Harvest!" + live honey count. UIStroke pulses AMBER→BRIGHT at 1.1/s. Honey count label updates in-place on attribute change. Disappears when honey drops below threshold. Reads HoneyCount player attribute + LandingBoard CollectionService tag. 7s safety scan.
