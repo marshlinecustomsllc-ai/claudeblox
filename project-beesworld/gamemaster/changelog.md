@@ -1,5 +1,11 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 205 — Queen Tier Crown Aura (2026-10-02)
+- Written: cycle20_queen_aura_dispatch.md
+- QueenAuraController LocalScript (StarterPlayerScripts): Neon Cylinder ring 1.2 studs above QueenCell-tagged BasePart, sized and coloured by QueenTier (T1 small silver → T5 large sun-yellow). Slow 0.25 rev/sec Heartbeat spin. Rebuilds on QueenTier attribute change. 8s safety re-scan. Zero server writes. Part budget: +0 (client-only Part, not permanent).
+- Tier spec: T1 r=0.55 silver (200,200,220), T2 r=0.65 honey gold (242,168,28), T3 r=0.80 purple (180,120,255), T4 r=0.95 ember (255,100,30), T5 r=1.20 sun yellow (255,240,60).
+- Part budget: 4,204 / 5,000 (unchanged).
+
 ## Cycle 1
 - Project initialized. User specified concept: a bee tycoon style game, titled "A Bee's World".
 - Studio connected to a fresh Baseplate-template place (studio_id 64d62e3f-b5e1-4e1f-9d51-56b0eb1835c5).
