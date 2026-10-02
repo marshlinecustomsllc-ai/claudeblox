@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 234 — Plot Flag Wind Animation (2026-10-02)
+- Written: cycle25_plot_flag_wind_dispatch.md
+- PlotFlagWindController LocalScript (StarterPlayerScripts): drives sinusoidal Y-axis oscillation on PlotFlag-tagged BaseParts. Unclaimed: 0.28/s gentle drift. Claimed: 0.55/s livelier ripple (reads PlotOwner attribute). PHASE_STEP_234=0.72 rad staggers all 6 flags. BASE_OFFSET_RANGE_234=±1.6° random tilt at registration for natural variation. CFrame multiply per flag per Heartbeat frame — minimal cost. 8s scan + stale prune.
+- Part budget: 4,218 / 5,000 (unchanged — LocalScript only).
+
 ## Dispatch 233 — Honey Milestone Celebration Pop (2026-10-02)
 - Written: cycle25_honey_milestone_dispatch.md
 - HoneyMilestoneController LocalScript (StarterPlayerScripts): monitors Honey player attribute. Fires a celebratory ScreenGui overlay (DisplayOrder=50) when player crosses 100/500/1000/5000/10000/25000/50000 honey for the first time per session. Card shows milestone label + large honey count. Scale-pop (EasingStyle.Back) entry + fade dismiss in 2.5s. Jingle sound in PlayerGui Vol=0.55. Pre-marks already-exceeded milestones on join to prevent retroactive firings.
