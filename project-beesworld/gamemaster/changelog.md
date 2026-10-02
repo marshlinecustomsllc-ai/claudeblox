@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 214 — ResourceService Attribute Writes (2026-10-02)
+- Written: cycle21_resourceservice_attrs_dispatch.md
+- Server-side integration pass: adds missing attribute writes to ResourceService and ForagingService to power D204–D213 client controllers. Covers: RipenessLevel (0–1) on HoneyBlob parts (feeds HoneyGlowController); NectarLevel (0–1) on RouteBeam parts (feeds NectarFlowController); OutputRate on CombCell parts (feeds CellHoverController); HoneyCount on Player (confirms HarvestBeaconController integration). No new parts — Script edits only.
+- Part budget: 4,204 / 5,000 (unchanged).
+
 ## Dispatch 213 — Season & Weather Badge (2026-10-02)
 - Written: cycle21_weather_badge_dispatch.md
 - WeatherBadgeController LocalScript (StarterPlayerScripts): 130×34 ScreenGui badge top-right (UDim2(1,-8,0,8)), DisplayOrder=17. Shows season emoji (🌸☀️🍂❄️) + weather emoji + weather label with yield-penalty text ("Storm −40%"). Stroke colour updates with weather state. Reacts to CurrentSeason + CurrentWeather player attributes + 8s scan. Gracefully defaults to 🌸 Sunny when WeatherService attributes absent.
