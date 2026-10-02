@@ -1628,3 +1628,13 @@
 - Reads `TotalSessions` and `TotalHoneyHarvested` player attributes; dispatch notes DataService profile additions if not already present.
 - Step 4 includes quick-test Command Bar snippet for Play-mode testing.
 - Part budget: +0 server-side permanent → 4,204 / 5,000.
+
+## Dispatch 201 — Pollen Mound Sparkle (cycle20_pollen_sparkle_dispatch.md) (2026-10-02)
+- Added **PollenSparkleController** LocalScript (StarterPlayerScripts).
+- Heartbeat sine shimmer on `PollenMound`-tagged BasePart `Color` when `PollenLevel` ≥ 0.60.
+- `shimmerColor_201()`: `POLLEN_BASE(220,200,60)` ↔ `POLLEN_SHIMMER(255,235,80)` ↔ `POLLEN_PEAK(255,250,140)`, richness-scaled by level above threshold.
+- Each mound gets a random phase offset so mounds pulse independently.
+- `GetAttributeChangedSignal("PollenLevel")` per mound for instant threshold crossings; 4s scan safety net.
+- `unregisterMound_201()` restores base colour with 0.6s tween (no snap).
+- No new parts — direct Color property writes on existing CellContent BaseParts.
+- Part budget: +0 server-side permanent → 4,204 / 5,000.
