@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 227 — Bear Altar Glow Controller (2026-10-02)
+- Written: cycle23_altar_glow_dispatch.md
+- BearAltarGlowController LocalScript (StarterPlayerScripts): finds BearAltar-tagged Part, creates AltarGlow_227 PointLight if absent. Reads ThreatStage attribute. Stages 0–1: warm amber slow pulse; Stage 3: orange-red moderate; Stage 5: deep red frantic 1.3/s; Stage 6: solid pure red, brightness=2.5, range=28. Pulse rhythm matches BearWarningController (D220) vignette for coherent signal. TweenService Sine 0.6s colour/range transitions. 8s rescan self-heal.
+- Part budget: 4,218 / 5,000 (unchanged — PointLight inside existing BearAltar part).
+
 ## Dispatch 226 — Honey Drip Fountain Animation (2026-10-02)
 - Written: cycle23_fountain_anim_dispatch.md
 - ResourceService addition: updateHubHoneyFlow_226 sums CombCell OutputRate attributes every 6s, writes HubHoneyFlow (0–1) to workspace. FLOW_MAX_RATE_226=8 honey/s ceiling.
