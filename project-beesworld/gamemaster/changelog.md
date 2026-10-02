@@ -1352,3 +1352,9 @@
 ## Dispatch 150 — Hive Population Display (2026-10-02)
 - BeePopulationController LocalScript — live "🐝 Colony: N bees" pill, bottom-left HUD (DisplayOrder=10). Formula: CombCellCount × (10 + PrestigeLevel × 5). Heartbeat counter animation (ease-out cubic, 0.8s). Reacts to CombCellCount and PrestigeLevel attribute changes.
 - Part budget: +0 permanent → 4,157 / 5,000
+
+## Dispatch 151 — Friend Bonus (cycle14_friend_bonus_dispatch.md)
+- **FriendBonusService** (new Script, ServerScriptService): async `GetFriendsAsync` friend detection per player; `friendSets_151` cache; `countFriends_151` cross-reference against current players; `refreshAll_151()` on every join and leave (0.5s delay on leave); `FriendBonusCount` attribute (0–3); `MAX_FRIENDS_151 = 3` cap (+30% max)
+- **FriendBonusController** (new LocalScript, StarterPlayerScripts): `FriendPill` at `{0,8,1,-108}` (40px above BeePopPill); grey dim "👥 Invite friends: +10% each" at 0 friends; amber bold "👥 +N% (N friend/friends)" when active; stroke colour also switches grey→amber
+- **CombService patch**: `friendMulti_151 = 1.0 + (math.min(3, FriendBonusCount) * 0.10)`; full produced formula now `broodRate * elapsed * nurseMulti_143 * tempMulti_146 * t2Multi_149 * friendMulti_151`
+- Part budget: +1 permanent → **4,158 / 5,000**
