@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 237 — Harvest Glow Controller (2026-10-02)
+- Written: cycle25_harvest_glow_dispatch.md
+- HarvestGlowController LocalScript (StarterPlayerScripts): listens to LastHarvestTime player attribute (written by ResourceService/HarvestController on harvest). Fires staggered golden PointLight burst (Brightness=1.8, Range=6) across all HiveComb-tagged parts: 0.12s snappy rise → 1.50s Sine fade back to 0. STAGGER_237=0.06s per cell creates a wave ripple across the comb grid. 2s cooldown debounce. PointLights named HarvestGlow_237 are created lazily on first harvest.
+- Part budget: 4,218 / 5,000 (unchanged — PointLights inside existing HiveComb parts).
+
 ## Dispatch 236 — Daily Quest HUD Badge (2026-10-02)
 - Written: cycle25_quest_hud_badge_dispatch.md
 - QuestHudBadge LocalScript (StarterPlayerScripts): compact bottom-right ScreenGui (DisplayOrder=18, 240×56px) showing active daily quest label + fill-bar progress. Reads QuestId/QuestProgress/QuestGoal/QuestComplete player attributes from QuestService (D23). Amber fill bar tweens on each progress tick. Complete state: green ✓ label + full green bar, auto-hides after 3s. 10 quest label definitions cover all D23 quest types. Hidden when no quest active.
