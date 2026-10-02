@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 213 — Season & Weather Badge (2026-10-02)
+- Written: cycle21_weather_badge_dispatch.md
+- WeatherBadgeController LocalScript (StarterPlayerScripts): 130×34 ScreenGui badge top-right (UDim2(1,-8,0,8)), DisplayOrder=17. Shows season emoji (🌸☀️🍂❄️) + weather emoji + weather label with yield-penalty text ("Storm −40%"). Stroke colour updates with weather state. Reacts to CurrentSeason + CurrentWeather player attributes + 8s scan. Gracefully defaults to 🌸 Sunny when WeatherService attributes absent.
+- Part budget: 4,204 / 5,000 (unchanged — ScreenGui only).
+
 ## Dispatch 212 — Bee Caste Badge (2026-10-02)
 - Written: cycle21_caste_badge_dispatch.md
 - CasteBadgeController LocalScript (StarterPlayerScripts): compact 144×30 ScreenGui badge at bottom-left (UDim2(0,8,1,-126)), DisplayOrder=18. Shows live Forager/Nurse/Guard counts with coloured dot per caste: F=green (100,200,100), N=soft-purple (200,160,255), G=amber-orange (255,130,50). Always visible once built. Fades in 0.20s on first appearance. Reacts to ForagerCount/NurseCount/GuardCount attribute changes + 6s safety scan. HUD stack: main HUD > PopCap pill (19) > CasteBadge (18).
