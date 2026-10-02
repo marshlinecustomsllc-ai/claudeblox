@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 231 — PatchService Attribute Writes (2026-10-02)
+- Written: cycle24_patchservice_attrs_dispatch.md
+- Server-side integration pass for FlowerBloomController (D230). Adds broadcastPatchState_231(patchPart, currentNectar, maxNectar, regenSecsLeft) helper to PatchService/ForagingService. Writes PatchNectarLevel (0–1) and PatchRegenSecondsLeft on every regen tick and immediately on depletion. Initial write on server start (task.delay 2s) ensures late-joining clients get correct patch colours. Optional 3s countdown-only tick for accurate timer labels.
+- Part budget: 4,218 / 5,000 (unchanged — script edits only).
+
 ## Dispatch 230 — Flower Patch Bloom State (2026-10-02)
 - Written: cycle24_flower_bloom_dispatch.md
 - FlowerBloomController LocalScript (StarterPlayerScripts): scans FlowerPatch-tagged BaseParts, reads PatchNectarLevel (0–1) and PatchRegenSecondsLeft attributes. Applies colour tween: depleted (100,115,70 grey-green) → recovering (180,200,120 mid-green) → full bloom (220,180,240 lavender-pink). Threshold 0.05 prevents continuous tweening. Builds BloomGui_230 BillboardGui (80×24, StudsOffset 3.5 up) with countdown label "⏱ Ns" — visible only when level < 0.15 and secsLeft > 0. GetAttributeChangedSignal wires instant response to PatchService writes. 5s scan + stale prune.
