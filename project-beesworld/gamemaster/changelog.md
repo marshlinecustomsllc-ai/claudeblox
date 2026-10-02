@@ -1,5 +1,11 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 215 — Plot Visitor Counter (2026-10-02)
+- Written: cycle21_visitor_counter_dispatch.md
+- PlotVisitorService Script (ServerScriptService.Systems): tracks unique player visits per plot; writes VisitorCount attribute to PlotSign-tagged parts every 4s proximity check (28-stud radius). Unique visitors only — increments once per player per session.
+- VisitorCountController LocalScript (StarterPlayerScripts): BillboardGui 5.5 studs above each PlotSign showing "👥 N visitors". Own plot shown in MINE_GOLD (255,220,80); others in WAX_CREAM. Reactive on VisitorCount attribute change.
+- Part budget: 4,204 / 5,000 (unchanged — BillboardGui only).
+
 ## Dispatch 214 — ResourceService Attribute Writes (2026-10-02)
 - Written: cycle21_resourceservice_attrs_dispatch.md
 - Server-side integration pass: adds missing attribute writes to ResourceService and ForagingService to power D204–D213 client controllers. Covers: RipenessLevel (0–1) on HoneyBlob parts (feeds HoneyGlowController); NectarLevel (0–1) on RouteBeam parts (feeds NectarFlowController); OutputRate on CombCell parts (feeds CellHoverController); HoneyCount on Player (confirms HarvestBeaconController integration). No new parts — Script edits only.
