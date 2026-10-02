@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 216 — WeatherService (2026-10-02)
+- Written: cycle22_weather_service_dispatch.md
+- WeatherService Script (ServerScriptService.Systems): 4-season cycle (300s/season, 20min full cycle). Each season has weighted weather probabilities. Weather re-rolls every 60s. Broadcasts CurrentSeason + CurrentWeather to all players (PlayerAdded too). ClockTime tweens over 30s; Atmosphere Density + Color update instantly. WeatherForageMultiplier written to workspace attribute for ForagingService. Multipliers: Sunny=1.0, Overcast=0.9, Drizzle=0.9, Fog=0.85, Rain=0.8, Storm=0.6.
+- Part budget: 4,204 / 5,000 (unchanged — Script only).
+
 ## Dispatch 215 — Plot Visitor Counter (2026-10-02)
 - Written: cycle21_visitor_counter_dispatch.md
 - PlotVisitorService Script (ServerScriptService.Systems): tracks unique player visits per plot; writes VisitorCount attribute to PlotSign-tagged parts every 4s proximity check (28-stud radius). Unique visitors only — increments once per player per session.
