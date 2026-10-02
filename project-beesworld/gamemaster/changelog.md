@@ -1598,3 +1598,13 @@
 - CollectionService `GetInstanceAddedSignal("RouteBeam")` (0.5s settle delay) + `GetInstanceRemovedSignal` + 3-second Heartbeat re-scan.
 - Dispatch notes ForagingService should write `LastQuality` + `NectarLevel` to RouteBeam after each completed trip; NectarLevel may already be set by PollenTrailController (dispatch 186).
 - Part budget: +0 server-side permanent → 4,204 / 5,000 (BillboardGui GuiObjects, not BaseParts).
+
+## Dispatch 198 — Route Limit Warning HUD (cycle19_route_limit_dispatch.md) (2026-10-02)
+- Added **RouteLimitController** LocalScript (StarterPlayerScripts).
+- Persistent 100×24 bottom-left pill ("🛣️ N / 3 routes") with stroke colour: Honey Gold (free) → Amber (one slot left) → Red (capped).
+- Soft-limit toast at `MAX_ROUTES_198 - 1` routes: "🛣️ One route slot left — dance wisely!"
+- Cap toast at `MAX_ROUTES_198`: "🛣️ Route cap reached — retire a route to add a new one."
+- `toastActive_198` flag prevents overlapping toasts; toasts only fire when count goes UP to the threshold.
+- CollectionService Added/Removed hooks + 2.5s Heartbeat re-scan.
+- `MAX_ROUTES_198 = 3` hard-coded constant (must match `Config.MAX_ROUTES`); dispatch notes optional Config require pattern.
+- Part budget: +0 server-side permanent → 4,204 / 5,000.
