@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 236 — Daily Quest HUD Badge (2026-10-02)
+- Written: cycle25_quest_hud_badge_dispatch.md
+- QuestHudBadge LocalScript (StarterPlayerScripts): compact bottom-right ScreenGui (DisplayOrder=18, 240×56px) showing active daily quest label + fill-bar progress. Reads QuestId/QuestProgress/QuestGoal/QuestComplete player attributes from QuestService (D23). Amber fill bar tweens on each progress tick. Complete state: green ✓ label + full green bar, auto-hides after 3s. 10 quest label definitions cover all D23 quest types. Hidden when no quest active.
+- Part budget: 4,218 / 5,000 (unchanged — ScreenGui in PlayerGui).
+
 ## Dispatch 235 — Landing Board Activity Pulse (2026-10-02)
 - Written: cycle25_landing_board_pulse_dispatch.md
 - LandingBoardPulseController LocalScript (StarterPlayerScripts): colour oscillation on LandingBoard-tagged BaseParts. Pulse speed scales with ForagerCount player attribute (D222): 0.10/s idle → 0.70/s at cap. Colour lerps dim amber (160,100,30) → bright honey gold (255,220,90). wave*fill coupling ensures zero flicker at 0 foragers. Phase 1.05 rad between boards keeps all 6 out of sync. Step 3 includes Command Bar script to auto-tag LandingBoard parts.
