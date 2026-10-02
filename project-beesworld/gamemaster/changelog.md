@@ -1336,3 +1336,9 @@
 - HoneyMilestoneService Script — watches HoneyEarned attribute, fires HoneyMilestoneReached RemoteEvent at 10 tiers (500→50,000). HoneyMilestone_147 per-prestige progress counter. Toast queue prevents overlap.
 - HoneyMilestoneController LocalScript — gold toast slides from top, 3s hold, queued playback. DisplayOrder=35.
 - Part budget: +1 permanent → 4,154 / 5,000
+
+## Dispatch 148 — Foraging Weather Events (2026-10-02)
+- WeatherService Script — server-wide weather cycle (90-180s duration, 5-8min gaps). 5 types: sunny(+15q/×0.85t), cloudy(neutral), windy(-10q/×1.15t), rainy(-20q/×1.25t), flower_bloom(+25q/×0.90t rare 10% weight). WeatherQualityMod + WeatherDurationMod attributes per player.
+- WeatherBannerController LocalScript — thin top-strip banner (DisplayOrder=8), slides in 4s, colour-coded per weather.
+- ForagingService patched: weatherQMod_148 adds to quality sum; weatherDMod_148 multiplies tripDuration.
+- Part budget: +1 permanent → 4,155 / 5,000
