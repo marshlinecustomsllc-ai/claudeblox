@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 220 — Bear Approach Warning (2026-10-02)
+- Written: cycle22_bear_warning_dispatch.md
+- BearWarningController LocalScript (StarterPlayerScripts): four-edge screen vignette (top/bottom 40px, left/right 30px Frames, DisplayOrder=30) that pulses red as ThreatStage rises. Pulse rates: Stage 3=0.30/s (faint, 20% alpha), Stage 4=0.80/s (medium, 45%), Stage 5=1.60/s frantic (70%), Stage 6=solid 85%. Camera rumble on Stage 4 entry (single) and every 1.8s at Stage 5. Vignette held solid at Stage 6 (bear charges). Reads ThreatStage player attribute. Zero server writes, zero parts.
+- Part budget: 4,204 / 5,000 (unchanged — ScreenGui only).
+
 ## Dispatch 219 — Bee Name Tag (2026-10-02)
 - Written: cycle22_bee_nametag_dispatch.md
 - BeeNameTagController LocalScript (StarterPlayerScripts): styled BillboardGui 2.2 studs above HumanoidRootPart per player. Shows "🐝 [Name]" (GothamBold) + "🍯 [HoneyCount]". Own player in bright gold; others in wax cream. Hides default Roblox name tag + health bar via Humanoid properties. CharacterAdded rebuilds tag; PlayerRemoving cleans up. HoneyCount attribute reactive + 6s scan.
