@@ -1658,3 +1658,13 @@
 - `updateStage_203()`: updates label/colour in-place if same PlotRoot; rebuilds only if plot changed.
 - `GetAttributeChangedSignal("ThreatStage")` for instant reaction; 5s safety-net poll.
 - Part budget: +0 server-side permanent → 4,204 / 5,000.
+
+## Dispatch 204 — Honey Ripeness Glow (cycle20_honey_glow_dispatch.md) (2026-10-02)
+- Added **HoneyGlowController** LocalScript (StarterPlayerScripts).
+- Reads `RipenessLevel` attribute (0–1) from all `HoneyBlob`-tagged BaseParts; applies per-frame `Color` + threshold-gated `Material` switch.
+- `ripenessColor_204()`: HONEY_FRESH(200,140,30) → HONEY_MID(230,160,25) → HONEY_RIPE(242,168,28) → HONEY_PEAK(255,200,60).
+- `NEON_THRESHOLD_204=0.70`: SmoothPlastic below, Neon at/above — implements architecture's "glow = bank balance" signature mechanic.
+- Applies to ALL HoneyBlob parts in scene (not just player's own plot) so other players' ripe honey is visible cross-plot.
+- `GetAttributeChangedSignal("RipenessLevel")` per blob for instant updates; 6s scan safety net.
+- No new parts — direct property writes on existing CellContent BaseParts.
+- Part budget: +0 server-side permanent → 4,204 / 5,000.
