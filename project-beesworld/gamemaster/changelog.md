@@ -1638,3 +1638,13 @@
 - `unregisterMound_201()` restores base colour with 0.6s tween (no snap).
 - No new parts — direct Color property writes on existing CellContent BaseParts.
 - Part budget: +0 server-side permanent → 4,204 / 5,000.
+
+## Dispatch 202 — Waggle Dance Replay Button (cycle20_dance_replay_dispatch.md) (2026-10-02)
+- Added **DanceReplayController** LocalScript (StarterPlayerScripts).
+- "↩ Replay route" pill appears for 8s after each `DanceResult` RemoteEvent; fades with countdown pulse in final 3s.
+- `runReplay_202()`: creates two invisible anchor Parts + Beam in workspace; soft-blue ghost trail (`GHOST_202` = 180,220,255) animates outward along submitted bearing for 1.6s then destroys itself.
+- `getDanceFloor_202()`: finds DanceFloorCell-tagged BasePart for player's plot as beam origin.
+- Beam length scaled to `result.distance / 674` (max meadow distance).
+- `replayActive_202` guard prevents overlap.
+- Anchor Parts and Beam are runtime-only; destroyed at animation end — zero permanent part budget impact.
+- Part budget: +0 server-side permanent → 4,204 / 5,000.
