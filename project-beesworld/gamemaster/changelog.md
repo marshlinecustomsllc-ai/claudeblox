@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 222 — PopulationService Attribute Broadcast (2026-10-02)
+- Written: cycle22_populationservice_attrs_dispatch.md
+- Server-side integration pass for population attributes. Adds broadcastPopulation_222 to PopulationService writing CurrentBees, MaxBees, ForagerCount, NurseCount, GuardCount to player attributes on every recalculation tick. PlayerAdded zero-init. MaxBees derivation note (HiveCell count × BEES_PER_CELL if not already tracked). Completes the attribute bus for PopCapController (D211) and CasteBadgeController (D212). Fourth and final integration-pass dispatch alongside D214/D216/D221.
+- Part budget: 4,204 / 5,000 (unchanged — Script edits only).
+
 ## Dispatch 221 — ThreatService Attribute Broadcast (2026-10-02)
 - Written: cycle22_threatservice_attrs_dispatch.md
 - Server-side integration pass for threat system attributes. Adds/confirms broadcastThreatStage_221 in ThreatService (called on every patience change + PlayerAdded); broadcastWaspAlert_221 in WaspService (true on scout spawn, false on repel/despawn + PlayerAdded); setSmokesRemaining_221 in ConsumableService (on smoker use/purchase + PlayerAdded). HudController SmokesRemaining wire-in note. Mirrors D214/D216 integration pattern. Powers BearWarningController (D220) and WaspAlertController.
