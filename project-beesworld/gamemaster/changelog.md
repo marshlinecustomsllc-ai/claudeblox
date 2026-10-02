@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 206 — Brood Cell Incubation Timer (2026-10-02)
+- Written: cycle20_brood_timer_dispatch.md
+- BroodTimerController LocalScript (StarterPlayerScripts): BillboardGui 3.2 studs above each BroodCell showing countdown label "🐝 Xs" and a left-to-right progress bar. Reads HatchIn (seconds remaining) and HatchMax (cycle length) attributes from BroodCell BaseParts. Text turns honey-gold in final 30% of cycle. Flash animation (warm white 0.5s → tween back to green-gold) triggers on detected hatch reset. GetAttributeChangedSignal per cell + 5s safety scan.
+- Part budget: 4,204 / 5,000 (unchanged — BillboardGui only, no BaseParts).
+
 ## Dispatch 205 — Queen Tier Crown Aura (2026-10-02)
 - Written: cycle20_queen_aura_dispatch.md
 - QueenAuraController LocalScript (StarterPlayerScripts): Neon Cylinder ring 1.2 studs above QueenCell-tagged BasePart, sized and coloured by QueenTier (T1 small silver → T5 large sun-yellow). Slow 0.25 rev/sec Heartbeat spin. Rebuilds on QueenTier attribute change. 8s safety re-scan. Zero server writes. Part budget: +0 (client-only Part, not permanent).
