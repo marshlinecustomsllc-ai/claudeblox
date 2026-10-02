@@ -1358,3 +1358,7 @@
 - **FriendBonusController** (new LocalScript, StarterPlayerScripts): `FriendPill` at `{0,8,1,-108}` (40px above BeePopPill); grey dim "👥 Invite friends: +10% each" at 0 friends; amber bold "👥 +N% (N friend/friends)" when active; stroke colour also switches grey→amber
 - **CombService patch**: `friendMulti_151 = 1.0 + (math.min(3, FriendBonusCount) * 0.10)`; full produced formula now `broodRate * elapsed * nurseMulti_143 * tempMulti_146 * t2Multi_149 * friendMulti_151`
 - Part budget: +1 permanent → **4,158 / 5,000**
+
+## Dispatch 152 — Hive Stats Dashboard (cycle14_hive_stats_dispatch.md)
+- **HiveStatsController** (new LocalScript, StarterPlayerScripts): right-side mid-screen panel `{1,-12,0.5,-36}` anchor `{1,0.5}`; queen badge row (5 tiers: 🐝→👑→🌟→💎→🌈) reading `QueenTier` or falling back to PrestigeLevel; rate row "🍯 ~N honey/min" calculated from brood cell count × 4.0 × friendMult × tempPenalty; zero-rate state shows "Build brood cells!" tutorial prompt; 5s polling loop; DisplayOrder=11
+- Part budget: +0 permanent → **4,158 / 5,000**
