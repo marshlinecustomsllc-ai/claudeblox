@@ -1342,3 +1342,9 @@
 - WeatherBannerController LocalScript — thin top-strip banner (DisplayOrder=8), slides in 4s, colour-coded per weather.
 - ForagingService patched: weatherQMod_148 adds to quality sum; weatherDMod_148 multiplies tripDuration.
 - Part budget: +1 permanent → 4,155 / 5,000
+
+## Dispatch 149 — Comb Cell Upgrade System (2026-10-02)
+- CellUpgradeService Script — server-authoritative upgrade purchases. CombUpgrades 9-slot comma string. Cost table: honey=400, brood=500, pollen=350, royal=800, dance_floor=600, propolis_kiln=550. RequestCellUpgrade + CellUpgradeResult RemoteEvents.
+- CellUpgradeController LocalScript — injects UpgradeBtn_149 into CellDetailPanel. States: grey (no funds), green (buyable), gold (Tier 2 maxed). Communicates with build UI via _SelectedCellSlot/_SelectedCellType attributes.
+- CombService patched: t2Multi_149 ×1.5 for upgraded slots, stacks with nurse/temp multipliers.
+- Part budget: +2 permanent → 4,157 / 5,000
