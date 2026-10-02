@@ -1468,3 +1468,7 @@
 ## Dispatch 169 — Population Growth Sparkline (cycle15_pop_graph_dispatch.md) (2026-10-02)
 - **PopGraphController** (new LocalScript, StarterPlayerScripts): ring-buffer of 20 population samples (`samples_169`); `buildChart_169()` attaches `PopSparklineCard` (160×90px) to HiveGui PopPage/CastesPage if found, else floating bottom-left; 20 `Frame` bars inside `ChartArea` normalised to min/max range, green above median/gold below; `TrendLabel` (📈/🐝/📉), `CountLabel` (colour-coded to trend), `ChangeLabel` (+N%/steady/−N% text); 0.4s Quad TweenService bar animation on each render; listens to `ColonyHealthSync` (10s cadence) + `RatesUpdate` fallback (5s); seeds 5 identical initial readings on load; graceful no-op if HiveGui not found
 - Part budget: +0 permanent → **4,204 / 5,000**
+
+## Dispatch 170 — Plot Visitor Toast (cycle15_plot_visitor_dispatch.md) (2026-10-02)
+- **PlotVisitorController** (new LocalScript, StarterPlayerScripts): 2s proximity poll loop; `findMyBoard_170()` looks up player's own `LandingBoard` by `PlotIndex` attribute; magnitude check at 30-stud radius; `showVisitorToast_170()` — slide-in-from-right toast (240×56, DisplayOrder=16): 👀 + "[Name] is watching your hive!" (GothamBold 13px) + "Maybe harvest soon… 🍯" adult line (10px grey); 4s auto-dismiss; 20s per-visitor cooldown via `lastSeen_170` userId table; one toast per poll tick (break after first visitor found); `PlotIndex` attribute change handled via live re-lookup; entirely client-side — zero server scripts or RemoteEvents
+- Part budget: +0 permanent → **4,204 / 5,000**
