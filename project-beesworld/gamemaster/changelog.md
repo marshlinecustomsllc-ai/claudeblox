@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 232 — Wasp Alert Sound Controller (2026-10-02)
+- Written: cycle24_wasp_alert_sound_dispatch.md
+- WaspAlertSoundController LocalScript (StarterPlayerScripts): listens to WaspAlert boolean player attribute (written by ThreatService D221). Plays alert sting (sharp buzz, Vol=0.65, pitch=1.15) on true; all-clear chime (soft, Vol=0.35, pitch=0.92) on false. Both sounds parented to PlayerGui for non-spatial full-volume delivery. 4s/2s cooldown prevents spam on rapid toggles. Joins during active alert get immediate sting.
+- Part budget: 4,218 / 5,000 (unchanged — Sound objects in PlayerGui).
+
 ## Dispatch 231 — PatchService Attribute Writes (2026-10-02)
 - Written: cycle24_patchservice_attrs_dispatch.md
 - Server-side integration pass for FlowerBloomController (D230). Adds broadcastPatchState_231(patchPart, currentNectar, maxNectar, regenSecsLeft) helper to PatchService/ForagingService. Writes PatchNectarLevel (0–1) and PatchRegenSecondsLeft on every regen tick and immediately on depletion. Initial write on server start (task.delay 2s) ensures late-joining clients get correct patch colours. Optional 3s countdown-only tick for accurate timer labels.
