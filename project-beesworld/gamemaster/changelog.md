@@ -1489,3 +1489,12 @@
 ## Dispatch 174 — Smoker Refill SFX + Smoke Puff (cycle15_smoker_refill_vfx_dispatch.md) (2026-10-02)
 - **SmokerRefillController** (new LocalScript, StarterPlayerScripts): `findSmoker_174()` — Smoker tag by PlotIndex, LandingBoard fallback; `playSmokePuff_174(origin)` — ephemeral anchor at +3 studs, 25-particle smoke puff (WHITE→GREY, lifetime 1.5–2.5s, upward drift); `playHissSFX_174(origin)` — spatial Sound (rbxassetid://6042053626, Vol=0.5, RollOffMax=35) in ephemeral anchor, Ended→Destroy + 5s safety cleanup; "🌫️ Smoker recharged!" toast drops from top-center (200×34, DisplayOrder=18), 3s; `puffActive_174` lock; ConsumableUsed + Notify fallback
 - Part budget: +0 permanent → **4,204 / 5,000**
+
+## Dispatch 175 — Bee Census Milestones (cycle16_bee_census_dispatch.md) (2026-10-02)
+- **BeeCensusService** (new Script, ServerScriptService.Systems): 5 MILESTONES_175 (thresholds 10/25/50/100/250 bees, each with kid text, adult text, tint Color3); `connectPlayer_175()` watches `BeeCount` attribute, checks uncelebrated tiers in sequence; fires `CensusReached` RemoteEvent per tier with 50ms stagger; `CensusHighest` player attribute persists highest tier across rejoins; `CensusReached` RemoteEvent created if missing
+- **BeeCensusController** (new LocalScript, StarterPlayerScripts): `showCelebToast_175()` — 300×72 Frame pops from centre via Back easing, milestone-tint UIStroke + kid headline, 4s duration; `addBadge_175()` — circular badge strip bottom-left of HiveGui (B/S/G/A/Q letters, tinted, pop-in animation); `playCelebSting_175()` — NoAttenuation celebratory chime (rbxassetid://4590662766); listens to `CensusReached`
+- Part budget: +0 permanent → **4,204 / 5,000**
+
+## Dispatch 176 — Nectar Flow Rate Display (cycle16_nectar_rate_display_dispatch.md) (2026-10-02)
+- **NectarRateController** (new LocalScript, StarterPlayerScripts): 130×54 card right-side HUD (attaches to HudGui or own ScreenGui); `updateDisplay_176()` — formats honey/s rate (colour: green >1.0, gold >0.2, amber >0, grey=0); trend arrow ↑/→/↓ based on delta vs `lastRate_176`; bottleneck label (WINGS=red, SUPPLY=amber, COMB=green); TweenService colour transitions; piggybacks on existing `RatesUpdate` RemoteEvent — zero new server code; 10s fallback poll for late-arriving RatesUpdate listener
+- Part budget: +0 permanent → **4,204 / 5,000**
