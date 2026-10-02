@@ -1587,3 +1587,14 @@
 - **CensusService** (new ModuleScript, ServerScriptService/Systems): 60s ticker; `countCastes_196(plotIdx)` reads `CasteBreakdown` JSON attribute from CombCell parts (Method A) or `PlayerBeeData` from PlotRoot (fallback Method B); writes `CensusData` JSON + `CensusTimestamp` attribute to each PlotRoot; pcall-wrapped HttpService.JSONEncode/Decode
 - **BeeCensusController** (new LocalScript, StarterPlayerScripts): 110×104 panel slides in from right edge (EasingStyle.Back); 3 caste rows — Forager/Nurse/Guard — each with fill bar (scaled relative to max caste) + "🌸 Collectors N" label; `updateFromCensus_196()` tweens bar widths (0.6s Sine) on each new census; "Total: N bees" footer; `showPanel_196` / `hidePanel_196` slide tween; 5s poll checks `CensusTimestamp` attribute change before updating
 - Part budget: +0 permanent → **4,204 / 5,000** *(BeeCensusGui ScreenGui + attribute writes — no new BaseParts)*
+
+## Dispatch 197 — Route Efficiency Badge (cycle19_route_efficiency_dispatch.md) (2026-10-02)
+- Added **RouteEfficiencyController** LocalScript (StarterPlayerScripts).
+- Reads `LastQuality` (0–1.5) and `NectarLevel` (0–1) attributes from `RouteBeam`-tagged BaseParts on the player's plot.
+- `computeScore_197()`: formula `(quality/1.5)×0.6 + nectar×0.4 → 0–100`; returns nil until ForagingService writes the first `LastQuality` attribute.
+- `buildBadge_197()`: 74×20 BillboardGui 2.2 studs above each RouteBeam; UICorner r=5; UIStroke colour-matched to score; "⭐/⭐⭐/⭐⭐⭐  XX%" label.
+- `efficiencyColor_197()`: linear lerp GREY(100,90,80) → AMBER(220,130,20) → GOLD(242,168,28) across 0–40–100.
+- `upsertBadge_197()`: updates Text + TextColor3 + UIStroke.Color in-place; only destroys/rebuilds if BillboardGui was removed externally.
+- CollectionService `GetInstanceAddedSignal("RouteBeam")` (0.5s settle delay) + `GetInstanceRemovedSignal` + 3-second Heartbeat re-scan.
+- Dispatch notes ForagingService should write `LastQuality` + `NectarLevel` to RouteBeam after each completed trip; NectarLevel may already be set by PollenTrailController (dispatch 186).
+- Part budget: +0 server-side permanent → 4,204 / 5,000 (BillboardGui GuiObjects, not BaseParts).
