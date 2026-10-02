@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 229 — Hive Sound Pulse (2026-10-02)
+- Written: cycle24_hive_sound_pulse_dispatch.md
+- HiveSoundPulseController LocalScript (StarterPlayerScripts): finds HiveAmbience/HiveBuzz/BeeAmbience Sound (from D118). Reads CurrentBees/MaxBees player attributes. Modulates Volume (0.08→0.55) and PlaybackSpeed (0.90→1.12) via TweenService Sine 2.5s as fill% changes. 4% threshold prevents micro-tweens. 8s rescan self-heals. GetAttributeChangedSignal wires instant response.
+- Part budget: 4,218 / 5,000 (unchanged — LocalScript only).
+
 ## Dispatch 228 — Comb Cell Shimmer (2026-10-02)
 - Written: cycle23_comb_shimmer_dispatch.md
 - CombShimmerController LocalScript (StarterPlayerScripts): registers HoneyCell/WaxCell/NurtureCell/BroodCell tagged parts, creates CombShimmer_228 PointLight (range=2.5, warm honey gold, no shadows) if cell has none. Heartbeat oscillates Brightness 0.08→0.32 at 0.18/s per cell, with 0.3s phase offset per successive cell creating a slow wave across the grid. GetInstanceAdded/Removed keep registration live. 10s scan as safety net.
