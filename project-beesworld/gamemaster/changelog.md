@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 212 — Bee Caste Badge (2026-10-02)
+- Written: cycle21_caste_badge_dispatch.md
+- CasteBadgeController LocalScript (StarterPlayerScripts): compact 144×30 ScreenGui badge at bottom-left (UDim2(0,8,1,-126)), DisplayOrder=18. Shows live Forager/Nurse/Guard counts with coloured dot per caste: F=green (100,200,100), N=soft-purple (200,160,255), G=amber-orange (255,130,50). Always visible once built. Fades in 0.20s on first appearance. Reacts to ForagerCount/NurseCount/GuardCount attribute changes + 6s safety scan. HUD stack: main HUD > PopCap pill (19) > CasteBadge (18).
+- Part budget: 4,204 / 5,000 (unchanged — ScreenGui only).
+
 ## Dispatch 211 — Population Cap Warning (2026-10-02)
 - Written: cycle21_pop_cap_dispatch.md
 - PopCapController LocalScript (StarterPlayerScripts): persistent HUD pill (180×42px) at bottom-left (UDim2(0,8,1,-90)) that appears when MaxBees - CurrentBees ≤ WARN_MARGIN_211 (3). Shows "🐝 X / Y bees" in WARN_AMBER (220,100,20) or AT_CAP_RED (200,40,20) when exactly at cap. UIStroke colour matches label. Kid-friendly hint: "Nearly full — add a Brood Cell" / "At capacity — add Brood Cells!". Fade in/out 0.25s TweenService. Reacts instantly to CurrentBees + MaxBees attribute changes; 5s safety scan. DisplayOrder=19 (above RouteLimitController at D198, below main HUD).
