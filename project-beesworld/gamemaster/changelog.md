@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 208 — Nectar Flow Indicator (2026-10-02)
+- Written: cycle20_nectar_flow_dispatch.md
+- NectarFlowController LocalScript (StarterPlayerScripts): scrolling Beam overlay on RouteBeam-tagged parts. Reads NectarLevel attribute (0-1); scroll speed maps MIN_SCROLL_208=0.05 to MAX_SCROLL_208=0.55 units/sec. TextureOffset scrolls patch→hive direction. Opacity scales with NectarLevel (near-invisible at idle, full at peak). Colour alternates FLOW_A (255,210,60) and FLOW_B honey gold. Invisible anchor Part holds Attachments synced to RouteBeam's RouteStart/RouteEnd. Part destroyed on RouteBeam removal.
+- Part budget: 4,204 / 5,000 (unchanged — anchor Parts and Beams are client-only ephemeral).
+
 ## Dispatch 207 — Comb Cell Hover Tooltip (2026-10-02)
 - Written: cycle20_cell_hover_dispatch.md
 - CellHoverController LocalScript (StarterPlayerScripts): proximity fade-in BillboardGui tooltip (110×42px) above the closest CombCell-tagged part within 7 studs. Shows cell type icon+name (top row) and tier badge + OutputRate/s (bottom row). Only one tooltip visible at a time — closest cell wins. Fade-in 0.18s, fade-out 0.22s TweenService. 0.12s Heartbeat poll. Reads CellType, Tier, OutputRate attributes; OutputRate optional (tooltip still works without it).
