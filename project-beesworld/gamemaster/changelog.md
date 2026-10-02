@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 238 — Bear Offering Ritual Light (2026-10-02)
+- Written: cycle25_bear_offering_ritual_dispatch.md
+- BearRitualController LocalScript (StarterPlayerScripts): proximity trigger (10-stud radius) on BearAltar-tagged Part. Entry: global ColorCorrectionEffect RitualCC_238 (−0.25 sat, −0.08 bright, +0.15 contrast, amber tint), ember ParticleEmitter RitualSpark_238 (Rate=18, LightEmission=0.6), ceremonial Sound fade-in Vol=0.40. Exit: all effects fade out over 1.2s. Heartbeat accumulator polls at 0.5s intervals. Layers with BearAltarGlowController (D227).
+- Part budget: 4,218 / 5,000 (unchanged — ColorCorrectionEffect in Lighting, ParticleEmitter in BearAltar part, Sound in PlayerGui).
+
 ## Dispatch 237 — Harvest Glow Controller (2026-10-02)
 - Written: cycle25_harvest_glow_dispatch.md
 - HarvestGlowController LocalScript (StarterPlayerScripts): listens to LastHarvestTime player attribute (written by ResourceService/HarvestController on harvest). Fires staggered golden PointLight burst (Brightness=1.8, Range=6) across all HiveComb-tagged parts: 0.12s snappy rise → 1.50s Sine fade back to 0. STAGGER_237=0.06s per cell creates a wave ripple across the comb grid. 2s cooldown debounce. PointLights named HarvestGlow_237 are created lazily on first harvest.
