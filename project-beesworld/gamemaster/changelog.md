@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 207 — Comb Cell Hover Tooltip (2026-10-02)
+- Written: cycle20_cell_hover_dispatch.md
+- CellHoverController LocalScript (StarterPlayerScripts): proximity fade-in BillboardGui tooltip (110×42px) above the closest CombCell-tagged part within 7 studs. Shows cell type icon+name (top row) and tier badge + OutputRate/s (bottom row). Only one tooltip visible at a time — closest cell wins. Fade-in 0.18s, fade-out 0.22s TweenService. 0.12s Heartbeat poll. Reads CellType, Tier, OutputRate attributes; OutputRate optional (tooltip still works without it).
+- Part budget: 4,204 / 5,000 (unchanged — BillboardGui only, destroyed on fade-out).
+
 ## Dispatch 206 — Brood Cell Incubation Timer (2026-10-02)
 - Written: cycle20_brood_timer_dispatch.md
 - BroodTimerController LocalScript (StarterPlayerScripts): BillboardGui 3.2 studs above each BroodCell showing countdown label "🐝 Xs" and a left-to-right progress bar. Reads HatchIn (seconds remaining) and HatchMax (cycle length) attributes from BroodCell BaseParts. Text turns honey-gold in final 30% of cycle. Flash animation (warm white 0.5s → tween back to green-gold) triggers on detected hatch reset. GetAttributeChangedSignal per cell + 5s safety scan.
