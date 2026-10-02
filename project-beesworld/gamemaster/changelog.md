@@ -1397,3 +1397,8 @@
 - **World parts (+2)**: `UnlockPanel` SurfaceGui sign near BeesBench ("🐝 Bee Friends — Visit during holidays"); `GhostBeeAnchor` VFX anchor in Hub with `GhostWisp` ParticleEmitter (Rate=0 default, client-activated)
 - **Holiday system series 154–157 complete** — all 4 approved holiday dispatches written
 - Part budget: +2 permanent → **4,197 / 5,000**
+
+## Dispatch 158 — LeaderboardGui (cycle15_leaderboard_gui_dispatch.md) (2026-10-02)
+- **LeaderboardService** (new/replaced Script, ServerScriptService): builds top-10 board from `HoneyEarned` lifetime attribute; sorts and assigns rank; `LeaderboardUpdated` FireAllClients every 30s + on PlayerAdded/Removing; `HoneyEarned` attribute change trigger (debounced, only when new value can displace current bottom-10); `RequestLeaderboard` RemoteEvent for new clients; `RequestLeaderboard` + `LeaderboardUpdated` RemoteEvents
+- **LeaderboardController** (new LocalScript, StarterPlayerScripts): `LeaderboardPanel` (260×380 slide-in from right, 10 pre-built rows); `LeaderboardToggle` 🏆 HUD button (right side, below HiveStats); 🥇🥈🥉 medals for top 3; local player row highlighted gold; `formatHoney_158()` abbreviates to K/M; `truncate_158()` 12-char cap; world billboard auto-attaches to `LeaderboardBoard` tagged part (top-5, MaxDistance=50, ProximityPrompt F key opens full panel); plot plaque rank label added to player's PlotSign SurfaceGui on rank change; DisplayOrder=20
+- Part budget: +1 permanent → **4,198 / 5,000**
