@@ -1386,3 +1386,14 @@
 - **ServerStatsController patch**: 4th row `FestRow_156` added to StatsBillboard on StatsBoard world part; fill bar (0–100% width, Honey Gold color) + numeric readout "N / N (X%)"; completed state shows "🎉 Festival Complete!" in green
 - **CombService patch**: after harvest, `pcall` wrapper calls `FestivalMeterService.AddHarvest(player, honeyBanked)` with the banked honey amount
 - Part budget: +1 permanent → **4,195 / 5,000**
+
+## Dispatch 157 — Holiday Specialist Bees + Midnight Mechanic (cycle14_holiday_bees_dispatch.md) (2026-10-02)
+- **DataService v12→v13 migration**: `specialistBees` table added to profile template (`{ghost=false, frost=false, blossom=false, solar=false}`); migration v13 backfills existing profiles
+- **SpecialistBeeService** (new ModuleScript, ServerScriptService.Systems): 4 holiday-gated bee unlocks; `BEES_157` config table maps beeId → holiday/cost/name/tagline/stat/emoji/mult; `isMidnightWindow_157()` detects Oct 31 23:55–Nov 1 00:04 UTC for Ghost Bee midnight secret (13 honey instead of 150); `RequestUnlockBee` + `UnlockBeeResult` + `BeeStatusSync` RemoteEvents; `applyStats_157()` writes `GhostBeeQualMult`, `FrostBeeOwned`, `BloomDurMult`, `SolarBeeOwned` attributes; periodic midnight sync loop for cost update
+- **ForagingService patch**: `ghostBee_157 = player:GetAttribute("GhostBeeQualMult")` multiplies final quality score (Ghost Bee: +8% foraging quality during Halloween)
+- **HiveTemperatureService patch**: `FrostBeeOwned` guard bypasses `tempMulti_146 = 0.80` cold penalty entirely for Frost Bee owners
+- **WeatherService patches**: Solar Bee doubles sunny weather `WeatherQualityMod` from 15 to 30; Blossom Bee extends `flower_bloom` weather duration by `BloomDurMult` (×1.20)
+- **SpecialistBeeController** (new LocalScript, StarterPlayerScripts): `BeePanel` with 4 bee rows (emoji + name + tagline + adult stat line + unlock button); `BeeFriendsToggle` top-center pill; lock overlay with seasonal label when wrong holiday; midnight secret shows purple "13 🍯" button; unlock result toast with slide-in/out; Ghost Bee VFX activator enables `GhostWisp` emitter in Hub when owned + Halloween active; DisplayOrder=25
+- **World parts (+2)**: `UnlockPanel` SurfaceGui sign near BeesBench ("🐝 Bee Friends — Visit during holidays"); `GhostBeeAnchor` VFX anchor in Hub with `GhostWisp` ParticleEmitter (Rate=0 default, client-activated)
+- **Holiday system series 154–157 complete** — all 4 approved holiday dispatches written
+- Part budget: +2 permanent → **4,197 / 5,000**
