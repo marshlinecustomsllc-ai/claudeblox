@@ -1,5 +1,12 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 224 — Plot Name Plaques (2026-10-02)
+- Written: cycle23_plot_plaques_dispatch.md
+- 6 PlotPlaque BaseParts (one per plot, above Landing Board) tagged PlotPlaque with PlotIndex attribute. Dark wood SmoothPlastic, CanCollide=false, Anchored=true. Each has a BillboardGui with OwnerLabel + TierLabel + UIStroke.
+- PlotPlaqueController LocalScript (StarterPlayerScripts): reads PlotOwner + PlotCellCount attributes from PlotPlaque parts. Own plot shown in bright gold with "(You)" suffix. Other players in wax cream. Empty plots muted. Tier labels: Starter(≥1)/Apprentice(≥18)/Expert(≥36)/Master(≥60). Reactive on attribute changes + 8s scan.
+- PlotService writes: updatePlaqueAttrs_224 called on plot claim/release and on cell build/destroy.
+- Part budget: 4,218 / 5,000 (+6 PlotPlaque parts).
+
 ## Dispatch 223 — Honey Leaderboard Board (2026-10-02)
 - Written: cycle23_honey_leaderboard_dispatch.md
 - LeaderboardService Script (ServerScriptService.Systems): polls HoneyCount attributes every 15s, sorts top-6 players, writes Leaderboard_Rank_N_Name + Leaderboard_Rank_N_Honey to workspace attributes. PlayerRemoving re-sorts.
