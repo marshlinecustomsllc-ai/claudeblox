@@ -1,5 +1,12 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 223 — Honey Leaderboard Board (2026-10-02)
+- Written: cycle23_honey_leaderboard_dispatch.md
+- LeaderboardService Script (ServerScriptService.Systems): polls HoneyCount attributes every 15s, sorts top-6 players, writes Leaderboard_Rank_N_Name + Leaderboard_Rank_N_Honey to workspace attributes. PlayerRemoving re-sorts.
+- Cork board world build: 8 parts in ApiaryYardHub.HoneyLeaderboard — dark wood frame, cork surface, honey-gold header Part + 6 invisible BillboardGui row anchors (medals 🥇🥈🥉 + 4./5./6.).
+- LeaderboardBoardController LocalScript (StarterPlayerScripts): reads workspace attributes, updates RowLabel text on 16s scan + workspace attribute change signal. Rank 1 shown in honey gold; others dark brown; empty slots greyed.
+- Part budget: 4,212 / 5,000 (+8 BaseParts in hub board).
+
 ## Dispatch 222 — PopulationService Attribute Broadcast (2026-10-02)
 - Written: cycle22_populationservice_attrs_dispatch.md
 - Server-side integration pass for population attributes. Adds broadcastPopulation_222 to PopulationService writing CurrentBees, MaxBees, ForagerCount, NurseCount, GuardCount to player attributes on every recalculation tick. PlayerAdded zero-init. MaxBees derivation note (HiveCell count × BEES_PER_CELL if not already tracked). Completes the attribute bus for PopCapController (D211) and CasteBadgeController (D212). Fourth and final integration-pass dispatch alongside D214/D216/D221.
