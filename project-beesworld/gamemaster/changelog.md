@@ -1362,3 +1362,9 @@
 ## Dispatch 152 — Hive Stats Dashboard (cycle14_hive_stats_dispatch.md)
 - **HiveStatsController** (new LocalScript, StarterPlayerScripts): right-side mid-screen panel `{1,-12,0.5,-36}` anchor `{1,0.5}`; queen badge row (5 tiers: 🐝→👑→🌟→💎→🌈) reading `QueenTier` or falling back to PrestigeLevel; rate row "🍯 ~N honey/min" calculated from brood cell count × 4.0 × friendMult × tempPenalty; zero-rate state shows "Build brood cells!" tutorial prompt; 5s polling loop; DisplayOrder=11
 - Part budget: +0 permanent → **4,158 / 5,000**
+
+## Dispatch 153 — Community Hub Rework (cycle14_community_hub_rework_dispatch.md)
+- **ServerStatsService** (new Script, ServerScriptService): broadcasts `ServerStatsChanged` RemoteEvent every 10s with `{bees, honey, foragers}` server-wide totals; also fires on player join/leave
+- **ServerStatsController** (new LocalScript, StarterPlayerScripts): creates `StatsBillboard` BillboardGui on `StatsBoard` world part; updates 3 rows (bees/honey/foragers); scales `HoneyDripFountain` ParticleEmitter.Rate (2/6/12) with server honey total
+- **World parts** (+33): `StatsBoard` neon-framed billboard with SurfaceGui title; flower arch at hub entrance Z=-265 (pillars + lintel + flower tops + sign); 3 bench clusters each with seat/back/legs/lantern pole/Neon glow sphere + PointLight; all in `Hub.CommunityRework_153` folder
+- Part budget: +1 permanent, +33 world parts → **4,192 / 5,000**
