@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 221 — ThreatService Attribute Broadcast (2026-10-02)
+- Written: cycle22_threatservice_attrs_dispatch.md
+- Server-side integration pass for threat system attributes. Adds/confirms broadcastThreatStage_221 in ThreatService (called on every patience change + PlayerAdded); broadcastWaspAlert_221 in WaspService (true on scout spawn, false on repel/despawn + PlayerAdded); setSmokesRemaining_221 in ConsumableService (on smoker use/purchase + PlayerAdded). HudController SmokesRemaining wire-in note. Mirrors D214/D216 integration pattern. Powers BearWarningController (D220) and WaspAlertController.
+- Part budget: 4,204 / 5,000 (unchanged — Script edits only).
+
 ## Dispatch 220 — Bear Approach Warning (2026-10-02)
 - Written: cycle22_bear_warning_dispatch.md
 - BearWarningController LocalScript (StarterPlayerScripts): four-edge screen vignette (top/bottom 40px, left/right 30px Frames, DisplayOrder=30) that pulses red as ThreatStage rises. Pulse rates: Stage 3=0.30/s (faint, 20% alpha), Stage 4=0.80/s (medium, 45%), Stage 5=1.60/s frantic (70%), Stage 6=solid 85%. Camera rumble on Stage 4 entry (single) and every 1.8s at Stage 5. Vignette held solid at Stage 6 (bear charges). Reads ThreatStage player attribute. Zero server writes, zero parts.
