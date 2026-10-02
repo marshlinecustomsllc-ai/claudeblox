@@ -1,5 +1,12 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 225 — Forager Bee Trail VFX (2026-10-02)
+- Written: cycle23_forager_trail_dispatch.md
+- ForagerTrailController LocalScript (StarterPlayerScripts): scans ForagerBee-tagged parts, attaches a ParticleEmitter "ForagerTrail_225" to each. Outbound (NectarLoad ≤ 0.1): light yellow-white, Rate=4. Laden/return (NectarLoad > 0.1): amber-gold, Rate=9. Lifetime=0.8s, Speed≈0 (bee movement drags trail). GetInstanceAdded wires newly spawned bees. 5s scan prunes stale refs.
+- ForagingService integration note: ForagerBee CollectionService tag + NectarLoad attribute (0–1) writes on load/deposit.
+- Performance: max 18 bees × 9 p/s = 162 p/s worst case; typical 6–9 bees = 24–81 p/s.
+- Part budget: 4,218 / 5,000 (unchanged — ParticleEmitters, no BaseParts).
+
 ## Dispatch 224 — Plot Name Plaques (2026-10-02)
 - Written: cycle23_plot_plaques_dispatch.md
 - 6 PlotPlaque BaseParts (one per plot, above Landing Board) tagged PlotPlaque with PlotIndex attribute. Dark wood SmoothPlastic, CanCollide=false, Anchored=true. Each has a BillboardGui with OwnerLabel + TierLabel + UIStroke.
