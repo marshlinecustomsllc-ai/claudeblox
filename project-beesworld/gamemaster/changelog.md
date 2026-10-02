@@ -1618,3 +1618,13 @@
 - `GetAttributeChangedSignal("HoneyCount")` on all players + `PlayerAdded`/`PlayerRemoving` hooks for near-instant reaction.
 - 5s Heartbeat safety-net re-poll.
 - Part budget: +0 server-side permanent → 4,204 / 5,000.
+
+## Dispatch 200 — Hive Birthday Toast (cycle20_hive_birthday_dispatch.md) (2026-10-02)
+- Added **HiveBirthdayController** LocalScript (StarterPlayerScripts).
+- Fires on the player's 7th session join (`TotalSessions == BIRTHDAY_SESSION_200`); `hasShown_200` guard prevents repeat.
+- Full overlay: dark 55% backdrop + 320×130 card (EasingStyle.Back scale-bounce); headline "🎂 Your hive is one week old!", subtitle with total honey harvested, tip line.
+- 28 confetti Frame dots (6–14px) staggered over 0.8s; each falls with random speed/drift/rotation, fades out in final 30%; pure GuiObjects, zero ParticleEmitters.
+- Overlay holds 4 seconds then fades and destroys itself.
+- Reads `TotalSessions` and `TotalHoneyHarvested` player attributes; dispatch notes DataService profile additions if not already present.
+- Step 4 includes quick-test Command Bar snippet for Play-mode testing.
+- Part budget: +0 server-side permanent → 4,204 / 5,000.
