@@ -1415,6 +1415,13 @@
 - **LoginRewardGranted** RemoteEvent added to `ReplicatedStorage.Remotes`
 - Part budget: +0 permanent → **4,198 / 5,000**
 
+## Dispatch 162 — Honey Ripeness Showcase (cycle15_ripeness_showcase_dispatch.md) (2026-10-02)
+- **RipenessVisualService** (new Script, ServerScriptService): polls HoneyBlob-tagged cells every 5s; reads `Ripeness` attribute (1.0–2.2); adjusts PointLight Range (0.5→4.0) and Color (warm gold→deep amber) per cell; sends `RipenessSync` RemoteEvent per player with `{avgRipeness, maxRipeness, frac}`; tracks server-wide richest player and fires `RipestHiveSync` to all clients when any hive ≥ 1.5x ripeness
+- **RipenessController** (new LocalScript, StarterPlayerScripts): `RipenessPill` HUD element (bottom-left, above FriendPill, `{0,8,1,-148}`); animated fill bar that grows and shifts color gold→amber→red-orange with ripeness fraction; label gains 🐻 emoji above 70% ripeness; `showRichestToast_162()` slides in top-of-screen bear-warning toast "🐻 [Player]'s hive is +N% ripe — Molasses is watching!" (5s hold); DisplayOrder=12
+- **RipenessSync** + **RipestHiveSync** RemoteEvents added to `ReplicatedStorage.Remotes`
+- **HoneyBlob backfill**: Command Bar step ensures all existing HoneyBlob-tagged parts have `Ripeness=1.0` attribute; CombService patch instructions for `part:SetAttribute("Ripeness", value)` on deposit and tick
+- Part budget: +0 permanent → **4,198 / 5,000**
+
 ## Dispatch 160 — Hive Expansion (Ring 3 Unlock) (cycle15_hive_expansion_dispatch.md) (2026-10-02)
 - **DataService v13→v14 migration**: `ring3Unlocked = false` added to profile template; migration v14 backfills existing profiles
 - **HiveExpansionService** (new ModuleScript, ServerScriptService.Systems): `EXPANSION_COST_160=2500` honey, `PRESTIGE_REQUIRED_160=1` prestige gate; `RequestHiveExpansion` / `HiveExpansionResult` / `HiveExpansionSync` RemoteEvents; `syncPlayer_160()` payload `{unlocked, eligible, canAfford, cost, prestige, required}`; server validates prestige gate + honey cost before deducting and setting `ring3Unlocked=true` + `Ring3Unlocked` player attribute; `HoneyCount` attribute change listener fires sync for eligible non-expanded players
