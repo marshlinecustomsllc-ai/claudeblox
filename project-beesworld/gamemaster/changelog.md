@@ -1,5 +1,13 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 218 — Honey Ripeness Bonus (2026-10-02)
+- Written: cycle22_ripeness_bonus_dispatch.md
+- ResourceService ripeness tick: RipenessLevel on HoneyBlob rises 0→1 over 120s of stored honey (5s tick). Resets to 0 on harvest or empty.
+- CombService harvest multiplier: getRipenessMultiplier_218 reads RipenessLevel; awards 1.0 + (level × 1.2) = max 2.2× at full ripeness (architecture's specified cap).
+- HarvestController toast: showRipenessFeedback_218 floats "🍯 ×2.2 ripe!" label at harvest when multiplier ≥ 1.10×. Fade-up-and-out 1.6s, Debris cleanup.
+- Completes risk/reward chain: HoneyGlow (D204) → HarvestBeacon (D210) → Ripeness toast (D218).
+- Part budget: 4,204 / 5,000 (unchanged — Script edits only).
+
 ## Dispatch 217 — Daily Login Streak (2026-10-02)
 - Written: cycle22_daily_streak_dispatch.md
 - DailyStreakService Script (ServerScriptService.Systems): DataStore-backed daily streak. 36h window; extends streak if last login was 20-36h ago, resets if >36h. Bonus: +8% honey/day, max +48% at Day 7+. Writes DailyStreak + DailyBonusPct player attributes.
