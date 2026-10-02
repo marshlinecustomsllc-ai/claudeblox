@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 239 — Honey Cell Drip Effect (2026-10-02)
+- Written: cycle26_honey_drip_trail_dispatch.md
+- HoneyCellDripController LocalScript (StarterPlayerScripts): adds HoneyDrip_239 ParticleEmitter (EmissionDirection=Bottom) to HoneyCell-tagged parts. Drip fires when fill (HoneyStored/HoneyCapacity) >= 0.80. Rate scales 1.2→1.8 p/s from 80%→100% full. GetAttributeChangedSignal on HoneyStored + HoneyCapacity for instant response. 8s scan + stale prune. Performance note included: optional PlotIndex scope guard for lobby-scale deployments.
+- Part budget: 4,218 / 5,000 (unchanged — ParticleEmitters inside existing HoneyCell parts).
+
 ## Dispatch 238 — Bear Offering Ritual Light (2026-10-02)
 - Written: cycle25_bear_offering_ritual_dispatch.md
 - BearRitualController LocalScript (StarterPlayerScripts): proximity trigger (10-stud radius) on BearAltar-tagged Part. Entry: global ColorCorrectionEffect RitualCC_238 (−0.25 sat, −0.08 bright, +0.15 contrast, amber tint), ember ParticleEmitter RitualSpark_238 (Rate=18, LightEmission=0.6), ceremonial Sound fade-in Vol=0.40. Exit: all effects fade out over 1.2s. Heartbeat accumulator polls at 0.5s intervals. Layers with BearAltarGlowController (D227).
