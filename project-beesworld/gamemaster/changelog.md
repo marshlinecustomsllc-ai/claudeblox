@@ -1453,3 +1453,9 @@
 - **WeatherQualMod attribute wire-up**: WeatherAnnounceService patch to set `player:SetAttribute("WeatherQualMod", qualMod)` on each weather change so ColonyHealthService can factor live weather into the foraging sub-score
 - **ColonyHealthSync** RemoteEvent added to `ReplicatedStorage.Remotes`
 - Part budget: +0 permanent → **4,198 / 5,000**
+
+## Dispatch 167 — Forager Return Trail VFX (cycle15_forager_trail_dispatch.md) (2026-10-02)
+- **TrailAnchor_167 parts**: 6 invisible anchor parts (0.2³, Anchored, CanCollide=false, Transparency=1), one parented to each LandingBoard 2 studs above centre, tagged `ForagerTrailAnchor`; `PlotIndex` attribute inherited from parent LandingBoard for per-player targeting
+- **ForagerTrailController** (new LocalScript, StarterPlayerScripts): `ensureEmitter_167()` lazily creates `ParticleEmitter` (golden/amber pollen burst, lifetime 1.0–1.8s, speed 8–14, spreadAngle 40°, LightEmission=0.15, fade-out transparency curve) on the player's own Landing Board anchor; `playReturnBurst_167()` — cooldown 1.5s, calls `Emit(count×3 clamped 4–18)` + brief 2.5× PointLight glow pulse on the Landing Board; listens to `ForagerReturn` RemoteEvent (primary) with automatic fallback to `RatesUpdate` honeyRate increase detection (secondary, ~5s latency); `PlotIndex` attribute change signal re-targets anchor on plot reassignment
+- **ForagerReturn** RemoteEvent: optional new event in `ReplicatedStorage.Remotes`; ForagingService patch instruction to `FireClient(player, {count})` on each deposit; controller gracefully falls back to RatesUpdate if event absent
+- Part budget: +6 permanent (6 TrailAnchor_167 parts) → **4,204 / 5,000**
