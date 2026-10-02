@@ -1,5 +1,11 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 217 — Daily Login Streak (2026-10-02)
+- Written: cycle22_daily_streak_dispatch.md
+- DailyStreakService Script (ServerScriptService.Systems): DataStore-backed daily streak. 36h window; extends streak if last login was 20-36h ago, resets if >36h. Bonus: +8% honey/day, max +48% at Day 7+. Writes DailyStreak + DailyBonusPct player attributes.
+- StreakBadgeController LocalScript (StarterPlayerScripts): 120×34 ScreenGui badge top-left (DisplayOrder=20). Shows "🔥 Day N" + "+X% honey". Pulses on join to celebrate. Bright gold at Day 7+. Reacts to DailyStreak + DailyBonusPct attribute changes.
+- Part budget: 4,204 / 5,000 (unchanged — Script + ScreenGui, no BaseParts).
+
 ## Dispatch 216 — WeatherService (2026-10-02)
 - Written: cycle22_weather_service_dispatch.md
 - WeatherService Script (ServerScriptService.Systems): 4-season cycle (300s/season, 20min full cycle). Each season has weighted weather probabilities. Weather re-rolls every 60s. Broadcasts CurrentSeason + CurrentWeather to all players (PlayerAdded too). ClockTime tweens over 30s; Atmosphere Density + Color update instantly. WeatherForageMultiplier written to workspace attribute for ForagingService. Multipliers: Sunny=1.0, Overcast=0.9, Drizzle=0.9, Fog=0.85, Rain=0.8, Storm=0.6.
