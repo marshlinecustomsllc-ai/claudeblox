@@ -1,5 +1,11 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 230 — Flower Patch Bloom State (2026-10-02)
+- Written: cycle24_flower_bloom_dispatch.md
+- FlowerBloomController LocalScript (StarterPlayerScripts): scans FlowerPatch-tagged BaseParts, reads PatchNectarLevel (0–1) and PatchRegenSecondsLeft attributes. Applies colour tween: depleted (100,115,70 grey-green) → recovering (180,200,120 mid-green) → full bloom (220,180,240 lavender-pink). Threshold 0.05 prevents continuous tweening. Builds BloomGui_230 BillboardGui (80×24, StudsOffset 3.5 up) with countdown label "⏱ Ns" — visible only when level < 0.15 and secsLeft > 0. GetAttributeChangedSignal wires instant response to PatchService writes. 5s scan + stale prune.
+- PatchService integration note: SetAttribute("PatchNectarLevel", nectar/max) + SetAttribute("PatchRegenSecondsLeft", regenLeft) on each FlowerPatch Part.
+- Part budget: 4,218 / 5,000 (unchanged — BillboardGuis inside existing FlowerPatch parts).
+
 ## Dispatch 229 — Hive Sound Pulse (2026-10-02)
 - Written: cycle24_hive_sound_pulse_dispatch.md
 - HiveSoundPulseController LocalScript (StarterPlayerScripts): finds HiveAmbience/HiveBuzz/BeeAmbience Sound (from D118). Reads CurrentBees/MaxBees player attributes. Modulates Volume (0.08→0.55) and PlaybackSpeed (0.90→1.12) via TweenService Sine 2.5s as fill% changes. 4% threshold prevents micro-tweens. 8s rescan self-heals. GetAttributeChangedSignal wires instant response.
