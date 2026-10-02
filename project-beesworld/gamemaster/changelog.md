@@ -1331,3 +1331,8 @@
 - HiveTemperatureController LocalScript — temperature pill at top-center (DisplayOrder=12). Warm: hidden. Cold: ❄️ blue pill with "−20% honey" hint.
 - CombService patch: tempMulti_146 ×0.80 on cold state, stacks with nurseMulti_143.
 - Part budget: +1 permanent → 4,153 / 5,000
+
+## Dispatch 147 — Honey Milestone Toasts (2026-10-02)
+- HoneyMilestoneService Script — watches HoneyEarned attribute, fires HoneyMilestoneReached RemoteEvent at 10 tiers (500→50,000). HoneyMilestone_147 per-prestige progress counter. Toast queue prevents overlap.
+- HoneyMilestoneController LocalScript — gold toast slides from top, 3s hold, queued playback. DisplayOrder=35.
+- Part budget: +1 permanent → 4,154 / 5,000
