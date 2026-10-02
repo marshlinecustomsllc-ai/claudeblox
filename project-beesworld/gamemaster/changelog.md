@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 209 — Propolis Seal Pulse (2026-10-02)
+- Written: cycle20_propolis_pulse_dispatch.md
+- PropolisPulseController LocalScript (StarterPlayerScripts): slow Heartbeat colour pulse on PropolisSeam-tagged BaseParts. BASE_RATE_209=0.30 pulses/sec, BOOST_RATE_209=0.48 when PropCount≥4 (fortified). Random phase offsets per seal for organic feel. Direct part.Color write per frame: PROP_DARK (60,30,10) ↔ PROP_GLOW (160,80,20) or PROP_BRIGHT (200,110,30) when fortified. 2s PropCount re-check, 6s scan safety net.
+- Part budget: 4,204 / 5,000 (unchanged — Color writes on existing parts only).
+
 ## Dispatch 208 — Nectar Flow Indicator (2026-10-02)
 - Written: cycle20_nectar_flow_dispatch.md
 - NectarFlowController LocalScript (StarterPlayerScripts): scrolling Beam overlay on RouteBeam-tagged parts. Reads NectarLevel attribute (0-1); scroll speed maps MIN_SCROLL_208=0.05 to MAX_SCROLL_208=0.55 units/sec. TextureOffset scrolls patch→hive direction. Opacity scales with NectarLevel (near-invisible at idle, full at peak). Colour alternates FLOW_A (255,210,60) and FLOW_B honey gold. Invisible anchor Part holds Attachments synced to RouteBeam's RouteStart/RouteEnd. Part destroyed on RouteBeam removal.
