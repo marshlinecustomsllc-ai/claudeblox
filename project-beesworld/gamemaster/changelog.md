@@ -1648,3 +1648,13 @@
 - `replayActive_202` guard prevents overlap.
 - Anchor Parts and Beam are runtime-only; destroyed at animation end — zero permanent part budget impact.
 - Part budget: +0 server-side permanent → 4,204 / 5,000.
+
+## Dispatch 203 — Bear Patrol Warning Ring (cycle20_bear_patrol_ring_dispatch.md) (2026-10-02)
+- Added **BearPatrolRingController** LocalScript (StarterPlayerScripts).
+- 120×30 BillboardGui 5 studs above PlotRoot; visible at ThreatStage ≥ 3.
+- Stage labels: "🐻 Circling" (3), "🐻 Watching" (4), "🐻 Ready!" (5), "🐻 Attacking!" (6).
+- Colour progression: Amber(3) → Orange-amber(4) → Orange-red(5) → Solid Red(6).
+- Heartbeat sine pulse (AMBER↔RED, 0.9/s) for stages 3–5; frozen solid red at stage 6.
+- `updateStage_203()`: updates label/colour in-place if same PlotRoot; rebuilds only if plot changed.
+- `GetAttributeChangedSignal("ThreatStage")` for instant reaction; 5s safety-net poll.
+- Part budget: +0 server-side permanent → 4,204 / 5,000.
