@@ -1415,6 +1415,10 @@
 - **LoginRewardGranted** RemoteEvent added to `ReplicatedStorage.Remotes`
 - Part budget: +0 permanent → **4,198 / 5,000**
 
+## Dispatch 164 — Comb Cell Ghost Preview (cycle15_comb_preview_dispatch.md) (2026-10-02)
+- **CombPreviewController** (new LocalScript, StarterPlayerScripts): `CELL_INFO_164` table — 6 cell types (Honey/Brood/Pollen/Propolis/RoyalCell/DanceFloor) each with emoji, kid description, adult stat line, adjacency note, and accent color; `CombPreviewGui` ScreenGui (DisplayOrder=55) with `PreviewCard` (220×180) — emoji header, colored accent bar, kid text (14px GothamBold), adult detail (11px grey), adjacency note (11px green), "Tap to place ✓" hint; fade-in/out TweenService transitions (0.18s in, 0.12s out); dynamic positioning (cursor offset, clamp to viewport); `tryCellTypeFromButton_164()` pattern-matches BuildGui buttons by name prefix ("Btn_"), direct name, `CellType` attribute, or child TextLabel text; `scanBuildGui_164()` wires `MouseEnter`/`MouseLeave` on all current + future buttons; mobile support via `MouseButton1Click` delayed hide
+- Part budget: +0 permanent → **4,198 / 5,000**
+
 ## Dispatch 163 — Queen Naming & Renaming Ceremony (cycle15_queen_naming_dispatch.md) (2026-10-02)
 - **DataService v15→v16 migration**: `queenName` (string, default `""`) added to profile template; migration v16 backfills existing profiles
 - **QueenNamingService** (new Script, ServerScriptService): `RequestQueenName` handler sanitises input (trim + 20-char cap), runs `TextService:FilterStringAsync` (Studio fallback for dev), saves to `profile.queenName` + `QueenName` player attribute, fires `QueenNameConfirmed` back to submitting player + broadcasts to all other players; `RequestQueenNameLoad` handler re-sends stored name on client join request; `PlayerAdded` delayed send (6s)
