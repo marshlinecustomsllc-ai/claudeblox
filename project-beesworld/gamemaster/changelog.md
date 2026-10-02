@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 219 — Bee Name Tag (2026-10-02)
+- Written: cycle22_bee_nametag_dispatch.md
+- BeeNameTagController LocalScript (StarterPlayerScripts): styled BillboardGui 2.2 studs above HumanoidRootPart per player. Shows "🐝 [Name]" (GothamBold) + "🍯 [HoneyCount]". Own player in bright gold; others in wax cream. Hides default Roblox name tag + health bar via Humanoid properties. CharacterAdded rebuilds tag; PlayerRemoving cleans up. HoneyCount attribute reactive + 6s scan.
+- Part budget: 4,204 / 5,000 (unchanged — BillboardGui only).
+
 ## Dispatch 218 — Honey Ripeness Bonus (2026-10-02)
 - Written: cycle22_ripeness_bonus_dispatch.md
 - ResourceService ripeness tick: RipenessLevel on HoneyBlob rises 0→1 over 120s of stored honey (5s tick). Resets to 0 on harvest or empty.
