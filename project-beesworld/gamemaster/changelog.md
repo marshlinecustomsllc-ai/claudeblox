@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 210 — Harvest Ready Beacon (2026-10-02)
+- Written: cycle21_harvest_beacon_dispatch.md
+- HarvestBeaconController LocalScript (StarterPlayerScripts): pulsing BillboardGui beacon (120×38px) above LandingBoard when HoneyCount ≥ HARVEST_THRESHOLD_210 (50). Shows "🍯 Harvest!" + live honey count. UIStroke pulses AMBER→BRIGHT at 1.1/s. Honey count label updates in-place on attribute change. Disappears when honey drops below threshold. Reads HoneyCount player attribute + LandingBoard CollectionService tag. 7s safety scan.
+- Part budget: 4,204 / 5,000 (unchanged).
+
 ## Dispatch 209 — Propolis Seal Pulse (2026-10-02)
 - Written: cycle20_propolis_pulse_dispatch.md
 - PropolisPulseController LocalScript (StarterPlayerScripts): slow Heartbeat colour pulse on PropolisSeam-tagged BaseParts. BASE_RATE_209=0.30 pulses/sec, BOOST_RATE_209=0.48 when PropCount≥4 (fortified). Random phase offsets per seal for organic feel. Direct part.Color write per frame: PROP_DARK (60,30,10) ↔ PROP_GLOW (160,80,20) or PROP_BRIGHT (200,110,30) when fortified. 2s PropCount re-check, 6s scan safety net.
