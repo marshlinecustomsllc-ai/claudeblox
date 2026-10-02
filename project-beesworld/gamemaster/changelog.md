@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 228 — Comb Cell Shimmer (2026-10-02)
+- Written: cycle23_comb_shimmer_dispatch.md
+- CombShimmerController LocalScript (StarterPlayerScripts): registers HoneyCell/WaxCell/NurtureCell/BroodCell tagged parts, creates CombShimmer_228 PointLight (range=2.5, warm honey gold, no shadows) if cell has none. Heartbeat oscillates Brightness 0.08→0.32 at 0.18/s per cell, with 0.3s phase offset per successive cell creating a slow wave across the grid. GetInstanceAdded/Removed keep registration live. 10s scan as safety net.
+- Part budget: 4,218 / 5,000 (unchanged — PointLights inside existing cell parts).
+
 ## Dispatch 227 — Bear Altar Glow Controller (2026-10-02)
 - Written: cycle23_altar_glow_dispatch.md
 - BearAltarGlowController LocalScript (StarterPlayerScripts): finds BearAltar-tagged Part, creates AltarGlow_227 PointLight if absent. Reads ThreatStage attribute. Stages 0–1: warm amber slow pulse; Stage 3: orange-red moderate; Stage 5: deep red frantic 1.3/s; Stage 6: solid pure red, brightness=2.5, range=28. Pulse rhythm matches BearWarningController (D220) vignette for coherent signal. TweenService Sine 0.6s colour/range transitions. 8s rescan self-heal.
