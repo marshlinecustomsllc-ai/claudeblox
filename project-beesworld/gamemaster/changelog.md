@@ -1446,3 +1446,10 @@
 - **WeatherChanged** RemoteEvent added to `ReplicatedStorage.Remotes`
 - **WeatherService patch instruction**: add `workspace:SetAttribute("CurrentWeather", state)` on each weather change for fallback compatibility
 - Part budget: +0 permanent → **4,198 / 5,000**
+
+## Dispatch 166 — Colony Health Meter (cycle15_colony_health_dispatch.md) (2026-10-02)
+- **ColonyHealthService** (new Script, ServerScriptService.Systems): 10s poll loop computes 0–100 health score from 4 weighted sub-scores — `population` (BeeCount/BeeCapacity ratio, 30%), `comb` (HoneyCount/HoneyCapacity fill, 30%), `queen` (QueenTier presence, 20%), `foraging` (GhostBeeQualMult × weather modifier, 20%); `TIERS_166` maps score to thriving/stable/struggling/critical; `tierChanged` flag fires only when tier crosses a boundary; `ColonyHealthSync` RemoteEvent payload: `{total, tier, tierChanged, pop, comb, queen, foraging}`; initial sync fires 2s after CharacterAdded to let other services set attributes first
+- **ColonyHealthController** (new LocalScript, StarterPlayerScripts): persistent `HealthPill` top-right pill (160×32, DisplayOrder=13) with emoji face + numeric score + tier-colour-coded stroke; tier-change toast (280×80, slide-in from above, 5s auto-dismiss) with big emoji + kid vibe line + adult detail line; tap/click pill expands `DetailPanel` (200×140, RichText) showing all 4 sub-scores with colour-coded labels; auto-closes after 8s; kids always see face + score; adults can tap for breakdown
+- **WeatherQualMod attribute wire-up**: WeatherAnnounceService patch to set `player:SetAttribute("WeatherQualMod", qualMod)` on each weather change so ColonyHealthService can factor live weather into the foraging sub-score
+- **ColonyHealthSync** RemoteEvent added to `ReplicatedStorage.Remotes`
+- Part budget: +0 permanent → **4,198 / 5,000**

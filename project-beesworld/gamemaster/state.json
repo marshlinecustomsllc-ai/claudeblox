@@ -80,8 +80,8 @@
     "last_playtest": null,
     "total_dispatch_docs": 35
   },
-  "dispatch_count": 165,
+  "dispatch_count": 166,
   "total_parts": 4198,
-  "last_dispatch": "cycle15_weather_announce_dispatch.md",
+  "last_dispatch": "cycle15_colony_health_dispatch.md",
   "last_updated": "2026-10-02"
 }
