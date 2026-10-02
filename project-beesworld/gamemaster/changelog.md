@@ -1348,3 +1348,7 @@
 - CellUpgradeController LocalScript — injects UpgradeBtn_149 into CellDetailPanel. States: grey (no funds), green (buyable), gold (Tier 2 maxed). Communicates with build UI via _SelectedCellSlot/_SelectedCellType attributes.
 - CombService patched: t2Multi_149 ×1.5 for upgraded slots, stacks with nurse/temp multipliers.
 - Part budget: +2 permanent → 4,157 / 5,000
+
+## Dispatch 150 — Hive Population Display (2026-10-02)
+- BeePopulationController LocalScript — live "🐝 Colony: N bees" pill, bottom-left HUD (DisplayOrder=10). Formula: CombCellCount × (10 + PrestigeLevel × 5). Heartbeat counter animation (ease-out cubic, 0.8s). Reacts to CombCellCount and PrestigeLevel attribute changes.
+- Part budget: +0 permanent → 4,157 / 5,000
