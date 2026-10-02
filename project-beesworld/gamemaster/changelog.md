@@ -1,5 +1,11 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 226 — Honey Drip Fountain Animation (2026-10-02)
+- Written: cycle23_fountain_anim_dispatch.md
+- ResourceService addition: updateHubHoneyFlow_226 sums CombCell OutputRate attributes every 6s, writes HubHoneyFlow (0–1) to workspace. FLOW_MAX_RATE_226=8 honey/s ceiling.
+- FountainAnimController LocalScript (StarterPlayerScripts): discovers HoneyDripFountain basin, creates FountainDrip_226 ParticleEmitter + FountainGlow_226 PointLight if absent. HubHoneyFlow drives Rate (2→16 p/s), PointLight Brightness (0.3→1.7), Range (8→22 studs), and colour (dark amber→bright honey gold). TweenService Sine 2s transitions. Workspace attribute signal + 6.5s scan.
+- Part budget: 4,218 / 5,000 (unchanged — LocalScript + emitter/light inside existing fountain part).
+
 ## Dispatch 225 — Forager Bee Trail VFX (2026-10-02)
 - Written: cycle23_forager_trail_dispatch.md
 - ForagerTrailController LocalScript (StarterPlayerScripts): scans ForagerBee-tagged parts, attaches a ParticleEmitter "ForagerTrail_225" to each. Outbound (NectarLoad ≤ 0.1): light yellow-white, Rate=4. Laden/return (NectarLoad > 0.1): amber-gold, Rate=9. Lifetime=0.8s, Speed≈0 (bee movement drags trail). GetInstanceAdded wires newly spawned bees. 5s scan prunes stale refs.
