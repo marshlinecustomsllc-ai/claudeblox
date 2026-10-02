@@ -1,5 +1,10 @@
 # CHANGELOG — A Bee's World
 
+## Dispatch 235 — Landing Board Activity Pulse (2026-10-02)
+- Written: cycle25_landing_board_pulse_dispatch.md
+- LandingBoardPulseController LocalScript (StarterPlayerScripts): colour oscillation on LandingBoard-tagged BaseParts. Pulse speed scales with ForagerCount player attribute (D222): 0.10/s idle → 0.70/s at cap. Colour lerps dim amber (160,100,30) → bright honey gold (255,220,90). wave*fill coupling ensures zero flicker at 0 foragers. Phase 1.05 rad between boards keeps all 6 out of sync. Step 3 includes Command Bar script to auto-tag LandingBoard parts.
+- Part budget: 4,218 / 5,000 (unchanged — LocalScript only).
+
 ## Dispatch 234 — Plot Flag Wind Animation (2026-10-02)
 - Written: cycle25_plot_flag_wind_dispatch.md
 - PlotFlagWindController LocalScript (StarterPlayerScripts): drives sinusoidal Y-axis oscillation on PlotFlag-tagged BaseParts. Unclaimed: 0.28/s gentle drift. Claimed: 0.55/s livelier ripple (reads PlotOwner attribute). PHASE_STEP_234=0.72 rad staggers all 6 flags. BASE_OFFSET_RANGE_234=±1.6° random tilt at registration for natural variation. CFrame multiply per flag per Heartbeat frame — minimal cost. 8s scan + stale prune.
