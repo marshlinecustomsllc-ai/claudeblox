@@ -1415,6 +1415,13 @@
 - **LoginRewardGranted** RemoteEvent added to `ReplicatedStorage.Remotes`
 - Part budget: +0 permanent → **4,198 / 5,000**
 
+## Dispatch 163 — Queen Naming & Renaming Ceremony (cycle15_queen_naming_dispatch.md) (2026-10-02)
+- **DataService v15→v16 migration**: `queenName` (string, default `""`) added to profile template; migration v16 backfills existing profiles
+- **QueenNamingService** (new Script, ServerScriptService): `RequestQueenName` handler sanitises input (trim + 20-char cap), runs `TextService:FilterStringAsync` (Studio fallback for dev), saves to `profile.queenName` + `QueenName` player attribute, fires `QueenNameConfirmed` back to submitting player + broadcasts to all other players; `RequestQueenNameLoad` handler re-sends stored name on client join request; `PlayerAdded` delayed send (6s)
+- **QueenNamingController** (new LocalScript, StarterPlayerScripts): `buildNamingPopup_163()` — crown emoji title, 20-char TextBox with live char counter, "Name Her!" + "Not yet" buttons, error label for server rejections; spring slide-in animation; `showSuccessToast_163()` — top-of-screen "👑 Queen [Name] is ready!" toast (3.5s); `updateQueenLabel_163()` — attaches `QueenNameBB` BillboardGui (30-stud MaxDistance, 3.5 stud hover offset) to `QueenBee`-tagged part, shows "👑 [Name]"; fires popup automatically when QueenBee appears on player's plot with no name set; optional patch adds "✏ Rename Queen" button to HiveGui QueenPage if it exists
+- **RemoteEvents**: `RequestQueenName`, `QueenNameConfirmed`, `RequestQueenNameLoad` added to `ReplicatedStorage.Remotes`
+- Part budget: +0 permanent → **4,198 / 5,000**
+
 ## Dispatch 162 — Honey Ripeness Showcase (cycle15_ripeness_showcase_dispatch.md) (2026-10-02)
 - **RipenessVisualService** (new Script, ServerScriptService): polls HoneyBlob-tagged cells every 5s; reads `Ripeness` attribute (1.0–2.2); adjusts PointLight Range (0.5→4.0) and Color (warm gold→deep amber) per cell; sends `RipenessSync` RemoteEvent per player with `{avgRipeness, maxRipeness, frac}`; tracks server-wide richest player and fires `RipestHiveSync` to all clients when any hive ≥ 1.5x ripeness
 - **RipenessController** (new LocalScript, StarterPlayerScripts): `RipenessPill` HUD element (bottom-left, above FriendPill, `{0,8,1,-148}`); animated fill bar that grows and shifts color gold→amber→red-orange with ripeness fraction; label gains 🐻 emoji above 70% ripeness; `showRichestToast_162()` slides in top-of-screen bear-warning toast "🐻 [Player]'s hive is +N% ripe — Molasses is watching!" (5s hold); DisplayOrder=12
