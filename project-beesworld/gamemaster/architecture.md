@@ -100,7 +100,7 @@ The player's physical journey is **down, out, and then up**, and the tension cur
 
 1. **Find** — walk the shared wild meadow, find a blooming patch, stand on it, press E → *Marked*. (Patches also auto-reveal slowly over time so passive players are never stuck.)
 2. **Dance** — stand on your Dance Floor (the permanent centre cell). Pick a marked patch. Two taps: bearing, then distance. Grade = Perfect / Good / Poor → route quality 1.25 / 1.0 / 0.7. A Beam draws the route across the world.
-3. **Fly** — foragers automatically fly the route. Server math: `tripTime = 2·dist/flightSpeed + 3s`, `yield = carry · speciesMult · richness · routeQuality`. Far patches pay more per trip but fewer trips. Routes decay one grade per 4 minutes until re-danced.
+3. **Fly** — foragers automatically fly the route. Server math: `tripTime = 2·dist/flightSpeed + 3s`, `yield = carry · speciesMult · richness · routeQuality`. Far patches pay more per trip but fewer trips. Routes stay fresh 12h, then fade linearly over 72h to Poor quality (0.70) -- never lost. Re-dancing refreshes and never lowers a route. See architecture_route_decay_addendum.md.
 4. **Convert** — nectar fills Honey Cells (3 nectar → 1 honey). That honey **ripens in place**, 1.0 → 2.2× over 6 minutes, and glows.
 5. **Decide** — Harvest now at current ripeness, or let it glow and risk Molasses.
 6. **Build** — spend honey (+ propolis for higher tiers) on new cells in Build Mode, placed on the hex lattice with adjacency bonuses.
@@ -243,16 +243,17 @@ Workspace/
 
 **ForagingService**
 - Purpose: route bookkeeping and abstract flight economics. Does **not** move any parts.
-- `CreateRoute(profile, patchId, quality)`, `DecayTick()`, `ComputeSupply(profile) -> nectar/s, pollen/s, propolis/s`.
+- `CreateRoute(profile, patchId, quality)`, `EffectiveRouteQuality (computed on read -- no tick)`, `ComputeSupply(profile) -> nectar/s, pollen/s, propolis/s`.
 - Per route: `yieldPerTrip = carry · speciesNectarMult · richnessFactor · quality · perkDeepCrop`, `tripTime = 2·dist/flightSpeed + 3`, `ratePerBee = yieldPerTrip / tripTime`. Foragers are distributed across active routes proportionally to `ratePerBee` (best route first, capped by patch richness drain).
 - Applies patch depletion back into `PatchService` so two players routing the same patch genuinely split it.
-- Route decay: quality drops one grade every `240s · (1 - 0.15·longMemory)`; a Poor route that decays becomes Lost and frees its slot (unless Dance Floor T5).
+- Route fading: a route stays fresh for 12h since its last dance, then its effective quality slides linearly over the next 72h down to a floor of 0.70 (Poor) and never lower -- never Lost, never frees its slot. `rateMult = (1 - 0.15*longMemory) * (T3+ ? 0.7 : 1)` scales the whole clock (Long Memory + Dance Floor tier, cumulative). Re-dancing an existing route sets `quality = max(newGradeQuality, currentEffectiveQuality)` and resets the clock -- it can only ever help. See architecture_route_decay_addendum.md.
 
 **DanceService**
 - Purpose: server-authoritative waggle grading. **The client never sends a grade.**
 - On `RequestDanceStart {patchId}`: validates proximity to the player's own Dance Floor cell (≤ 12 studs, server reads `character.PrimaryPart.Position`), validates patch is marked and a route slot is free, generates a **server-side secret**: `trueBearing` (from hive to patch), `trueDistance`, plus `dialPhase` and `dialSpeed` seeds. Returns only the seeds needed to animate — never the answer offsets.
-- On `SubmitDance {angleInput, durationInput}` (both normalized 0..1): server reconstructs where the dial and bar actually were, computes `angleError` and `durationError`, grades against the golden-zone width for that Dance Floor tier + `clearSignal` perk. Rejects if no dance is open, if submitted <1.2s or >12s after start, or if the player moved >14 studs from the Dance Floor.
+- On `SubmitDance {angleInput, durationInput}` (both normalized 0..1): server reconstructs where the dial and bar actually were, computes `angleError` and `durationError`, grades against the golden-zone width for that Dance Floor tier + `clearSignal` perk. Rejects if no dance is open, if submitted <0.2s or >12s after start, or if the player moved >14 studs from the Dance Floor.
 - One open dance per player. Rate limit 1 per 3s.
+- Timing constants live in Config.DANCE (sweep 3.4s, range 840, tolerance 42/83 studs = +/-170/+/-336 ms); see architecture_kidfriendly_addendum.md.
 
 **PopulationService**
 - Purpose: brood, hatching, castes, population cap.
@@ -316,7 +317,7 @@ All in `ReplicatedStorage/Remotes/`. `C→S` = client fires, `S→C` = server fi
 | `WalletUpdate` | S→C | `{honey, propolis, pollen, royalJelly, ripeningHoney, ripeness}` | throttled 4/s, only on change |
 | `RatesUpdate` | S→C | `{supply, wings, comb, effective, honeyPerMin, bees, castes, popCap, bottleneck:string}` | 1/s |
 | `CombUpdate` | S→C | `{floor, q, r, cellType, tier, state}` | on change only |
-| `RouteUpdate` | S→C | `{slot, patchId, quality, decayAt, hivePos, patchPos}` | on create/decay/lose |
+| `RouteUpdate` | S→C | `{slot, patchId, quality, decayAt, hivePos, patchPos}` | not built -- route freshness ships in RatesUpdate.routeFreshness |
 | `PatchUpdate` | S→C | `{patchId, richness, blooming, species}` | 1/s, only to players within 400 studs |
 | `DanceResult` | S→C | `{grade:string, angleError, durationError, quality, slot}` | immediately after `SubmitDance` |
 | `TimeWeather` | S→C | `{hour:number, weather:string, endsAt:number}` | on change + every 15s resync |
@@ -619,7 +620,7 @@ So a maxed Honey Cell costs `60 · 4 · 5 · 6 = 7,200` honey cumulative and pro
 | 2 | Polished Floor | 900 | 3 | 24° | — |
 | 3 | Scented Floor | 7,500 | 4 | 30° | routes decay 30% slower |
 | 4 | Resonant Floor | 60,000 | 6 | 38° | +10% all route quality |
-| 5 | Grand Dance Floor | 400,000 | 8 | 46° | routes never fully Lost (floor at Poor) |
+| 5 | Grand Dance Floor | 400,000 | 8 | 46° | routes never fade below Good |
 
 *(+1 route slot per unlocked comb floor, so a maxed player runs 10.)*
 
@@ -706,7 +707,7 @@ Worked example -- a fresh player, one Perfect clover route at 45 studs, 3 forage
 | Thick Propolis | threat resistance +7% | 6 |
 | Hive Steward | auto-harvest at ripeness 1.0 (10% / 25% / 50% of cells per minute) | 3 |
 | Starter Comb | begin each generation with 3 / 6 / 10 pre-built cells | 3 |
-| Long Memory | route decay −15% | 4 |
+| Long Memory | routes fade 15% slower/level (clock x(1-0.15L)) | 4 |
 
 ### Swarming (prestige)
 
@@ -1030,7 +1031,7 @@ Additional required state colour: **Dormant Grey `#8E8A7A`** for unbuilt cell pl
 | Apiary Yard (hub) | 300 | giant human junk, leaderboard, 6 gateways, bell |
 | Petal Path | 24 | stepping stones |
 | Perimeter skirt / barriers | 40 | invisible walls + treeline ring |
-| Actors (Molasses 16, Cub 11, wasp pool 8 × 4) | 59 | runtime-spawned |
+| Actors (Molasses 16, Cub 11, wasp pool 8 × 11) | 115 | runtime-spawned |
 | **Total, worst case (6 players all maxed)** | **3,193** | **1,807 headroom** |
 | **Server at launch (6 empty plots)** | **1,699** | 91 per empty plot |
 
@@ -1064,8 +1065,8 @@ Additional required state colour: **Dormant Grey `#8E8A7A`** for unbuilt cell pl
 | flora (patches / resin -- world-builder) | 420 | 13% | 18 patches + 4 resin nodes, built as templates |
 | lighting fixtures | 0 | 0% | all lights are `PointLight`/`SpotLight` objects inside existing parts -- **zero part cost** |
 | VFX anchors | 14 | <1% | invisible emitter anchors (kiln, rainbow, swarm column) |
-| Actors (enemy-designer) | 59 | 2% | Molasses, Cub, wasp pool |
-| reserve | ~1,800 | — | iteration buffer; do not consume without a Game Master check |
+| Actors (enemy-designer) | 115 | 4% | Molasses, Cub, wasp pool (wasp redesigned mid-session, 4->11 parts each) |
+| reserve | ~1,744 | — | iteration buffer; do not consume without a Game Master check |
 
 **Client-only, outside the server budget:** 110 Bee Models × 2 parts = 220, nectar mote pool = 60, route `Beam`s = 0 parts. Total client overhead ≈ 280 parts, LOD-culled and halved by `lowDetail`.
 
